@@ -2,7 +2,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Login from "../pages/auth/Login";
-import { Signup } from "../pages/auth/Signup";
 import { ViewClearance } from "../pages/ViewClearance";
 import Unauthorized from "../pages/Unauthorized";
 import Dashboard from "../pages/clearing-officer/Dashboard";
@@ -67,7 +66,6 @@ const AppRoutes: React.FC = () => {
       {/**General Route */}
       <Route path="permit" element={<ViewQrCodePermit />} />
       <Route path="login" element={<Login />} />
-      <Route path="signup" element={<Signup />} />
       <Route path="clearance" element={<ViewClearance />} />
       <Route path="register" element={<Register />} />
     </Routes>

@@ -89,7 +89,7 @@ interface AuthContextType {
   accessToken: string | null;
   role?: string;
   login: (email: string, password: string) => Promise<void>;
-  register: (
+  registerUser: (
     studentId: string,
     firstName: string,
     lastName: string,
@@ -131,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Register
-  const register = async (
+  const registerUser = async (
     studentId: string,
     firstName: string,
     lastName: string,
@@ -228,7 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ accessToken, login, register, logout, role }}
+      value={{ accessToken, login, registerUser, logout, role }}
     >
       {children}
     </AuthContext.Provider>
