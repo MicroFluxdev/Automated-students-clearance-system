@@ -4,36 +4,39 @@ import { Lock, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, type LoginData } from "@/lib/validation";
 
 export default function Login() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSuccessModalVisible, setIsSuccessModalVisible] =
     useState<boolean>(false);
 
   const navigate = useNavigate();
-  const { login, role, accessToken } = useAuth();
+  const { login, role } = useAuth();
 
-  console.log("accessToken", accessToken);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onTouched",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!email || !password) {
-      setError("Email and password are required");
-      return;
-    }
-
+  const onSubmit = async (data: LoginData) => {
     setIsLoading(true);
     setError("");
 
     try {
-      // Attempt login first to get the role
-      await login(email, password);
+      await login(data.email, data.password);
 
-      // Show success modal before navigation
       setIsSuccessModalVisible(true);
     } catch (error: any) {
       if (error.response) {
@@ -67,17 +70,6 @@ export default function Login() {
       </div>
       {/* Right side: Login form */}
       <div className="flex flex-col justify-center flex-1 px-6 py-12 bg-white">
-        {/* <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <img
-            alt="Your Company"
-            src="https://ncmcmaranding.com/img/old-logo.png"
-            className="mx-auto h-15 w-auto"
-          />
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-            Sign in to your account
-          </h2>
-        </div> */}
-
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <h2 className=" text-center text-3xl font-bold tracking-tight text-gray-700">
             Welcome back!
@@ -93,7 +85,11 @@ export default function Login() {
               <span className="block sm:inline">{error}</span>
             </div>
           )}
-          <form onSubmit={handleLogin} className="space-y-3">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-3"
+            noValidate
+          >
             <div>
               <label
                 htmlFor="email"
@@ -104,16 +100,20 @@ export default function Login() {
               <div className="mt-2">
                 <input
                   id="email"
-                  name="email"
                   type="email"
-                  required
                   autoComplete="email"
-                  className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 ${
+                    errors.email ? "border border-red-500" : ""
+                  }`}
+                  {...register("email")}
                   placeholder="john@example.com"
                 />
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-sm">
+                  {errors.email.message?.toString()}
+                </p>
+              )}
             </div>
 
             <div>
@@ -128,16 +128,20 @@ export default function Login() {
               <div className="mt-2">
                 <input
                   id="password"
-                  name="password"
                   type="password"
-                  required
                   autoComplete="current-password"
-                  className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 ${
+                    errors.password ? "border border-red-500" : ""
+                  }`}
+                  {...register("password")}
                   placeholder="Enter your password"
                 />
               </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm">
+                  {errors.password.message?.toString()}
+                </p>
+              )}
               <div className="text-sm my-5 flex justify-end">
                 <a href="#" className=" text-indigo-600 hover:text-indigo-500">
                   Forgot password?

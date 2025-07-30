@@ -11,14 +11,6 @@ export const schema = z
       .min(10, "Phone number must be at least 10 digits")
       .max(15, "Phone number must not exceed 15 digits"),
     email: z.string().email("Invalid email"),
-    // password: z
-    //   .string()
-    //   .min(6, "Password must be at least 6 characters")
-    //   .max(8, "At least 8 characters long")
-    //   .regex(/[A-Z]/, "Contains uppercase letter")
-    //   .regex(/[a-z]/, "Contains lowercase letter")
-    //   .regex(/[0-9]/, "Contains number")
-    //   .regex(/[!@#$%^&*(),.?":{}|<>]/, "Contains special characte"),
     password: z
       .string()
       .refine((val) => passwordRules.every((rule) => rule.test(val)), {
@@ -48,3 +40,13 @@ export const schema = z
   });
 
 export type FormData = z.infer<typeof schema>;
+
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .nonempty("Email is required")
+    .email("Invalid email address"),
+  password: z.string().nonempty("Password is required"),
+});
+
+export type LoginData = z.infer<typeof loginSchema>;
