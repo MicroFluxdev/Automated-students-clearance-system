@@ -4,7 +4,10 @@ import { passwordRules } from "./passwordRules";
 //register
 export const registerSchema = z
   .object({
-    studentId: z.string().min(1, "Student ID is required"),
+    studentId: z
+      .string()
+      .min(1, "Student ID is required")
+      .regex(/^\d{2}-\d{4}$/, "Student ID must be in the format 00-0000"),
     firstName: z.string().min(1, "Full name is required"),
     lastName: z.string().min(1, "Last name is required"),
     phoneNumber: z
