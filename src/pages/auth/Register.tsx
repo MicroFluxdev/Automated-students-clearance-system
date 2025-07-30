@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { type FormData, schema } from "@/lib/validation";
+import { type RegisterData, registerSchema } from "@/lib/validation";
 import { passwordRules } from "@/lib/passwordRules";
 import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai";
 
@@ -25,12 +25,12 @@ export default function Register() {
     formState: { errors },
     watch,
     reset,
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
+  } = useForm<RegisterData>({
+    resolver: zodResolver(registerSchema),
     mode: "onTouched",
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: RegisterData) => {
     setIsLoading(true);
     setError("");
     try {

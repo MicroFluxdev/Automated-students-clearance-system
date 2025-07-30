@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { passwordRules } from "./passwordRules";
 
-export const schema = z
+//register
+export const registerSchema = z
   .object({
     studentId: z.string().min(1, "Student ID is required"),
     firstName: z.string().min(1, "Full name is required"),
@@ -39,8 +40,9 @@ export const schema = z
     path: ["confirmPassword"],
   });
 
-export type FormData = z.infer<typeof schema>;
+export type RegisterData = z.infer<typeof registerSchema>;
 
+//log in
 export const loginSchema = z.object({
   email: z
     .string()
