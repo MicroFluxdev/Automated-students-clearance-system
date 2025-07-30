@@ -1,12 +1,12 @@
 import { useAuth } from "@/authentication/AuthContext";
-import { Modal } from "antd";
-import { Lock, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import ClipLoader from "react-spinners/ClipLoader";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginData } from "@/lib/validation";
+import FormInput from "@/components/myUi/auth/FormInput";
+import AuthButton from "@/components/myUi/auth/AuthButton";
+import StatusModal from "@/components/myUi/auth/StatusModal";
 
 export default function Login() {
   const [error, setError] = useState<string>("");
@@ -90,74 +90,33 @@ export default function Login() {
             className="space-y-3"
             noValidate
           >
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm/6 font-medium text-gray-800"
-              >
-                Email address
-              </label>
-              <div className="mt-2">
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 ${
-                    errors.email ? "border border-red-500" : ""
-                  }`}
-                  {...register("email")}
-                  placeholder="john@example.com"
-                />
-              </div>
-              {errors.email && (
-                <p className="text-red-500 text-sm">
-                  {errors.email.message?.toString()}
-                </p>
-              )}
+            <FormInput
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="john@example.com"
+              register={register}
+              label="Email address"
+              error={errors.email}
+            />
+
+            <FormInput
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              register={register}
+              label="Password"
+              error={errors.password}
+            />
+
+            <div className="text-sm my-5 flex justify-end">
+              <a href="#" className=" text-indigo-600 hover:text-indigo-500">
+                Forgot password?
+              </a>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-sm/6 font-medium text-gray-800"
-                >
-                  Password
-                </label>
-              </div>
-              <div className="mt-2">
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 ${
-                    errors.password ? "border border-red-500" : ""
-                  }`}
-                  {...register("password")}
-                  placeholder="Enter your password"
-                />
-              </div>
-              {errors.password && (
-                <p className="text-red-500 text-sm">
-                  {errors.password.message?.toString()}
-                </p>
-              )}
-              <div className="text-sm my-5 flex justify-end">
-                <a href="#" className=" text-indigo-600 hover:text-indigo-500">
-                  Forgot password?
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                disabled={isLoading}
-              >
-                {isLoading ? <ClipLoader color="#fff" size={22} /> : "Log in"}
-              </button>
-            </div>
+            <AuthButton isLoading={isLoading} label="Log in" type="submit" />
           </form>
 
           <div className="text-center text-xs sm:text-sm text-gray-600 mt-5">
@@ -182,42 +141,20 @@ export default function Login() {
           </div>
         </div>
       </div>
-      <Modal
-        title={
-          <span
-            className={`flex items-center gap-2 ${
-              role === "student" ? "text-red-600" : "text-green-700"
-            }`}
-          >
-            {role === "student" ? (
-              <Lock className="inline-block" size={22} />
-            ) : (
-              <CheckCircle className="inline-block" size={22} />
-            )}
-            {role === "student" ? "Access Denied" : "Login Successful"}
-          </span>
-        }
-        open={isSuccessModalVisible}
+      <StatusModal
+        isOpen={isSuccessModalVisible}
         onOk={() => {
           setIsSuccessModalVisible(false);
           if (role === "admin") navigate("/admin-side", { replace: true });
           if (role === "clearingOfficer")
             navigate("/clearing-officer", { replace: true });
         }}
-        okText="Okay"
-        centered
-        cancelButtonProps={{ style: { display: "none" } }}
-      >
-        <p
-          className={`text-base sm:text-lg ${
-            role === "student" ? "text-red-600" : "text-green-700"
-          }`}
-        >
-          {role === "student"
-            ? "Students cannot access this login page. Please use the student portal."
-            : "Welcome back! NCMC's Clearance System is now open..."}
-        </p>
-      </Modal>
+        role={role || ""}
+        successTitle="Login Successful"
+        successMessage="Welcome back! NCMC's Clearance System is now open..."
+        errorTitle="Access Denied"
+        errorMessage="Students cannot access this login page. Please use the student portal."
+      />
     </div>
   );
 }
