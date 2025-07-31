@@ -163,20 +163,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await axiosInstance.post("/auth/logout");
     setAccessToken(null);
     setRole(undefined);
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("role");
+    localStorage.clear();
   };
 
   // Refresh token on mount
   const refreshAccessToken = async () => {
     try {
-      const res = await axiosInstance.post("/auth/refresh-token");
+      const res = await axiosInstance.post(
+        "/auth/refresh-token",
+        {},
+        { withCredentials: true }
+      );
       const token = res.data.accessToken;
       setAccessToken(token);
       localStorage.setItem("accessToken", token);
     } catch (err) {
       setAccessToken(null);
-      localStorage.removeItem("accessToken");
+      localStorage.clear();
     }
   };
 
