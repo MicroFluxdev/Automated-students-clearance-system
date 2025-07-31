@@ -43,9 +43,9 @@ export default function Login() {
         const { status } = error.response;
 
         if (status === 401 || status === 404 || status === 400) {
-          setError("Wrong credentials. Please try again.");
-        } else {
-          setError("Login failed. Please try again later.");
+          setError(
+            error.response.data?.error || "Wrong credentials. Please try again."
+          );
         }
       } else if (error.request) {
         setError("Network error. Please check your connection and try again.");
