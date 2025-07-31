@@ -153,7 +153,10 @@ export default function Login() {
         successTitle="Login Successful"
         successMessage="Welcome back! NCMC's Clearance System is now open..."
         errorTitle="Access Denied"
-        errorMessage="Students cannot access this login page. Please use the student portal."
+        errorMessage={
+          error ||
+          "Students cannot access this login page. Please use the student portal."
+        }
       />
     </div>
   );

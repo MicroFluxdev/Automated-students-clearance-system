@@ -98,6 +98,8 @@ interface AuthContextType {
     password: string
   ) => Promise<void>;
   logout: () => Promise<void>;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 // Create Context
@@ -113,6 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [role, setRole] = useState<string | undefined>(
     () => localStorage.getItem("role") || undefined
   );
+  const [loading, setLoading] = useState(false);
 
   // Login
   const login = async (email: string, password: string) => {
@@ -239,7 +242,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ accessToken, login, registerUser, logout, role }}
+      value={{
+        accessToken,
+        login,
+        registerUser,
+        logout,
+        role,
+        loading,
+        setLoading,
+      }}
     >
       {children}
     </AuthContext.Provider>
