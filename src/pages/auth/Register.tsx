@@ -101,7 +101,7 @@ export default function Register() {
             className="space-y-3"
             noValidate
           >
-            <div className="flex gap-4">
+            <div className="flex justify-between gap-4">
               <FormInput
                 id="firstName"
                 type="text"
@@ -122,7 +122,7 @@ export default function Register() {
                 error={errors.lastName}
               />
             </div>
-            <div className="flex gap-4">
+            <div className="flex justify-between gap-4">
               <FormInput
                 id="studentId"
                 type="text"
