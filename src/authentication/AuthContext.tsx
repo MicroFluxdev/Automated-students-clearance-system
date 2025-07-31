@@ -191,6 +191,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       async (error) => {
         const originalRequest = error.config;
 
+        // ⛔ Don't retry on login or register failure
+        if (
+          originalRequest.url.includes("/auth/login") ||
+          originalRequest.url.includes("/auth/register")
+        ) {
+          return Promise.reject(error);
+        }
+
         // Prevent infinite retry loop
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
