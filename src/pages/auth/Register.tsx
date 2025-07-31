@@ -48,9 +48,10 @@ export default function Register() {
     } catch (error: any) {
       if (error?.response) {
         const { status } = error.response;
-        if (status === 401 || status === 404 || status === 400) {
+        if (status === 400) {
           setError(
-            "Registration failed. Please check your details and try again."
+            error.response.data?.error ||
+              "Registration failed. Please try again later."
           );
         } else {
           setError("Registration failed. Please try again later.");

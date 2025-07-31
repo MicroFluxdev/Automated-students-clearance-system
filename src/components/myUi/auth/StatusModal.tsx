@@ -31,19 +31,21 @@ const StatusModal: React.FC<StatusModalProps> = ({
       centered
       footer={null}
       closable={false}
-      bodyStyle={{
-        padding: "2.5rem 2rem 2rem 2rem",
-        borderRadius: "1.25rem",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)",
-        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
-      }}
       style={{
         borderRadius: 24,
         maxWidth: 400,
       }}
-      maskStyle={{
-        background: "rgba(30, 41, 59, 0.25)",
-        backdropFilter: "blur(2px)",
+      styles={{
+        body: {
+          padding: "2.5rem 2rem 2rem 2rem",
+          borderRadius: "1.25rem",
+          background: "linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)",
+          boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
+        },
+        mask: {
+          background: "rgba(30, 41, 59, 0.25)",
+          backdropFilter: "blur(2px)",
+        },
       }}
     >
       <div className="flex flex-col items-center text-center">
