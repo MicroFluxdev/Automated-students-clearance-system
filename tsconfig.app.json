@@ -27,5 +27,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "tests/Hello.test.tsx", "tests/setUpTests.ts"]
 }
