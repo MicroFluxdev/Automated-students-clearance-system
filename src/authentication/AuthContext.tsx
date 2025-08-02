@@ -1,6 +1,5 @@
 import axiosInstance from "@/api/axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 
 // Context type
@@ -83,10 +82,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Logout
   const logout = async () => {
-    await axiosInstance.post("/auth/logout");
+    try {
+      await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
+    } catch (error) {
+      console.error("Logout failed on server:", error);
+    }
     setAccessToken(null);
     setRole(undefined);
     localStorage.clear();
+    window.location.href = "/login";
   };
 
   // Refresh token on mount
@@ -132,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (!refreshPromise) {
             refreshPromise = new Promise(async (resolve, reject) => {
               try {
-                const res = await axios.post(
+                const res = await axiosInstance.post(
                   "/auth/refresh-token",
                   {},
                   { withCredentials: true }

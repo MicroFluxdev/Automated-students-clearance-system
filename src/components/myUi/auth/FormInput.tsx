@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  type FieldError,
-  type UseFormRegister,
-  type FieldValues,
-} from "react-hook-form";
+import { type FieldError } from "react-hook-form";
 
 interface FormInputProps {
   id: string;
@@ -11,7 +7,7 @@ interface FormInputProps {
   placeholder?: string;
   autoComplete?: string;
   error?: FieldError;
-  register: UseFormRegister<FieldValues>;
+  register: any;
   label?: string;
   className?: string;
 }

@@ -11,7 +11,7 @@ const ProtectedRoute: React.FC<Props> = ({ children, allowedRoles }) => {
   const { accessToken, role } = useAuth();
   const location = useLocation();
 
-  if (!accessToken) {
+  if (!accessToken || accessToken === "null" || accessToken === "undefined") {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
