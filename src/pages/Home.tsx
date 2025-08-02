@@ -2,34 +2,37 @@ import { Link } from "react-router-dom";
 
 const Home = () => {
   return (
-    <section className="bg-white lg:grid lg:place-content-center">
-      <div className="mx-auto w-screen max-w-screen-xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-        <div className="mx-auto max-w-prose text-center">
-          <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
-            Understand user flow and
-            <strong className="text-indigo-600"> increase </strong>
-            conversions
+    <section className="relative bg-white">
+      <img
+        className="absolute inset-0 object-[75%] sm:object-[25%] object-cover w-full h-full opacity-25 sm:opacity-100"
+        src="/ncmc-logo1.png"
+        alt="ncmc-logo"
+      />
+      <div className="hidden sm:block sm:inset-0 sm:absolute sm:bg-gradient-to-r sm:from-white sm:to-transparent"></div>
+      <div className="relative max-w-screen-xl px-4 py-32 mx-auto lg:h-screen lg:items-center lg:flex">
+        <div className="max-w-xl text-center sm:text-left">
+          <h1 className="text-3xl font-extrabold sm:text-5xl">
+            Welcome to the
+            <strong className="font-extrabold text-rose-700 sm:block">
+              NCMC Online Clearance
+            </strong>
           </h1>
-
-          <p className="mt-4 text-base text-pretty text-gray-700 sm:text-lg/relaxed">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque,
-            nisi. Natus, provident accusamus impedit minima harum corporis
-            iusto.
+          <p className="max-w-lg mt-4 sm:leading-relaxed sm:text-xl">
+            Streamline your clearance process with our efficient and easy-to-use
+            online platform. Get cleared from anywhere, anytime.
           </p>
-
-          <div className="mt-4 flex justify-center gap-4 sm:mt-6">
+          <div className="flex flex-wrap gap-4 mt-8 text-center">
             <Link
-              className="inline-block rounded border border-indigo-600 bg-indigo-600 px-5 py-3 font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 cursor-pointer"
               to="/login"
+              className="block w-full px-12 py-3 text-sm font-medium text-white rounded shadow bg-rose-600 sm:w-auto active:bg-rose-500 hover:bg-rose-700 focus:outline-none focus:ring"
             >
-              Log In
+              Get Started
             </Link>
-
             <Link
-              className="inline-block rounded border border-gray-200 px-5 py-3 font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer"
-              to="/signup"
+              to="/about"
+              className="block w-full px-12 py-3 text-sm font-medium bg-white rounded shadow text-rose-600 sm:w-auto hover:text-rose-700 active:text-rose-500 focus:outline-none focus:ring"
             >
-              Register
+              Learn More
             </Link>
           </div>
         </div>
