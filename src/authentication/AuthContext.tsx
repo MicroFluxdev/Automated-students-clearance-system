@@ -1,84 +1,3 @@
-// import axiosInstance from "@/api/axios";
-// import React, { createContext, useContext, useEffect, useState } from "react";
-
-// // Context type
-// interface AuthContextType {
-//   accessToken: string | null;
-//   role?: string;
-//   login: (email: string, password: string) => Promise<void>;
-//   logout: () => Promise<void>;
-// }
-
-// // Create Context
-// const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// // Provider
-// export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-//   children,
-// }) => {
-//   const [accessToken, setAccessToken] = useState<string | null>(null);
-//   const [role, setRole] = useState<string | undefined>(undefined);
-
-//   // Login
-//   const login = async (email: string, password: string) => {
-//     const res = await axiosInstance.post("/auth/login", { email, password });
-//     setAccessToken(res.data.accessToken); // Store in memory
-//     setRole(res.data.user.role); // Set role if available
-//     console.log("Login successful, role:", res.data.role);
-//     console.log("Access Token:", res.data.accessToken);
-//     console.log("User Role:", res);
-//   };
-
-//   // Logout
-//   const logout = async () => {
-//     await axiosInstance.post("/auth/logout");
-//     setAccessToken(null);
-//   };
-
-//   // Refresh token on mount
-//   const refreshAccessToken = async () => {
-//     try {
-//       const res = await axiosInstance.post("/auth/refresh-token");
-//       setAccessToken(res.data.accessToken);
-//     } catch (err) {
-//       setAccessToken(null);
-//     }
-//   };
-
-//   useEffect(() => {
-//     refreshAccessToken(); // run once when app loads
-//   }, []);
-
-//   // Auto-attach token to requests
-//   useEffect(() => {
-//     const requestIntercept = axiosInstance.interceptors.request.use(
-//       (config) => {
-//         if (accessToken) {
-//           config.headers.Authorization = `Bearer ${accessToken}`;
-//         }
-//         return config;
-//       }
-//     );
-
-//     return () => axiosInstance.interceptors.request.eject(requestIntercept);
-//   }, [accessToken]);
-
-//   console.log("AuthProvider initialized with accessToken:", accessToken);
-
-//   return (
-//     <AuthContext.Provider value={{ accessToken, login, logout, role }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// // Hook
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (!context) throw new Error("useAuth must be used within AuthProvider");
-//   return context;
-// };
-
 import axiosInstance from "@/api/axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
@@ -105,6 +24,8 @@ interface AuthContextType {
 // Create Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+let refreshPromise: Promise<string> | null = null;
+
 // Provider
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -129,7 +50,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("role", userRole);
 
     console.log("Access Token:", token);
-
     console.log("Login successful, role:", userRole);
   };
 
@@ -187,8 +107,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   useEffect(() => {
-    refreshAccessToken();
-  }, []);
+    if (!accessToken) {
+      refreshAccessToken();
+    }
+  }, [accessToken]);
 
   // Auto-attach token to requests interceptors
   useEffect(() => {
@@ -197,7 +119,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       async (error) => {
         const originalRequest = error.config;
 
-        // ⛔ Don't retry on login or register failure
         if (
           originalRequest.url.includes("/auth/login") ||
           originalRequest.url.includes("/auth/register")
@@ -205,29 +126,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           return Promise.reject(error);
         }
 
-        // Prevent infinite retry loop
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
+          if (!refreshPromise) {
+            refreshPromise = new Promise(async (resolve, reject) => {
+              try {
+                const res = await axios.post(
+                  "/auth/refresh-token",
+                  {},
+                  { withCredentials: true }
+                );
+                const newAccessToken = res.data.accessToken;
+                setAccessToken(newAccessToken);
+                localStorage.setItem("accessToken", newAccessToken);
+                resolve(newAccessToken);
+              } catch (refreshError) {
+                setAccessToken(null);
+                setRole(undefined);
+                localStorage.clear();
+                toast.error("Session expired. Please log in again.");
+                window.location.href = "/login";
+                reject(refreshError);
+              } finally {
+                refreshPromise = null;
+              }
+            });
+          }
+
           try {
-            const res = await axios.post(
-              "/auth/refresh-token",
-              {},
-              { withCredentials: true }
-            );
-
-            const newAccessToken = res.data.accessToken;
-            setAccessToken(newAccessToken);
-            localStorage.setItem("accessToken", newAccessToken);
-
-            // Set new token in header and retry request
+            const newAccessToken = await refreshPromise;
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return axiosInstance(originalRequest);
-          } catch (refreshError) {
-            await logout();
-            toast.error("Session expired. Please log in again.");
-            window.location.href = "/login";
-            window.location.reload();
+          } catch (e) {
+            return Promise.reject(e);
           }
         }
 
@@ -235,7 +167,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     );
 
-    return () => axiosInstance.interceptors.response.eject(responseIntercept);
+    const requestIntercept = axiosInstance.interceptors.request.use(
+      (config) => {
+        if (accessToken) {
+          config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    return () => {
+      axiosInstance.interceptors.response.eject(responseIntercept);
+      axiosInstance.interceptors.request.eject(requestIntercept);
+    };
   }, [accessToken]);
 
   console.log("AuthProvider initialized with accessToken:", accessToken);

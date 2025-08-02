@@ -21,6 +21,7 @@ import SidebarLayout from "@/layouts/SidebarLayout";
 import ViewQrCodePermit from "@/pages/ViewQrCodePermit";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Register from "@/pages/auth/Register";
+import GuestRoute from "@/components/GuestRoute";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -65,9 +66,24 @@ const AppRoutes: React.FC = () => {
       </Route>
       {/**General Route */}
       <Route path="permit" element={<ViewQrCodePermit />} />
-      <Route path="login" element={<Login />} />
+      <Route
+        path="login"
+        element={
+          <GuestRoute>
+            <Login />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="register"
+        element={
+          <GuestRoute>
+            <Register />
+          </GuestRoute>
+        }
+      />
       <Route path="clearance" element={<ViewClearance />} />
-      <Route path="register" element={<Register />} />
+      <Route path="unauthorized" element={<Unauthorized />} />
     </Routes>
   );
 };

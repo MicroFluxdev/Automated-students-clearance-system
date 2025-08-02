@@ -19,7 +19,7 @@ export default function AdminNavbar({ toggleSidebar }: NavbarProps) {
     try {
       await logout();
       navigate("/login");
-    } catch (error) {
+    } catch {
       // Optionally handle error (e.g., show notification)
       navigate("/login");
     }
