@@ -1,237 +1,245 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
+import { User, Lock, Trash2, Upload, Mail, AlertCircle } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
-  Avatar,
-  Button,
   Card,
-  Form,
-  Input,
-  Modal,
-  Upload,
-  message,
-} from "antd";
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  UserOutlined,
-  LockOutlined,
-  DeleteOutlined,
-  UploadOutlined,
-  MailOutlined,
-} from "@ant-design/icons";
-import type { UploadProps } from "antd";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 const AccountSettings = () => {
-  const [form] = Form.useForm();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
-  const handleUpdateProfile = async () => {
+  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setLoading(true);
-    try {
-      // API call to update profile
-      message.success("Profile updated successfully");
-    } catch (error) {
-      message.error("Failed to update profile");
-    }
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setLoading(false);
+    // message.success("Profile updated successfully");
   };
 
-  const handleChangePassword = async () => {
+  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setLoading(true);
-    try {
-      // API call to change password
-      message.success("Password changed successfully");
-    } catch (error) {
-      message.error("Failed to change password");
-    }
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setLoading(false);
+    // message.success("Password changed successfully");
   };
 
   const handleDeleteAccount = async () => {
     setLoading(true);
-    try {
-      // API call to delete account
-      message.success("Account deleted successfully");
-    } catch (error) {
-      message.error("Failed to delete account");
-    }
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setLoading(false);
     setIsDeleteModalOpen(false);
+    // message.success("Account deleted successfully");
   };
 
-  const uploadProps: UploadProps = {
-    name: "avatar",
-    showUploadList: false,
-    beforeUpload: (file) => {
-      const isImage = file.type.startsWith("image/");
-      if (!isImage) {
-        message.error("You can only upload image files!");
-      }
-      return isImage || Upload.LIST_IGNORE;
-    },
-    onChange: (info) => {
-      if (info.file.status === "done") {
-        message.success("Avatar uploaded successfully");
-      }
-    },
+  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatar(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      // message.success("Avatar uploaded successfully");
+    }
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">
-        Account Settings
-      </h1>
+    <div className="space-y-8 p-4 md:p-8 max-w-4xl mx-auto">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your account settings and preferences.
+        </p>
+      </div>
+      <Separator />
 
-      <div className="grid gap-6">
-        {/* Profile Section */}
-        <Card className="shadow-md">
-          <div className="flex items-center gap-6 mb-6">
-            <Upload {...uploadProps}>
-              <div className="relative group cursor-pointer">
-                <Avatar
-                  size={100}
-                  icon={<UserOutlined />}
-                  className="border-2 border-blue-500"
+      {/* Profile Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Information</CardTitle>
+          <CardDescription>Update your public profile details.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-6 mb-8">
+            <div className="relative group">
+              <Avatar className="w-24 h-24 border-2 border-primary">
+                <AvatarImage src={avatar || "https://github.com/shadcn.png"} />
+                <AvatarFallback>
+                  <User className="w-10 h-10" />
+                </AvatarFallback>
+              </Avatar>
+              <label
+                htmlFor="avatar-upload"
+                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <Upload className="text-white w-8 h-8" />
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
                 />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                  <UploadOutlined className="text-white text-xl" />
+              </label>
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold">John Doe</h2>
+              <p className="text-muted-foreground">johndoe@example.com</p>
+            </div>
+          </div>
+          <form onSubmit={handleUpdateProfile} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input id="firstName" placeholder="John" className="pl-10" />
                 </div>
               </div>
-            </Upload>
-            <div>
-              <h2 className="text-xl font-semibold">Profile Information</h2>
-              <p className="text-gray-500">Update your profile details</p>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input id="lastName" placeholder="Doe" className="pl-10" />
+                </div>
+              </div>
             </div>
-          </div>
-
-          <Form form={form} onFinish={handleUpdateProfile} layout="vertical">
-            <div className="grid grid-cols-2 gap-4">
-              <Form.Item
-                name="firstName"
-                label="First Name"
-                rules={[
-                  { required: true, message: "Please input your first name!" },
-                ]}
-              >
-                <Input prefix={<UserOutlined />} />
-              </Form.Item>
-              <Form.Item
-                name="lastName"
-                label="Last Name"
-                rules={[
-                  { required: true, message: "Please input your last name!" },
-                ]}
-              >
-                <Input prefix={<UserOutlined />} />
-              </Form.Item>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="johndoe@example.com"
+                  className="pl-10"
+                />
+              </div>
             </div>
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: "Please input your email!" },
-                { type: "email", message: "Please enter a valid email!" },
-              ]}
-            >
-              <Input prefix={<MailOutlined />} />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Update Profile
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-
-        {/* Change Password Section */}
-        <Card className="shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Change Password</h2>
-          <Form onFinish={handleChangePassword} layout="vertical">
-            <Form.Item
-              name="currentPassword"
-              label="Current Password"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your current password!",
-                },
-              ]}
-            >
-              <Input.Password prefix={<LockOutlined />} />
-            </Form.Item>
-            <Form.Item
-              name="newPassword"
-              label="New Password"
-              rules={[
-                { required: true, message: "Please input your new password!" },
-                { min: 8, message: "Password must be at least 8 characters!" },
-              ]}
-            >
-              <Input.Password prefix={<LockOutlined />} />
-            </Form.Item>
-            <Form.Item
-              name="confirmPassword"
-              label="Confirm New Password"
-              dependencies={["newPassword"]}
-              rules={[
-                {
-                  required: true,
-                  message: "Please confirm your new password!",
-                },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("newPassword") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error("Passwords do not match!"));
-                  },
-                }),
-              ]}
-            >
-              <Input.Password prefix={<LockOutlined />} />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Change Password
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-
-        {/* Delete Account Section */}
-        <Card className="shadow-md border-red-100">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-semibold text-red-600">
-                Delete Account
-              </h2>
-              <p className="text-gray-500">
-                Permanently delete your account and all data
-              </p>
-            </div>
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => setIsDeleteModalOpen(true)}
-            >
-              Delete Account
+            <Button type="submit" disabled={loading}>
+              {loading ? "Updating..." : "Update Profile"}
             </Button>
-          </div>
-        </Card>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
 
-      <Modal
-        title="Delete Account"
-        open={isDeleteModalOpen}
-        onOk={handleDeleteAccount}
-        onCancel={() => setIsDeleteModalOpen(false)}
-        okText="Delete"
-        okButtonProps={{ danger: true }}
-        confirmLoading={loading}
-      >
-        <p>
-          Are you sure you want to delete your account? This action cannot be
-          undone.
-        </p>
-      </Modal>
+      {/* Change Password Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Change Password</CardTitle>
+          <CardDescription>
+            For your security, we recommend using a strong password that you
+            don't use elsewhere.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleChangePassword} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input id="currentPassword" type="password" className="pl-10" />
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input id="newPassword" type="password" className="pl-10" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Changing..." : "Change Password"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Delete Account Section */}
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Delete Account</CardTitle>
+          <CardDescription>
+            Permanently delete your account and all associated data. This action
+            is irreversible.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Account
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="text-destructive" />
+                    <span>Are you absolutely sure?</span>
+                  </div>
+                </DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAccount}
+                  disabled={loading}
+                >
+                  {loading ? "Deleting..." : "Yes, delete my account"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
     </div>
   );
 };
