@@ -24,12 +24,12 @@ const data = {
     {
       label: "Revenue",
       data: [12000, 19000, 3000, 5000, 20000, 30000],
-      backgroundColor: "rgba(99, 102, 241, 0.8)",
-      borderColor: "rgba(99, 102, 241, 1)",
+      backgroundColor: "rgba(59, 130, 246, 0.8)", // blue-500 at 80%
+      borderColor: "rgba(59, 130, 246, 1)", // blue-500 at 100%
       borderWidth: 2,
       borderRadius: 12,
-      hoverBackgroundColor: "rgba(99, 102, 241, 1)",
-      hoverBorderColor: "rgba(99, 102, 241, 1)",
+      hoverBackgroundColor: "rgba(59, 130, 246, 1)", // full blue
+      hoverBorderColor: "rgba(59, 130, 246, 1)",
     },
   ],
 };

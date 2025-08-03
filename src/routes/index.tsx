@@ -16,19 +16,19 @@ import AddStudents from "@/pages/admin-side/AddStudents";
 import AddClearingOfficer from "@/pages/admin-side/AddClearingOfficer";
 import AdminSettings from "@/pages/admin-side/AccountSettings";
 import Layout from "@/layouts/Layout";
-import Home from "@/pages/Home";
 import SidebarLayout from "@/layouts/SidebarLayout";
 import ViewQrCodePermit from "@/pages/ViewQrCodePermit";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Register from "@/pages/auth/Register";
 import GuestRoute from "@/components/GuestRoute";
+import RootPages from "@/pages/landingPage/RootPages";
 
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/**Route for Home*/}
       <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
+        <Route index element={<RootPages />} />
         <Route path="*" element={<Unauthorized />} />
       </Route>
 

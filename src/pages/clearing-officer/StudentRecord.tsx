@@ -1,29 +1,39 @@
-import React, { useState } from "react";
-import {
-  Input,
-  Button,
-  Table,
-  Card,
-  Checkbox,
-  Select,
-  Space,
-  Tag,
-  Row,
-  Col,
-} from "antd";
-import {
-  SearchOutlined,
-  MailOutlined,
-  CheckCircleOutlined,
-  UndoOutlined,
-  PhoneOutlined,
-  IdcardOutlined,
-  LeftOutlined,
-  ReadOutlined,
-  FileTextOutlined,
-  FilterOutlined,
-} from "@ant-design/icons";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import {
+  Search,
+  Mail,
+  CheckCircle,
+  Undo,
+  Phone,
+  User,
+  ArrowLeft,
+  Book,
+  FileText,
+  Filter,
+  PackageX,
+} from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Student {
   id: number;
@@ -131,34 +141,32 @@ const students: Student[] = [
 const StudentRecord: React.FC = () => {
   const [search, setSearch] = useState<string>("");
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
-  const [selectAll, setSelectAll] = useState<boolean>(false);
   const [studentList, setStudentList] = useState<Student[]>(students);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   const statuses = ["all", "Signed", "Incomplete", "Missing"];
 
-  const filteredStudents = studentList
-    .filter(
-      (student) =>
-        (student.name.toLowerCase().includes(search.toLowerCase()) ||
-          student.email.toLowerCase().includes(search.toLowerCase()) ||
-          student.id_no.toLowerCase().includes(search.toLowerCase())) &&
-        (selectedStatus === "all" || student.status === selectedStatus)
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const filteredStudents = useMemo(
+    () =>
+      studentList
+        .filter(
+          (student) =>
+            (student.name.toLowerCase().includes(search.toLowerCase()) ||
+              student.email.toLowerCase().includes(search.toLowerCase()) ||
+              student.id_no.toLowerCase().includes(search.toLowerCase())) &&
+            (selectedStatus === "all" || student.status === selectedStatus)
+        )
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [studentList, search, selectedStatus]
+  );
 
-  const handleSelectAll = (): void => {
-    setSelectAll(!selectAll);
-    setSelectedStudents(
-      selectAll ? [] : filteredStudents.map((student) => student.id)
-    );
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedStudents(checked ? filteredStudents.map((s) => s.id) : []);
   };
 
-  const handleSelectStudent = (studentId: number): void => {
+  const handleSelectStudent = (studentId: number, checked: boolean) => {
     setSelectedStudents((prev) =>
-      prev.includes(studentId)
-        ? prev.filter((id) => id !== studentId)
-        : [...prev, studentId]
+      checked ? [...prev, studentId] : prev.filter((id) => id !== studentId)
     );
   };
 
@@ -171,7 +179,6 @@ const StudentRecord: React.FC = () => {
       )
     );
     setSelectedStudents([]);
-    setSelectAll(false);
   };
 
   const handleUndoSelected = (): void => {
@@ -183,7 +190,6 @@ const StudentRecord: React.FC = () => {
       )
     );
     setSelectedStudents([]);
-    setSelectAll(false);
   };
 
   const handleSignToggle = (studentId: number): void => {
@@ -199,218 +205,218 @@ const StudentRecord: React.FC = () => {
     );
   };
 
-  const columns = [
-    {
-      title: (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <Checkbox checked={selectAll} onChange={handleSelectAll} />
-          <span>Select All</span>
-        </div>
-      ),
-      dataIndex: "select",
-      key: "select",
-      width: 50,
-      render: (_: any, record: Student) => (
-        <Checkbox
-          checked={selectedStudents.includes(record.id)}
-          onChange={() => handleSelectStudent(record.id)}
-        />
-      ),
-    },
-    {
-      title: "ID Number",
-      dataIndex: "id_no",
-      key: "id_no",
-      render: (text: string) => (
-        <Space>
-          <IdcardOutlined style={{ color: "#1890ff" }} />
-          {text}
-        </Space>
-      ),
-    },
-    {
-      title: "Student",
-      dataIndex: "name",
-      key: "name",
-      render: (text: string, record: Student) => (
-        <Space>
-          <img
-            src={record.profilePic}
-            alt={text}
-            style={{ width: 40, height: 40, borderRadius: "50%" }}
-          />
-          <span>{text}</span>
-        </Space>
-      ),
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      render: (text: string) => (
-        <Space>
-          <MailOutlined style={{ color: "#1890ff" }} />
-          {text}
-        </Space>
-      ),
-    },
-    {
-      title: "Phone Number",
-      dataIndex: "cp_no",
-      key: "cp_no",
-      render: (text: string) => (
-        <Space>
-          <PhoneOutlined style={{ color: "#1890ff" }} />
-          {text}
-        </Space>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => {
-        const color =
-          status === "Signed"
-            ? "green"
-            : status === "Incomplete"
-            ? "orange"
-            : "red";
-        return <Tag color={color}>{status}</Tag>;
-      },
-    },
-    {
-      title: "Action",
-      key: "action",
-      render: (_: any, record: Student) => (
-        <Space>
-          <Button
-            type={record.status === "Signed" ? "primary" : "primary"}
-            danger={record.status === "Signed"}
-            onClick={() => handleSignToggle(record.id)}
-            icon={
-              record.status === "Signed" ? (
-                <UndoOutlined />
-              ) : (
-                <CheckCircleOutlined />
-              )
-            }
-          >
-            {record.status === "Signed" ? "Undo" : "Sign"}
-          </Button>
-          <Link to="/clearance">
-            <Button type="primary" style={{ backgroundColor: "#faad14" }}>
-              View
-            </Button>
-          </Link>
-        </Space>
-      ),
-    },
-  ];
+  const getStatusVariant = (
+    status: "Signed" | "Incomplete" | "Missing"
+  ): "default" | "secondary" | "destructive" => {
+    switch (status) {
+      case "Signed":
+        return "default";
+      case "Incomplete":
+        return "secondary";
+      case "Missing":
+        return "destructive";
+    }
+  };
+
+  const isAllSelected =
+    selectedStudents.length > 0 &&
+    selectedStudents.length === filteredStudents.length;
+  // const isSomeSelected =
+  //   selectedStudents.length > 0 &&
+  //   selectedStudents.length < filteredStudents.length;
 
   return (
-    <div style={{ padding: 24 }}>
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Row justify="space-between" align="middle">
-          <Col xs={24} sm={12}>
-            <Space>
-              <FileTextOutlined style={{ fontSize: 24 }} />
-              <h1 style={{ margin: 0 }}>Student Records</h1>
-            </Space>
-          </Col>
-          <Col xs={24} sm={12} style={{ textAlign: "right", marginTop: 8 }}>
-            <Space wrap>
-              <ReadOutlined style={{ color: "#722ed1" }} />
-              <span>Department of Computer Science</span>
-            </Space>
-          </Col>
-        </Row>
+    <div className="p-4 sm:p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <FileText className="w-6 h-6" />
+          <h1 className="text-2xl font-bold">Student Records</h1>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Book className="w-5 h-5 text-primary" />
+          <span>Department of Computer Science</span>
+        </div>
+      </div>
 
-        <Card>
-          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-            <Row justify="space-between" align="middle">
-              <Col xs={24} sm={12}>
-                <Space wrap>
-                  <Link to="/clearing-officer/courses">
-                    <Button
-                      icon={<LeftOutlined />}
-                      type="primary"
-                      style={{
-                        backgroundColor: "#1890ff",
-                        borderColor: "#1890ff",
-                      }}
-                    >
-                      Back
-                    </Button>
-                  </Link>
-                  {/* <Tag color="purple">Requirements</Tag>
-                  <Tag color="success">Signed</Tag>
-                  <Tag color="warning">Incomplete</Tag>
-                  <Tag color="error">Missing</Tag> */}
-                </Space>
-              </Col>
-              <Col xs={24} sm={12} style={{ textAlign: "right", marginTop: 8 }}>
-                <Space wrap>
-                  <Select
-                    value={selectedStatus}
-                    onChange={setSelectedStatus}
-                    style={{ minWidth: 150 }}
-                  >
-                    {statuses.map((status) => (
-                      <Select.Option key={status} value={status}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                  <FilterOutlined style={{ fontSize: 24, color: "#1890ff" }} />
-                </Space>
-              </Col>
-            </Row>
-
-            <Row justify="space-between" align="middle">
-              <Col xs={24} sm={12}>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Link to="/clearing-officer/courses">
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Button>
+              </Link>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <div className="relative w-full sm:w-auto">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search students..."
-                  prefix={<SearchOutlined />}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  style={{ width: "100%", maxWidth: 400 }}
+                  className="pl-8 w-full sm:w-[250px]"
                 />
-              </Col>
-              <Col xs={24} sm={12} style={{ textAlign: "right", marginTop: 8 }}>
-                {selectedStudents.length > 0 && (
-                  <Space wrap>
-                    <Button
-                      type="primary"
-                      icon={<CheckCircleOutlined />}
-                      onClick={handleSignSelected}
-                      style={{ backgroundColor: "#52c41a" }}
-                    >
-                      Sign Selected ({selectedStudents.length})
-                    </Button>
-                    <Button
-                      type="primary"
-                      danger
-                      icon={<UndoOutlined />}
-                      onClick={handleUndoSelected}
-                    >
-                      Undo Selected ({selectedStudents.length})
-                    </Button>
-                  </Space>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Filter className="w-5 h-5 text-muted-foreground" />
+                <Select
+                  value={selectedStatus}
+                  onValueChange={setSelectedStatus}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statuses.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {selectedStudents.length > 0 && (
+            <div className="flex items-center gap-2 mb-4">
+              <Button
+                size="sm"
+                onClick={handleSignSelected}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Sign Selected ({selectedStudents.length})
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleUndoSelected}
+              >
+                <Undo className="w-4 h-4 mr-2" />
+                Undo Selected ({selectedStudents.length})
+              </Button>
+            </div>
+          )}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={isAllSelected}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
+                  <TableHead>Student</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    ID Number
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell">Email</TableHead>
+                  <TableHead className="hidden md:table-cell">Phone</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((student) => (
+                    <TableRow key={student.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedStudents.includes(student.id)}
+                          onCheckedChange={(checked) =>
+                            handleSelectStudent(student.id, !!checked)
+                          }
+                          aria-label={`Select ${student.name}`}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage
+                              src={student.profilePic}
+                              alt={student.name}
+                            />
+                            <AvatarFallback>
+                              {student.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{student.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-muted-foreground" />
+                          {student.id_no}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-muted-foreground" />
+                          {student.email}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                          {student.cp_no}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusVariant(student.status)}>
+                          {student.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end items-center gap-2">
+                          <Button
+                            variant={
+                              student.status === "Signed"
+                                ? "destructive"
+                                : "default"
+                            }
+                            size="sm"
+                            onClick={() => handleSignToggle(student.id)}
+                          >
+                            {student.status === "Signed" ? (
+                              <Undo className="w-4 h-4 mr-2" />
+                            ) : (
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                            )}
+                            {student.status === "Signed" ? "Undo" : "Sign"}
+                          </Button>
+                          <Link to="/clearance">
+                            <Button variant="outline" size="sm">
+                              View
+                            </Button>
+                          </Link>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <PackageX className="w-8 h-8 text-muted-foreground" />
+                        <p className="text-muted-foreground">
+                          No students found.
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </Col>
-            </Row>
-
-            <Table
-              columns={columns}
-              dataSource={filteredStudents}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: "max-content" }} // enables horizontal scroll on small screens
-            />
-          </Space>
-        </Card>
-      </Space>
+              </TableBody>
+            </Table>
+          </div>
+          {/* Note: Pagination would be added here if needed, e.g., using <Button> components */}
+        </CardContent>
+      </Card>
     </div>
   );
 };

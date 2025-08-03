@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 
-import { SideMenu } from "../components/clearing-officer/SidebarMenu";
+import { AppSidebar } from "../components/clearing-officer/SidebarMenu";
 import Navbar from "@/components/clearing-officer/Navbar";
 
 const SidebarLayout: React.FC = () => {
@@ -27,12 +27,12 @@ const SidebarLayout: React.FC = () => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:relative`}
       >
-        <SideMenu closeSidebar={toggleSidebar} />
+        <AppSidebar closeSidebar={toggleSidebar} />
       </aside>
 
       <main className="flex-1 overflow-y-auto">
         <Navbar toggleSidebar={toggleSidebar} />
-        <div className="p-8">
+        <div>
           <Outlet />
         </div>
       </main>
