@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import TooltipDemo from "@/components/HoverToolip";
 
 interface Student {
   id: number;
@@ -306,11 +307,13 @@ const StudentRecord: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[50px]">
-                    <Checkbox
-                      checked={isAllSelected}
-                      onCheckedChange={handleSelectAll}
-                      aria-label="Select all"
-                    />
+                    <TooltipDemo isSelected={isAllSelected}>
+                      <Checkbox
+                        checked={isAllSelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all"
+                      />
+                    </TooltipDemo>
                   </TableHead>
                   <TableHead>Student</TableHead>
                   <TableHead className="hidden md:table-cell">

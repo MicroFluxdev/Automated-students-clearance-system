@@ -79,50 +79,67 @@ const Requirements = () => {
 
   const columns = [
     {
-      title: "Requirement",
+      title: <span className="font-semibold">Requirement</span>,
       dataIndex: "name",
       key: "name",
+      render: (name: string) => (
+        <span className="font-medium text-gray-800 dark:text-white">
+          {name}
+        </span>
+      ),
     },
     {
-      title: "Department",
+      title: <span className="font-semibold">Department</span>,
       dataIndex: "department",
       key: "department",
       render: (department: string) => (
-        <Space>
-          <BankOutlined className="text-blue-500" />
-          {department}
-        </Space>
+        <div className="flex items-center">
+          <BankOutlined className="text-blue-500 mr-2" />
+          <span className="text-gray-700 dark:text-gray-300">{department}</span>
+        </div>
       ),
     },
     {
-      title: "Description",
+      title: <span className="font-semibold">Description</span>,
       dataIndex: "description",
       key: "description",
-      render: (description: string) => description || "No description",
+      render: (description: string) => (
+        <span className="text-gray-600 dark:text-gray-400">
+          {description || "No description"}
+        </span>
+      ),
     },
     {
-      title: "Deadline",
+      title: <span className="font-semibold">Deadline</span>,
       dataIndex: "deadline",
       key: "deadline",
       render: (deadline: Date) => (
-        <Space>
-          <CalendarOutlined />
-          {format(deadline, "MMM dd, yyyy")}
-        </Space>
+        <div className="flex items-center">
+          <CalendarOutlined className="text-blue-500 mr-2" />
+          <span className="text-gray-700 dark:text-gray-300">
+            {format(deadline, "MMM dd, yyyy")}
+          </span>
+        </div>
       ),
     },
     {
-      title: "Type",
+      title: <span className="font-semibold">Type</span>,
       dataIndex: "isOptional",
       key: "isOptional",
       render: (isOptional: boolean) => (
-        <span className={isOptional ? "text-blue-500" : "text-red-500"}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            isOptional
+              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+          }`}
+        >
           {isOptional ? "Optional" : "Mandatory"}
         </span>
       ),
     },
     {
-      title: "Actions",
+      title: <span className="font-semibold">Actions</span>,
       key: "actions",
       render: (_: any, record: Requirement) => (
         <Button
@@ -130,35 +147,41 @@ const Requirements = () => {
           danger
           icon={<DeleteOutlined />}
           onClick={() => handleDeleteRequirement(record.id)}
+          className="hover:bg-red-50 dark:hover:bg-red-900/20"
         />
       ),
     },
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between mb-6">
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-blue-500">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
             Clearance Requirements
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-600 dark:text-gray-300">
             Manage department clearance requirements
           </p>
         </div>
-        <Button type="primary" icon={<FileTextOutlined />}>
-          Export Requirements
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            type="default"
+            icon={<FileTextOutlined />}
+            className="bg-white dark:bg-gray-800"
+          >
+            Export Requirements
+          </Button>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Add New Requirement
+          </Button>
+        </div>
       </div>
-
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={() => setIsModalOpen(true)}
-        className="mb-6"
-      >
-        Add New Requirement
-      </Button>
 
       <Modal
         title="Add New Requirement"
@@ -242,8 +265,14 @@ const Requirements = () => {
         </Space>
       </Modal>
 
-      <Card>
-        <Table columns={columns} dataSource={requirements} rowKey="id" />
+      <Card className="shadow-lg border border-gray-200 dark:border-gray-700">
+        <Table
+          columns={columns}
+          dataSource={requirements}
+          rowKey="id"
+          className="rounded-lg overflow-hidden"
+          rowClassName="hover:bg-gray-50 dark:hover:bg-gray-800/50"
+        />
       </Card>
     </div>
   );

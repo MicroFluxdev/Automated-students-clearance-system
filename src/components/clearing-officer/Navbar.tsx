@@ -105,17 +105,20 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import NotificationDrawer from "../NotificationDrawer";
+import { useAuth } from "@/authentication/AuthContext";
 
 interface NavbarProps {
   toggleSidebar: () => void;
 }
 const Navbar = ({ toggleSidebar }: NavbarProps) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { logout } = useAuth();
+
   const notificationCount = 3;
 
-  const handleLogout = () => {
-    console.log("Logging out...");
-  };
+  // const handleLogout = () => {
+  //   console.log("Logging out...");
+  // };
 
   // const handleNotificationClick = () => {
   //   console.log("Opening notifications...");
@@ -125,7 +128,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
   return (
     <nav>
       {/* backdrop-blur-md border-b border-border/50 */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" bg-white backdrop-blur-md border-b border-border/50 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Title */}
           <Button
@@ -171,7 +174,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
