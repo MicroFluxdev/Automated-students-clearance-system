@@ -31,7 +31,7 @@ const AdminLayout: React.FC = () => {
 
       <main className="flex-1 overflow-y-auto">
         <AdminNavbar toggleSidebar={toggleSidebar} />
-        <div className="p-8">
+        <div>
           <Outlet />
         </div>
       </main>

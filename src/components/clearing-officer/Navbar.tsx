@@ -94,7 +94,7 @@
 //     </nav>
 //   );
 // }
-import { BellIcon, LogOut, Menu, User } from "lucide-react";
+import { BellIcon, LogOut, Menu, QrCode, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -137,8 +137,21 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
           >
             <Menu className="h-6 w-6" />
           </Button>
-          <div className="flex-shrink-0">
+          <div className="flex flex-shrink-0">
             <h1 className="text-xl font-bold text-foreground">Your App</h1>
+            {/* Search bar or other center content */}
+            <div className="flex-1 flex justify-center px-4">
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  <QrCode className="h-5 w-5 text-gray-500" />
+                  <span className="text-sm text-gray-600">QR Scanner</span>
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Right side items */}

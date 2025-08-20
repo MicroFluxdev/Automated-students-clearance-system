@@ -1,8 +1,19 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MapPin, Plus } from "lucide-react";
 import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Event {
   id: number;
@@ -13,7 +24,7 @@ interface Event {
 }
 
 const Events = () => {
-  const [events] = useState<Event[]>([
+  const [events, setEvents] = useState<Event[]>([
     {
       id: 1,
       title: "Freshmen Orientation",
@@ -48,6 +59,37 @@ const Events = () => {
     },
   ]);
 
+  // Dialog state and form state
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [newEventTitle, setNewEventTitle] = useState<string>("");
+  const [newEventVenue, setNewEventVenue] = useState<string>("");
+  const [newEventDescription, setNewEventDescription] = useState<string>("");
+  const [newEventDateStart, setNewEventDateStart] = useState<string>("");
+
+  const resetForm = () => {
+    setNewEventTitle("");
+    setNewEventVenue("");
+    setNewEventDescription("");
+    setNewEventDateStart("");
+  };
+
+  const handleCreateEvent = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!newEventTitle.trim() || !newEventDateStart.trim()) return;
+    const nextId =
+      events.length > 0 ? Math.max(...events.map((ev) => ev.id)) + 1 : 1;
+    const newEvent: Event = {
+      id: nextId,
+      title: newEventTitle.trim(),
+      venue: newEventVenue.trim() || "TBA",
+      description: newEventDescription.trim(),
+      dateStart: newEventDateStart,
+    };
+    setEvents((prev) => [...prev, newEvent]);
+    setIsDialogOpen(false);
+    resetForm();
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -60,10 +102,81 @@ const Events = () => {
               Stay informed about the latest happenings on campus.
             </p>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Event
-          </Button>
+          <Dialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (open) resetForm();
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Event
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[525px]">
+              <DialogHeader>
+                <DialogTitle>Add new event</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreateEvent} className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="event-title">Title</Label>
+                  <Input
+                    id="event-title"
+                    value={newEventTitle}
+                    onChange={(e) => setNewEventTitle(e.target.value)}
+                    placeholder="e.g., Orientation Day"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="event-venue">Venue</Label>
+                  <Input
+                    id="event-venue"
+                    value={newEventVenue}
+                    onChange={(e) => setNewEventVenue(e.target.value)}
+                    placeholder="e.g., Main Auditorium"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="event-date">Date</Label>
+                  <Input
+                    id="event-date"
+                    type="date"
+                    value={newEventDateStart}
+                    onChange={(e) => setNewEventDateStart(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="event-description">Description</Label>
+                  <Textarea
+                    id="event-description"
+                    value={newEventDescription}
+                    onChange={(e) => setNewEventDescription(e.target.value)}
+                    placeholder="Add short details about the event"
+                    rows={4}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Create
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </header>
 
         <div className="space-y-6">

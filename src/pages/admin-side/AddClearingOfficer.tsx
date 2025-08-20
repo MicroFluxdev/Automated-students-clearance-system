@@ -7,7 +7,6 @@ import {
   MailOutlined,
   PhoneOutlined,
 } from "@ant-design/icons";
-import { UserCog } from "lucide-react";
 
 interface ClearingOfficer {
   id: number;
@@ -118,8 +117,7 @@ const AddClearingOfficer = () => {
     <div className="p-6">
       <div className="flex justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-blue-500 flex items-center gap-2">
-            <UserCog size={24} />
+          <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             Clearing Officers Management
           </h1>
           <p className="text-gray-500">Manage clearing officers</p>

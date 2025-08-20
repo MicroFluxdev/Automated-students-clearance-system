@@ -7,11 +7,9 @@ import {
   Undo,
   Phone,
   User,
-  ArrowLeft,
   Book,
-  FileText,
-  Filter,
   PackageX,
+  ChevronLeft,
 } from "lucide-react";
 import {
   Table,
@@ -137,6 +135,15 @@ const students: Student[] = [
     profilePic: "https://randomuser.me/api/portraits/men/4.jpg",
     status: "Missing",
   },
+  {
+    id: 11,
+    id_no: "24-0334",
+    name: "Bob Brown",
+    email: "bobbrown@example.com",
+    cp_no: "09123456789",
+    profilePic: "https://randomuser.me/api/portraits/men/4.jpg",
+    status: "Missing",
+  },
 ];
 
 const StudentRecord: React.FC = () => {
@@ -144,6 +151,8 @@ const StudentRecord: React.FC = () => {
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
   const [studentList, setStudentList] = useState<Student[]>(students);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const studentsPerPage = 10;
 
   const statuses = ["all", "Signed", "Incomplete", "Missing"];
 
@@ -161,8 +170,17 @@ const StudentRecord: React.FC = () => {
     [studentList, search, selectedStatus]
   );
 
+  const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+
+  // Calculate paginated students
+  const paginatedStudents = useMemo(() => {
+    const startIndex = (currentPage - 1) * studentsPerPage;
+    const endIndex = startIndex + studentsPerPage;
+    return filteredStudents.slice(startIndex, endIndex);
+  }, [filteredStudents, currentPage, studentsPerPage]);
+
   const handleSelectAll = (checked: boolean) => {
-    setSelectedStudents(checked ? filteredStudents.map((s) => s.id) : []);
+    setSelectedStudents(checked ? paginatedStudents.map((s) => s.id) : []);
   };
 
   const handleSelectStudent = (studentId: number, checked: boolean) => {
@@ -221,17 +239,20 @@ const StudentRecord: React.FC = () => {
 
   const isAllSelected =
     selectedStudents.length > 0 &&
-    selectedStudents.length === filteredStudents.length;
+    selectedStudents.length === paginatedStudents.length;
   // const isSomeSelected =
   //   selectedStudents.length > 0 &&
-  //   selectedStudents.length < filteredStudents.length;
+  //   selectedStudents.length < paginatedStudents.length;
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div className="flex items-center gap-3">
-          <FileText className="w-6 h-6" />
-          <h1 className="text-2xl font-bold">Student Records</h1>
+          <ChevronLeft
+            className="w-6 h-6 text-slate-600 cursor-pointer hover:scale-110 transition-transform duration-200"
+            onClick={() => window.history.back()}
+          />
+          <h1 className="text-3xl font-bold text-slate-800">Student Records</h1>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Book className="w-5 h-5 text-primary" />
@@ -242,42 +263,28 @@ const StudentRecord: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Link to="/clearing-officer/courses">
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-              </Link>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2">
+            <div className="flex w-full flex-col sm:flex-row items-center justify-between gap-2">
               <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search students..."
+                  placeholder="Search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-8 w-full sm:w-[250px]"
                 />
               </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Filter className="w-5 h-5 text-muted-foreground" />
-                <Select
-                  value={selectedStatus}
-                  onValueChange={setSelectedStatus}
-                >
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="w-full sm:w-[180px] sm:ml-auto">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statuses.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
@@ -326,8 +333,8 @@ const StudentRecord: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStudents.length > 0 ? (
-                  filteredStudents.map((student) => (
+                {paginatedStudents.length > 0 ? (
+                  paginatedStudents.map((student) => (
                     <TableRow key={student.id}>
                       <TableCell>
                         <Checkbox
@@ -417,7 +424,58 @@ const StudentRecord: React.FC = () => {
               </TableBody>
             </Table>
           </div>
-          {/* Note: Pagination would be added here if needed, e.g., using <Button> components */}
+          <div className="flex items-center justify-between px-2 py-4">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm text-muted-foreground">
+                Showing{" "}
+                {Math.min(
+                  (currentPage - 1) * studentsPerPage + 1,
+                  filteredStudents.length
+                )}{" "}
+                to{" "}
+                {Math.min(
+                  currentPage * studentsPerPage,
+                  filteredStudents.length
+                )}{" "}
+                of {filteredStudents.length} students
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="w-8 h-8 p-0"
+                    >
+                      {page}
+                    </Button>
+                  )
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

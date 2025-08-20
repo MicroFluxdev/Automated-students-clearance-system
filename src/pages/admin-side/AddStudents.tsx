@@ -6,7 +6,6 @@ import {
   UserOutlined,
   MailOutlined,
   PhoneOutlined,
-  UsergroupAddOutlined,
 } from "@ant-design/icons";
 
 interface Student {
@@ -118,8 +117,7 @@ const AddStudents = () => {
     <div className="p-6">
       <div className="flex justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-blue-500 flex items-center gap-2">
-            <UsergroupAddOutlined size={24} />
+          <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             Student Management
           </h1>
           <p className="text-gray-500">Add and manage students</p>

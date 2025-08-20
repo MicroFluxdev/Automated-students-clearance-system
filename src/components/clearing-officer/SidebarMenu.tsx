@@ -109,7 +109,6 @@ import {
   Menu,
   LayoutDashboard,
   GraduationCap,
-  NotebookPen,
   Calendar,
   Settings2,
 } from "lucide-react";
@@ -122,14 +121,9 @@ const navbar = [
     label: "Dashboard",
   },
   {
-    to: "/clearing-officer/courses",
+    to: "/clearing-officer/clearance",
     icon: GraduationCap,
-    label: "Courses",
-  },
-  {
-    to: "/clearing-officer/requirements",
-    icon: NotebookPen,
-    label: "Requirements",
+    label: "Clearance",
   },
   {
     to: "/clearing-officer/events",

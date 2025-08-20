@@ -5,7 +5,7 @@ import Login from "../pages/auth/Login";
 import { ViewClearance } from "../pages/ViewClearance";
 import Unauthorized from "../pages/Unauthorized";
 import Dashboard from "../pages/clearing-officer/Dashboard";
-import Courses from "../pages/clearing-officer/Courses";
+import Clearance from "../pages/clearing-officer/Clearance";
 import StudentRecord from "../pages/clearing-officer/StudentRecord";
 import Requirements from "../pages/clearing-officer/Requirements";
 import Events from "@/pages/clearing-officer/Events";
@@ -57,7 +57,7 @@ const AppRoutes: React.FC = () => {
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="courses" element={<Courses />} />
+        <Route path="clearance" element={<Clearance />} />
         <Route path="student-records" element={<StudentRecord />} />
         <Route path="requirements" element={<Requirements />} />
         <Route path="events" element={<Events />} />
