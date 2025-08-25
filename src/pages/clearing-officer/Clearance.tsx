@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -15,28 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Search,
-  Users,
-  Calendar,
-  ClipboardList,
-  FolderOpen,
-  Plus,
-} from "lucide-react";
-import { Link } from "react-router-dom";
+
+import { Search, FolderOpen } from "lucide-react";
+
+import ReqDialogForm from "./_components/ReqDialogForm";
+import RequirementCard from "./_components/RequirementCard";
 
 interface Course {
   title: string;
@@ -49,36 +25,36 @@ interface Course {
 
 const requirements: Course[] = [
   {
-    title: "CC107 - Data Structures",
-    description: "Advanced topics in data structures and algorithms.",
+    title: "CC107",
+    description: "Advanced topics in data structures and algorithms. ",
     dueDate: "May 15, 2025",
     completed: true,
     students: 45,
-    department: "Computer Science",
+    department: "BS-Computer Science",
   },
   {
-    title: "SE102 - Software Design",
+    title: "SE102 ",
     description: "Principles of software design and architecture.",
     dueDate: "April 28, 2025",
     completed: false,
     students: 38,
-    department: "Software Engineering",
+    department: "BS-Education",
   },
   {
-    title: "IS301 - Database Systems",
+    title: "IS301",
     description: "In-depth study of database management systems.",
     dueDate: "June 5, 2025",
     completed: false,
     students: 52,
-    department: "Information Systems",
+    department: "BS-Administration",
   },
   {
-    title: "CS404 - Artificial Intelligence",
+    title: "CS404 ",
     description: "Exploring the fundamentals of AI and machine learning.",
     dueDate: "May 20, 2025",
     completed: true,
     students: 30,
-    department: "Computer Science",
+    department: "BS-Accounting",
   },
 ];
 
@@ -95,9 +71,10 @@ const Clearance = () => {
 
   const categories = [
     "all",
-    "Computer Science",
-    "Software Engineering",
-    "Information Systems",
+    "BS-Computer Science",
+    "BS-Education",
+    "BS-Administration",
+    "BS-Accounting",
   ];
 
   const filteredRequirements = requirements.filter(
@@ -132,108 +109,17 @@ const Clearance = () => {
               </p>
             </div>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Requirements
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Create New Requirement</DialogTitle>
-                <DialogDescription>
-                  Add a new clearance requirement for students to complete.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    placeholder="Enter requirement title"
-                    value={newRequirement.title}
-                    onChange={(e) =>
-                      setNewRequirement({
-                        ...newRequirement,
-                        title: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Select
-                    value={newRequirement.department}
-                    onValueChange={(value) =>
-                      setNewRequirement({
-                        ...newRequirement,
-                        department: value,
-                      })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.slice(1).map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Enter requirement description"
-                    value={newRequirement.description}
-                    onChange={(e) =>
-                      setNewRequirement({
-                        ...newRequirement,
-                        description: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="dueDate">Due Date</Label>
-                  <Input
-                    id="dueDate"
-                    type="date"
-                    value={newRequirement.dueDate}
-                    onChange={(e) =>
-                      setNewRequirement({
-                        ...newRequirement,
-                        dueDate: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  onClick={handleCreateRequirement}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Create Requirement
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <ReqDialogForm
+            isDialogOpen={isDialogOpen}
+            setIsDialogOpen={setIsDialogOpen}
+            newRequirement={newRequirement}
+            setNewRequirement={setNewRequirement}
+            handleCreateRequirement={handleCreateRequirement}
+            categories={categories}
+          />
         </header>
 
-        <Card className="flex flex-col sm:flex-row items-center gap-4 px-5">
+        <Card className="flex flex-col sm:flex-row items-center gap-4 px-5 shadow-gray-100">
           <div className="relative flex-1 w-full sm:w-auto ">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
@@ -270,57 +156,15 @@ const Clearance = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
             {filteredRequirements.map((req, index) => (
-              <Card
-                key={index}
-                className="flex flex-col hover:shadow-lg transition-shadow duration-300"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-blue-100 p-3 rounded-full">
-                        <ClipboardList className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg font-bold text-slate-700">
-                          {req.title}
-                        </CardTitle>
-                        <CardDescription>{req.department}</CardDescription>
-                      </div>
-                    </div>
-                    <Badge
-                      variant={req.completed ? "default" : "secondary"}
-                      className={
-                        req.completed ? "bg-green-500" : "bg-yellow-500"
-                      }
-                    >
-                      {req.completed ? "Completed" : "In Progress"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <p className="text-gray-600 text-sm mb-4">
-                    {req.description}
-                  </p>
-                  <div className="flex items-center text-sm text-gray-500 mb-2">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>Due: {req.dueDate}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Users className="h-4 w-4 mr-2" />
-                    <span>{req.students} students enrolled</span>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Link
-                    to="/clearing-officer/student-records"
-                    className="w-full"
-                  >
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                      View Records
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
+              <RequirementCard
+                index={index}
+                title={req.title}
+                department={req.department}
+                completed={req.completed}
+                description={req.description}
+                dueDate={req.dueDate}
+                students={req.students}
+              />
             ))}
           </div>
         )}

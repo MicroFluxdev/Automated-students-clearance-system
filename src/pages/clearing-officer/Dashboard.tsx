@@ -9,7 +9,7 @@ import {
   Mail,
   LogOut,
 } from "lucide-react";
-import MonthlyAnalyticsChart from "../../components/Chart"; // Update path as needed
+import MonthlyAnalyticsChart from "../../components/Chart";
 
 export default function Dashboard() {
   return (
@@ -17,7 +17,7 @@ export default function Dashboard() {
       <div className="mx-auto">
         {/* Top Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="shadow-gray-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Views</CardTitle>
               <BarChart2 className="h-4 w-4 text-blue-500" />
@@ -30,7 +30,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-gray-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Engagement</CardTitle>
               <Activity className="h-4 w-4 text-purple-500" />
@@ -41,7 +41,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-gray-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Conversion</CardTitle>
               <PieChart className="h-4 w-4 text-green-500" />
@@ -54,7 +54,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-gray-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Revenue</CardTitle>
               <LineChart className="h-4 w-4 text-orange-500" />
@@ -72,7 +72,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <MonthlyAnalyticsChart />
 
-          <Card className="p-6">
+          <Card className="p-6 shadow-gray-100">
             <CardHeader>
               <CardTitle className="text-center">Account Information</CardTitle>
             </CardHeader>

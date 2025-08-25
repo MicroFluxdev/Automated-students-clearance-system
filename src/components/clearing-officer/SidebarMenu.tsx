@@ -165,7 +165,7 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
             <Menu className="h-4 w-4 text-white" />
           </div>
-          <span className="font-semibold text-gray-800">SkyWave</span>
+          <span className="font-semibold text-gray-800">ASCS</span>
         </div>
 
         <button
@@ -217,7 +217,7 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 {active && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-700 opacity-90 rounded-lg z-0" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-700 opacity-90 rounded-lg z-0" />
                 )}
                 <Icon
                   className={cn(

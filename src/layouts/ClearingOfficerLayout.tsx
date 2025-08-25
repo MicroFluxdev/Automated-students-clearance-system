@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 import { AppSidebar } from "../components/clearing-officer/SidebarMenu";
 import Navbar from "@/components/clearing-officer/Navbar";
 
-const SidebarLayout: React.FC = () => {
+const ClearingOfficerLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = (): void => {
@@ -40,4 +40,4 @@ const SidebarLayout: React.FC = () => {
   );
 };
 
-export default SidebarLayout;
+export default ClearingOfficerLayout;

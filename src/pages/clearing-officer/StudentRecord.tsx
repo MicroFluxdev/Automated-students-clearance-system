@@ -10,6 +10,8 @@ import {
   Book,
   PackageX,
   ChevronLeft,
+  XCircle,
+  Clock,
 } from "lucide-react";
 import {
   Table,
@@ -32,7 +34,16 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import TooltipDemo from "@/components/HoverToolip";
+import PaginationComponent from "./_components/PaginationComponent";
 
 interface Student {
   id: number;
@@ -42,6 +53,14 @@ interface Student {
   cp_no: string;
   profilePic: string;
   status: "Signed" | "Incomplete" | "Missing";
+}
+
+interface ConfirmDialog {
+  isOpen: boolean;
+  type: "single" | "multiple";
+  studentId?: number;
+  studentName?: string;
+  onConfirm?: () => void;
 }
 
 const students: Student[] = [
@@ -152,6 +171,10 @@ const StudentRecord: React.FC = () => {
   const [studentList, setStudentList] = useState<Student[]>(students);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialog>(() => ({
+    isOpen: false,
+    type: "single",
+  }));
   const studentsPerPage = 10;
 
   const statuses = ["all", "Signed", "Incomplete", "Missing"];
@@ -180,7 +203,7 @@ const StudentRecord: React.FC = () => {
   }, [filteredStudents, currentPage, studentsPerPage]);
 
   const handleSelectAll = (checked: boolean) => {
-    setSelectedStudents(checked ? paginatedStudents.map((s) => s.id) : []);
+    setSelectedStudents(checked ? filteredStudents.map((s) => s.id) : []);
   };
 
   const handleSelectStudent = (studentId: number, checked: boolean) => {
@@ -201,45 +224,57 @@ const StudentRecord: React.FC = () => {
   };
 
   const handleUndoSelected = (): void => {
-    setStudentList((prevList) =>
-      prevList.map((student) =>
-        selectedStudents.includes(student.id)
-          ? { ...student, status: "Incomplete" }
-          : student
-      )
-    );
-    setSelectedStudents([]);
+    setConfirmDialog({
+      isOpen: true,
+      type: "multiple",
+      onConfirm: () => {
+        setStudentList((prevList) =>
+          prevList.map((student) =>
+            selectedStudents.includes(student.id)
+              ? { ...student, status: "Incomplete" }
+              : student
+          )
+        );
+        setSelectedStudents([]);
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
   };
 
   const handleSignToggle = (studentId: number): void => {
-    setStudentList((prevList) =>
-      prevList.map((student) =>
-        student.id === studentId
-          ? {
-              ...student,
-              status: student.status === "Signed" ? "Incomplete" : "Signed",
-            }
-          : student
-      )
-    );
+    const student = studentList.find((s) => s.id === studentId);
+
+    if (student?.status === "Signed") {
+      setConfirmDialog({
+        isOpen: true,
+        type: "single",
+        studentId,
+        studentName: student.name,
+        onConfirm: () => {
+          setStudentList((prevList) =>
+            prevList.map((s) =>
+              s.id === studentId ? { ...s, status: "Incomplete" } : s
+            )
+          );
+          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        },
+      });
+    } else {
+      setStudentList((prevList) =>
+        prevList.map((s) =>
+          s.id === studentId ? { ...s, status: "Signed" } : s
+        )
+      );
+    }
   };
 
-  const getStatusVariant = (
-    status: "Signed" | "Incomplete" | "Missing"
-  ): "default" | "secondary" | "destructive" => {
-    switch (status) {
-      case "Signed":
-        return "default";
-      case "Incomplete":
-        return "secondary";
-      case "Missing":
-        return "destructive";
-    }
+  const handleDialogCancel = () => {
+    setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
   };
 
   const isAllSelected =
     selectedStudents.length > 0 &&
-    selectedStudents.length === paginatedStudents.length;
+    selectedStudents.length === filteredStudents.length;
   // const isSomeSelected =
   //   selectedStudents.length > 0 &&
   //   selectedStudents.length < paginatedStudents.length;
@@ -254,13 +289,13 @@ const StudentRecord: React.FC = () => {
           />
           <h1 className="text-3xl font-bold text-slate-800">Student Records</h1>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-md text-muted-foreground">
           <Book className="w-5 h-5 text-primary" />
           <span>Department of Computer Science</span>
         </div>
       </div>
 
-      <Card>
+      <Card className="shadow-gray-100">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between gap-4">
             <div className="flex w-full flex-col sm:flex-row items-center justify-between gap-2">
@@ -272,6 +307,23 @@ const StudentRecord: React.FC = () => {
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-8 w-full sm:w-[250px]"
                 />
+              </div>
+              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground ml-5">
+                <span className="flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  Signed:{" "}
+                  {studentList.filter((s) => s.status === "Signed").length}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-4 h-4 text-yellow-600" />
+                  Incomplete:{" "}
+                  {studentList.filter((s) => s.status === "Incomplete").length}
+                </span>
+                <span className="flex items-center gap-1">
+                  <XCircle className="w-4 h-4 text-red-600" />
+                  Missing:{" "}
+                  {studentList.filter((s) => s.status === "Missing").length}
+                </span>
               </div>
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger className="w-full sm:w-[180px] sm:ml-auto">
@@ -311,7 +363,7 @@ const StudentRecord: React.FC = () => {
           )}
           <div className="rounded-md border">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-gray-50">
                 <TableRow>
                   <TableHead className="w-[50px]">
                     <TooltipDemo isSelected={isAllSelected}>
@@ -322,14 +374,18 @@ const StudentRecord: React.FC = () => {
                       />
                     </TooltipDemo>
                   </TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead className="hidden md:table-cell">
+                  <TableHead className="font-semibold">Student</TableHead>
+                  <TableHead className="hidden md:table-cell font-semibold">
                     ID Number
                   </TableHead>
-                  <TableHead className="hidden lg:table-cell">Email</TableHead>
-                  <TableHead className="hidden md:table-cell">Phone</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="hidden lg:table-cell font-semibold">
+                    Email
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell font-semibold">
+                    Phone
+                  </TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -378,17 +434,25 @@ const StudentRecord: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusVariant(student.status)}>
+                        <Badge
+                          className={`${
+                            student.status === "Signed"
+                              ? "bg-green-100 border border-green-300 text-green-600"
+                              : student.status === "Incomplete"
+                              ? "bg-yellow-100 border border-yellow-300 text-yellow-600"
+                              : "bg-red-100 border border-red-300 text-red-600"
+                          }`}
+                        >
                           {student.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end items-center gap-2">
+                      <TableCell className="">
+                        <div className="flex  items-center gap-2">
                           <Button
                             variant={
                               student.status === "Signed"
                                 ? "destructive"
-                                : "default"
+                                : "success"
                             }
                             size="sm"
                             onClick={() => handleSignToggle(student.id)}
@@ -401,7 +465,10 @@ const StudentRecord: React.FC = () => {
                             {student.status === "Signed" ? "Undo" : "Sign"}
                           </Button>
                           <Link to="/clearance">
-                            <Button variant="outline" size="sm">
+                            <Button
+                              className="bg-yellow-500 hover:bg-yellow-400"
+                              size="sm"
+                            >
                               View
                             </Button>
                           </Link>
@@ -413,8 +480,8 @@ const StudentRecord: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
                       <div className="flex flex-col items-center gap-2">
-                        <PackageX className="w-8 h-8 text-muted-foreground" />
-                        <p className="text-muted-foreground">
+                        <PackageX className="w-20 h-20 text-muted-foreground" />
+                        <p className="text-muted-foreground text-2xl">
                           No students found.
                         </p>
                       </div>
@@ -440,44 +507,42 @@ const StudentRecord: React.FC = () => {
                 of {filteredStudents.length} students
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className="w-8 h-8 p-0"
-                    >
-                      {page}
-                    </Button>
-                  )
-                )}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
+            <div>
+              <PaginationComponent
+                currentPage={currentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCurrentPage}
+              />
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmDialog.isOpen} onOpenChange={handleDialogCancel}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Undo Action</DialogTitle>
+            <DialogDescription>
+              {confirmDialog.type === "single" && confirmDialog.studentName
+                ? `Are you sure you want to undo the clearance for ${confirmDialog.studentName}? This action will change their status to "Incomplete".`
+                : `Are you sure you want to undo the clearance for ${selectedStudents.length} selected student(s)? This action will change their status to "Incomplete".`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleDialogCancel}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDialog.onConfirm as () => void}
+            >
+              <Undo className="w-4 h-4 mr-2" />
+              Undo Clearance
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -134,7 +134,7 @@ export const ViewClearance = () => {
     }
   };
 
-  let schoolYear = "2024-2025 2nd Semester";
+  const schoolYear = "2024-2025 2nd Semester";
 
   return (
     <div className="mx-auto p-4 md:px-10 lg:px-30 space-y-6 bg-slate-100">
