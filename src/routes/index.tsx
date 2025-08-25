@@ -2,7 +2,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Login from "../pages/auth/Login";
-import { ViewClearance } from "../pages/ViewClearance";
+import { ViewClearance } from "../pages/clearing-officer/ViewClearance";
 import Unauthorized from "../pages/Unauthorized";
 import Dashboard from "../pages/clearing-officer/Dashboard";
 import Clearance from "../pages/clearing-officer/Clearance";
@@ -62,6 +62,7 @@ const AppRoutes: React.FC = () => {
         <Route path="requirements" element={<Requirements />} />
         <Route path="events" element={<Events />} />
         <Route path="accountSettings" element={<AccountSettings />} />
+        <Route path="viewClearance" element={<ViewClearance />} />
         <Route path="*" element={<Unauthorized />} />
       </Route>
       {/**General Route */}
@@ -82,7 +83,7 @@ const AppRoutes: React.FC = () => {
           </GuestRoute>
         }
       />
-      <Route path="clearance" element={<ViewClearance />} />
+
       <Route path="unauthorized" element={<Unauthorized />} />
     </Routes>
   );

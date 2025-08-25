@@ -464,7 +464,7 @@ const StudentRecord: React.FC = () => {
                             )}
                             {student.status === "Signed" ? "Undo" : "Sign"}
                           </Button>
-                          <Link to="/clearance">
+                          <Link to="/clearing-officer/viewClearance">
                             <Button
                               className="bg-yellow-500 hover:bg-yellow-400"
                               size="sm"
