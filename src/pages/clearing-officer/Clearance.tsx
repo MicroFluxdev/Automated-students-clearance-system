@@ -21,7 +21,7 @@ import {
   setIsDialogOpen,
   // addRequirement,
   setNewRequirement,
-} from "@/store/clearanceSlice";
+} from "@/store/slices/clearingOfficer/clearanceSlice";
 
 // interface Course {
 //   title: string;

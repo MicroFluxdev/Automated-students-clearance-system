@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
-import clearanceReducer from "./clearanceSlice";
-import studentReducer from "./studentSlice";
+import clearanceReducer from "./slices/clearingOfficer/clearanceSlice";
+import studentReducer from "./slices/clearingOfficer/studentSlice";
 
 export const store = configureStore({
   reducer: {

@@ -55,7 +55,7 @@ import {
   updateStudentStatus,
   toggleStudentStatus,
   // Student,
-} from "@/store/studentSlice";
+} from "@/store/slices/clearingOfficer/studentSlice";
 
 // interface Student {
 //   id: number;
