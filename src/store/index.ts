@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import clearanceReducer from "./clearanceSlice";
+import studentReducer from "./studentSlice";
 
 export const store = configureStore({
   reducer: {
     clearance: clearanceReducer,
+    student: studentReducer,
   },
 });
 
