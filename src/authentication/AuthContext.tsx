@@ -1,6 +1,7 @@
 import axiosInstance from "@/api/axios";
 import { tokenService } from "@/authentication/tokenService";
 import { AuthContext } from "@/authentication/context";
+import { redirectService } from "@/authentication/redirectService";
 import type { AxiosError, User } from "@/authentication/AuthContext.types";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -92,8 +93,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setAccessToken(null);
     setUser(null);
 
-    // Force redirect to login page
-    window.location.href = "/login";
+    // Use redirect service for seamless navigation
+    redirectService.redirectToLogin(
+      "You have been logged out successfully.",
+      false
+    );
   };
 
   /**

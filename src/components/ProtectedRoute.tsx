@@ -2,7 +2,6 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../authentication/useAuth";
 import ScreenLoading from "./ScreenLoading";
-import { toast } from "react-toastify";
 
 interface Props {
   children: React.ReactNode;
@@ -20,7 +19,6 @@ const ProtectedRoute: React.FC<Props> = ({ children, allowedRoles }) => {
 
   // Redirect to login if not authenticated
   if (!isAuthenticated || !user) {
-    toast.error("Please log in to access this page");
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

@@ -1,6 +1,7 @@
 import { useAuth } from "@/authentication/useAuth";
+import { redirectService } from "@/authentication/redirectService";
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginData } from "@/lib/validation";
@@ -14,19 +15,14 @@ export default function Login() {
   const [isSuccessModalVisible, setIsSuccessModalVisible] =
     useState<boolean>(false);
 
-  const navigate = useNavigate();
   const { login, role, user, isAuthenticated } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      if (role === "admin") {
-        navigate("/admin-side", { replace: true });
-      } else if (role === "clearingOfficer") {
-        navigate("/clearing-officer", { replace: true });
-      }
+    if (isAuthenticated && role) {
+      redirectService.redirectToDashboard(role);
     }
-  }, [isAuthenticated, role, navigate]);
+  }, [isAuthenticated, role]);
 
   const {
     register,
@@ -161,9 +157,9 @@ export default function Login() {
         isOpen={isSuccessModalVisible}
         onOk={() => {
           setIsSuccessModalVisible(false);
-          if (role === "admin") navigate("/admin-side", { replace: true });
-          if (role === "clearingOfficer")
-            navigate("/clearing-officer", { replace: true });
+          if (role) {
+            redirectService.redirectToDashboard(role);
+          }
         }}
         role={role || ""}
         successTitle="Login Successful"

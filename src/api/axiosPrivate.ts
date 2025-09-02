@@ -1,6 +1,5 @@
 import axios from "axios";
 import { tokenService } from "@/authentication/tokenService";
-
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 /**
@@ -44,7 +43,10 @@ axiosPrivate.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return axiosPrivate(originalRequest);
       } catch (refreshError) {
-        // Token service handles cleanup and redirect on refresh failure
+        // Token service handles the redirect and message
+        console.log(
+          "🔄 Token refresh failed, token service will handle redirect"
+        );
         return Promise.reject(refreshError);
       }
     }

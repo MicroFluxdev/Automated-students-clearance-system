@@ -1,5 +1,6 @@
 import axiosInstance from "@/api/axios";
 import type { User } from "./AuthContext.types";
+import { redirectService } from "./redirectService";
 
 // Token management service
 class TokenService {
@@ -84,10 +85,13 @@ class TokenService {
       console.log("❌ Token refresh failed:", axiosError.response?.status);
       this.clearTokens();
 
-      // Redirect to login on refresh failure
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
-      }
+      // Show message and redirect to login
+      const errorMessage =
+        axiosError.response?.status === 401
+          ? "Your session has expired. Please log in again."
+          : "Authentication failed. Please log in again.";
+
+      redirectService.redirectToLogin(errorMessage);
 
       throw error;
     }
