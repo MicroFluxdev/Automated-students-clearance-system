@@ -7,6 +7,7 @@ interface Course {
   completed: boolean;
   students: number;
   department: string;
+  requirements: string[];
 }
 
 interface ClearanceState {
@@ -18,6 +19,7 @@ interface ClearanceState {
     description: string;
     dueDate: string;
     department: string;
+    requirements: string[];
   };
   requirements: Course[];
 }
@@ -30,6 +32,7 @@ const initialRequirements: Course[] = [
     completed: true,
     students: 45,
     department: "BS-Computer Science",
+    requirements: ["CC107"],
   },
   {
     title: "SE102",
@@ -38,6 +41,7 @@ const initialRequirements: Course[] = [
     completed: false,
     students: 38,
     department: "BS-Education",
+    requirements: ["SE102", "SE103", "SE104"],
   },
   {
     title: "IS301",
@@ -46,6 +50,7 @@ const initialRequirements: Course[] = [
     completed: false,
     students: 52,
     department: "BS-Administration",
+    requirements: ["IS301", "IS302"],
   },
   {
     title: "CS404",
@@ -54,6 +59,7 @@ const initialRequirements: Course[] = [
     completed: true,
     students: 30,
     department: "BS-Accounting",
+    requirements: ["CS404", "CS405", "CS406"],
   },
 ];
 
@@ -63,6 +69,7 @@ const initialState: ClearanceState = {
   isDialogOpen: false,
   newRequirement: {
     title: "",
+    requirements: [],
     description: "",
     dueDate: "",
     department: "",

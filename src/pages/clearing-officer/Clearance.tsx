@@ -103,6 +103,7 @@ const Clearance = () => {
         description: "",
         dueDate: "",
         department: "",
+        requirements: [],
       })
     );
   };
@@ -177,6 +178,7 @@ const Clearance = () => {
                 description={req.description}
                 dueDate={req.dueDate}
                 students={req.students}
+                requirements={req.requirements}
               />
             ))}
           </div>
