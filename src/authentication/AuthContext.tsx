@@ -83,17 +83,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
    */
   const logout = async () => {
     try {
-      await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
+      const currentToken = tokenService.getAccessToken();
+      await axiosInstance.post(
+        "/auth/logout",
+        {},
+        {
+          withCredentials: true,
+          headers: currentToken
+            ? { Authorization: `Bearer ${currentToken}` }
+            : {},
+        }
+      );
     } catch (error) {
       console.error("Logout failed on server:", error);
     }
 
-    // Clear all tokens and user data
+    // Local cleanup
     tokenService.clearTokens();
     setAccessToken(null);
     setUser(null);
 
-    // Use redirect service for seamless navigation
     redirectService.redirectToLogin(
       "You have been logged out successfully.",
       false
