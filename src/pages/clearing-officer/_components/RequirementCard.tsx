@@ -109,18 +109,12 @@ const RequirementCard: React.FC<RequirementsCardProps> = ({
             </Button>
           </Link>
           <Link to="">
-            <Button
-              size="icon"
-              className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-300"
-            >
+            <Button size="icon" className=" bg-blue-100 hover:bg-blue-300">
               <Edit className="h-4 w-4 text-blue-600" />
             </Button>
           </Link>
           <Link to="">
-            <Button
-              size="icon"
-              className="border-2 border-red-600 bg-red-100 hover:bg-red-300"
-            >
+            <Button size="icon" className="  bg-red-100 hover:bg-red-300">
               <Trash2 className="h-4 w-4 text-red-600" />
             </Button>
           </Link>

@@ -23,6 +23,7 @@ import GuestRoute from "@/components/GuestRoute";
 import RootPages from "@/pages/landingPage/RootPages";
 import ClearingOfficerLayout from "@/layouts/ClearingOfficerLayout";
 import SampleQrCode from "@/pages/SampleQrCode";
+import ViewPermit from "@/pages/TestingQrCodePermit";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -69,6 +70,7 @@ const AppRoutes: React.FC = () => {
       {/**General Route */}
       <Route path="permit" element={<ViewQrCodePermit />} />
       <Route path="sampleQrCode" element={<SampleQrCode />} />
+      <Route path="viewPermit" element={<ViewPermit />} />
       <Route
         path="login"
         element={
