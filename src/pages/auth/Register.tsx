@@ -36,7 +36,7 @@ export default function Register() {
     setError("");
     try {
       await registerUser(
-        data.studentId,
+        data.schoolId,
         data.firstName,
         data.lastName,
         data.email,
@@ -128,13 +128,13 @@ export default function Register() {
             </div>
             <div className="flex justify-between gap-4">
               <FormInput
-                id="studentId"
+                id="schoolId"
                 type="text"
                 autoComplete="off"
                 placeholder="00-0000"
                 register={register}
-                label="Student ID"
-                error={errors.studentId}
+                label="School ID"
+                error={errors.schoolId}
               />
 
               <FormInput
