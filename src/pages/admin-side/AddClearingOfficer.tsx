@@ -102,7 +102,7 @@ const AddClearingOfficer = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: ClearingOfficer) => (
+      render: (_: unknown, record: ClearingOfficer) => (
         <Button
           type="text"
           danger

@@ -75,7 +75,7 @@ export default function AdminSettings() {
       </div>
       <div className="p-6 max-w-4xl">
         <Tabs defaultValue="clearance" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 bg-blue-500">
             <TabsTrigger value="clearance">Clearance Deadline</TabsTrigger>
             <TabsTrigger value="password">Change Password</TabsTrigger>
           </TabsList>

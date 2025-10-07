@@ -102,7 +102,7 @@ const AddStudents = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: Student) => (
+      render: (_: unknown, record: Student) => (
         <Button
           type="text"
           danger
