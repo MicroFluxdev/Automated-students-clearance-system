@@ -1,42 +1,42 @@
 name: React Vite CI/CD Pipeline
 
 on:
-    push:
-        branches: ["main"]
-    pull_request:
-        branches: ["main"]
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
-    build-and-test:
-        runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: ubuntu-latest
 
-        strategy:
-            matrix:
-                node-version: [18.x]
+    strategy:
+      matrix:
+        node-version: [18.x]
 
-        steps:
-            - name: 🧭 Checkout Repository
-              uses: actions/checkout@v4
+    steps:
+      - name: 🧭 Checkout Repository
+        uses: actions/checkout@v4
 
-            - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ matrix.node-version }}
+      - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
 
-            - name: 📦 Install Dependencies
-              run: npm ci
+      - name: 📦 Install Dependencies
+        run: npm ci
 
-            - name: 🧪 Run Tests
-              run: |
-                  echo "No tests configured — skipping"
-                  # Uncomment below when you have test setup
-                  # npm test
+      - name: 🧪 Run Tests
+        run: |
+          echo "No tests configured — skipping"
+          # Uncomment below when you have test setup
+          # npm test
 
-            - name: 🏗️ Build Vite Project
-              run: npm run build
+      - name: 🏗️ Build Vite Project
+        run: npm run build
 
-            - name: 📂 Upload Production Artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: vite-dist
-                  path: dist
+      - name: 📂 Upload Production Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vite-dist
+          path: dist
