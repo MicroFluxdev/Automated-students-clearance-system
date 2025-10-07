@@ -1,5 +1,4 @@
 import { useAuth } from "@/authentication/useAuth";
-import { redirectService } from "@/authentication/redirectService";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -17,10 +16,14 @@ export default function Login() {
 
   const { login, role, user, isAuthenticated } = useAuth();
 
-  // Redirect if already authenticated
+  // Redirect or show modal based on role if already authenticated
   useEffect(() => {
-    if (isAuthenticated && role) {
-      redirectService.redirectToDashboard(role);
+    if (!isAuthenticated || !role) return;
+
+    if (role === "student") {
+      // Stay on login page and show modal
+      setIsSuccessModalVisible(true);
+      return;
     }
   }, [isAuthenticated, role]);
 
@@ -157,9 +160,6 @@ export default function Login() {
         isOpen={isSuccessModalVisible}
         onOk={() => {
           setIsSuccessModalVisible(false);
-          if (role) {
-            redirectService.redirectToDashboard(role);
-          }
         }}
         role={role || ""}
         successTitle="Login Successful"

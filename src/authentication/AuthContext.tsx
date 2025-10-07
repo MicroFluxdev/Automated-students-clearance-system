@@ -24,6 +24,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isAuthenticated = Boolean(accessToken && user);
   const role = user?.role;
 
+  console.log("🔍 User:", user);
+  console.log("🔍 Role:", role);
+  console.log("🔍 Is Authenticated:", isAuthenticated);
+
   /**
    * Handles user login.
    */
@@ -48,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
    * Handles user registration.
    */
   const registerUser = async (
-    studentId: string,
+    schoolId: string,
     firstName: string,
     lastName: string,
     email: string,
@@ -57,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     try {
       await axiosInstance.post("/auth/register", {
-        studentId,
+        schoolId,
         firstName,
         lastName,
         email,

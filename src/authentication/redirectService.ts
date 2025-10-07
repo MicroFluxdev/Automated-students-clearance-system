@@ -73,6 +73,9 @@ class RedirectService {
       case "clearingOfficer":
         path = "/clearing-officer";
         break;
+      case "student":
+        path = "/";
+        break;
       default:
         path = "/unauthorized";
         break;

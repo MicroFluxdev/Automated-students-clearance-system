@@ -1,7 +1,7 @@
 // User interface
 export interface User {
   id: string;
-  studentId?: string;
+  schoolId?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -35,7 +35,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   registerUser: (
-    studentId: string,
+    schoolId: string,
     firstName: string,
     lastName: string,
     email: string,

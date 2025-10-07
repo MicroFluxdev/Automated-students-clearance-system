@@ -1,4 +1,5 @@
 import axiosInstance from "@/api/axios";
+import type { User } from "@/authentication/AuthContext.types";
 
 export interface LoginRequest {
   email: string;
@@ -6,7 +7,7 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  studentId: string;
+  schoolId: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -19,7 +20,7 @@ export interface AuthResponse {
   message: string;
   user: {
     id: string;
-    studentId?: string;
+    schoolId?: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -80,7 +81,7 @@ export const authApi = {
   /**
    * Get user profile (protected route)
    */
-  async getProfile(): Promise<{ user: any }> {
+  async getProfile(): Promise<{ user: User }> {
     const response = await axiosInstance.get("/auth/profile");
     return response.data;
   },
