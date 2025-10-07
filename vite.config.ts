@@ -20,4 +20,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: "./tests/setUpTests.ts",
   },
+  build: {
+    outDir: "dist",
+  },
 });
