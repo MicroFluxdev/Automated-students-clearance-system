@@ -111,23 +111,29 @@ const Clearance = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-6  min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <header className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 w-full sm:w-auto">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">Clearance</h1>
-              <p className="text-gray-500 mt-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+                Clearance
+              </h1>
+              <p className="text-gray-500 mt-1 text-sm sm:text-base">
                 Manage and track all available requirements.
               </p>
             </div>
           </div>
-          <ReqDialogForm
-            isDialogOpen={isDialogOpen}
-            setIsDialogOpen={(value) => dispatch(setIsDialogOpen(value))}
-            newRequirement={newRequirement}
-            setNewRequirement={(value) => dispatch(setNewRequirement(value))}
-            handleCreateRequirement={handleCreateRequirement}
-            categories={categories}
-          />
+
+          {/* Dialog Form - responsive width */}
+          <div className="w-full sm:w-auto">
+            <ReqDialogForm
+              isDialogOpen={isDialogOpen}
+              setIsDialogOpen={(value) => dispatch(setIsDialogOpen(value))}
+              newRequirement={newRequirement}
+              setNewRequirement={(value) => dispatch(setNewRequirement(value))}
+              handleCreateRequirement={handleCreateRequirement}
+              categories={categories}
+            />
+          </div>
         </header>
 
         <Card className="flex flex-col sm:flex-row items-center gap-4 px-5 shadow-gray-100">
@@ -171,6 +177,7 @@ const Clearance = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
             {filteredRequirements.map((req, index) => (
               <RequirementCard
+                key={req.id} // ✅ unique key
                 index={index}
                 title={req.title}
                 department={req.department}

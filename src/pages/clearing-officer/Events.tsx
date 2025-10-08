@@ -59,7 +59,6 @@ const Events = () => {
     },
   ]);
 
-  // Dialog state and form state
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [newEventTitle, setNewEventTitle] = useState<string>("");
   const [newEventVenue, setNewEventVenue] = useState<string>("");
@@ -91,17 +90,19 @@ const Events = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8  min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <header className="flex items-center justify-between mb-8">
+        {/* HEADER */}
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
               Upcoming Events
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-gray-500 mt-1 text-sm sm:text-base">
               Stay informed about the latest happenings on campus.
             </p>
           </div>
+
           <Dialog
             open={isDialogOpen}
             onOpenChange={(open) => {
@@ -110,12 +111,12 @@ const Events = () => {
             }}
           >
             <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Event
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px]">
+            <DialogContent className="sm:max-w-[525px] w-[95%] rounded-xl">
               <DialogHeader>
                 <DialogTitle>Add new event</DialogTitle>
               </DialogHeader>
@@ -159,17 +160,18 @@ const Events = () => {
                     rows={4}
                   />
                 </div>
-                <DialogFooter>
+                <DialogFooter className="flex justify-between sm:justify-end gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setIsDialogOpen(false)}
+                    className="w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-blue-600 text-white hover:bg-blue-700"
+                    className="bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto"
                   >
                     Create
                   </Button>
@@ -179,33 +181,38 @@ const Events = () => {
           </Dialog>
         </header>
 
+        {/* EVENT LIST */}
         <div className="space-y-6">
           {events.map((event) => (
             <Card
               key={event.id}
-              className="overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border-l-4 border-blue-500"
+              className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 border-blue-500"
             >
-              <CardContent className="p-0 flex">
-                <div className="w-24 bg-blue-50 flex flex-col items-center justify-center p-4 text-center">
+              <CardContent className="p-0 flex flex-col sm:flex-row">
+                {/* Date */}
+                <div className="w-full sm:w-24 bg-blue-50 flex flex-row sm:flex-col items-center justify-center p-4 text-center gap-2 sm:gap-0">
                   <p className="text-sm font-semibold text-blue-700 uppercase">
                     {format(new Date(event.dateStart), "MMM")}
                   </p>
-                  <p className="text-3xl font-bold text-blue-800">
+                  <p className="text-2xl sm:text-3xl font-bold text-blue-800">
                     {format(new Date(event.dateStart), "dd")}
                   </p>
                 </div>
-                <div className="flex-1 p-6">
-                  <CardHeader className="p-0 mb-4">
-                    <CardTitle className="text-xl font-semibold text-gray-800">
+
+                {/* Content */}
+                <div className="flex-1 p-4 sm:p-6">
+                  <CardHeader className="p-0 mb-3 sm:mb-4">
+                    <CardTitle className="text-lg sm:text-xl font-semibold text-gray-800">
                       {event.title}
                     </CardTitle>
                   </CardHeader>
-                  <p className="text-gray-600 mb-4 text-sm">
+                  <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base line-clamp-3">
                     {event.description}
                   </p>
-                  <div className="flex items-center text-sm text-gray-500 space-x-6">
+
+                  <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 sm:space-x-6 space-y-2 sm:space-y-0">
                     <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2" />
+                      <Calendar className="h-4 w-4 mr-2 text-blue-600" />
                       <span>
                         {format(
                           new Date(event.dateStart),
@@ -214,13 +221,19 @@ const Events = () => {
                       </span>
                     </div>
                     <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2" />
+                      <MapPin className="h-4 w-4 mr-2 text-blue-600" />
                       <span>{event.venue}</span>
                     </div>
                   </div>
                 </div>
-                <div className="p-6 flex items-center">
-                  <Button variant="outline" size="sm">
+
+                {/* Action Button */}
+                <div className="p-4 sm:p-6 flex items-center justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
                     View Details
                   </Button>
                 </div>

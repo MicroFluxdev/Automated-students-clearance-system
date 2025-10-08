@@ -1,17 +1,17 @@
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
   Mail,
   CheckCircle,
   Undo,
   Phone,
-  User,
   Book,
   PackageX,
   ChevronLeft,
   XCircle,
   Clock,
+  IdCard,
 } from "lucide-react";
 import {
   Table,
@@ -54,130 +54,10 @@ import {
   setConfirmDialog,
   updateStudentStatus,
   toggleStudentStatus,
-  // Student,
 } from "@/store/slices/clearingOfficer/studentSlice";
 
-// interface Student {
-//   id: number;
-//   id_no: string;
-//   name: string;
-//   email: string;
-//   cp_no: string;
-//   profilePic: string;
-//   status: "Signed" | "Incomplete" | "Missing";
-// }
-
-// interface ConfirmDialog {
-//   isOpen: boolean;
-//   type: "single" | "multiple";
-//   studentId?: number;
-//   studentName?: string;
-//   onConfirm?: () => void;
-// }
-
-// const students: Student[] = [
-//   {
-//     id: 1,
-//     id_no: "24-0334",
-//     name: "John Doe",
-//     email: "johndoe@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/men/1.jpg",
-//     status: "Signed",
-//   },
-//   {
-//     id: 2,
-//     id_no: "20-0842",
-//     name: "Jane Smith",
-//     email: "janesmith@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/women/2.jpg",
-//     status: "Incomplete",
-//   },
-//   {
-//     id: 3,
-//     id_no: "24-0334",
-//     name: "Alice Johnson",
-//     email: "alicejohnson@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/women/3.jpg",
-//     status: "Signed",
-//   },
-//   {
-//     id: 4,
-//     id_no: "24-0334",
-//     name: "Bob Brown",
-//     email: "bobbrown@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/men/4.jpg",
-//     status: "Missing",
-//   },
-//   {
-//     id: 5,
-//     id_no: "24-0334",
-//     name: "Jane Smith",
-//     email: "janesmith@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/women/2.jpg",
-//     status: "Signed",
-//   },
-//   {
-//     id: 6,
-//     id_no: "24-0334",
-//     name: "Alice Johnson",
-//     email: "alicejohnson@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/women/3.jpg",
-//     status: "Signed",
-//   },
-//   {
-//     id: 7,
-//     id_no: "24-0334",
-//     name: "Bob Brown",
-//     email: "bobbrown@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/men/4.jpg",
-//     status: "Incomplete",
-//   },
-//   {
-//     id: 8,
-//     id_no: "24-0334",
-//     name: "Jane Smith",
-//     email: "janesmith@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/women/2.jpg",
-//     status: "Missing",
-//   },
-//   {
-//     id: 9,
-//     id_no: "21-0882",
-//     name: "Alice Johnson",
-//     email: "alicejohnson@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/women/3.jpg",
-//     status: "Signed",
-//   },
-//   {
-//     id: 10,
-//     id_no: "24-0334",
-//     name: "Bob Brown",
-//     email: "bobbrown@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/men/4.jpg",
-//     status: "Missing",
-//   },
-//   {
-//     id: 11,
-//     id_no: "24-0334",
-//     name: "Bob Brown",
-//     email: "bobbrown@example.com",
-//     cp_no: "09123456789",
-//     profilePic: "https://randomuser.me/api/portraits/men/4.jpg",
-//     status: "Missing",
-//   },
-// ];
-
 const StudentRecord: React.FC = () => {
+  const navigation = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const {
     search,
@@ -287,7 +167,7 @@ const StudentRecord: React.FC = () => {
         <div className="flex items-center gap-3">
           <ChevronLeft
             className="w-6 h-6 text-slate-600 cursor-pointer hover:scale-110 transition-transform duration-200"
-            onClick={() => window.history.back()}
+            onClick={() => navigation("/clearing-officer/clearance")}
           />
           <h1 className="text-3xl font-bold text-slate-800">Student Records</h1>
         </div>
@@ -422,7 +302,7 @@ const StudentRecord: React.FC = () => {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-muted-foreground" />
+                          <IdCard className="w-4 h-4 text-muted-foreground" />
                           {student.id_no}
                         </div>
                       </TableCell>
@@ -454,6 +334,7 @@ const StudentRecord: React.FC = () => {
                       <TableCell className="">
                         <div className="flex  items-center gap-2">
                           <Button
+                            className="w-20"
                             variant={
                               student.status === "Signed"
                                 ? "destructive"
@@ -463,17 +344,18 @@ const StudentRecord: React.FC = () => {
                             onClick={() => handleSignToggle(student.id)}
                           >
                             {student.status === "Signed" ? (
-                              <Undo className="w-4 h-4 mr-2" />
+                              <Undo className="w-4 h-4" />
                             ) : (
-                              <CheckCircle className="w-4 h-4 mr-2" />
+                              <CheckCircle className="w-4 h-4" />
                             )}
                             {student.status === "Signed" ? "Undo" : "Sign"}
                           </Button>
                           <Link to="/clearing-officer/viewClearance">
                             <Button
-                              className="bg-yellow-500 hover:bg-yellow-400"
+                              className="bg-yellow-500 hover:bg-yellow-400 w-20"
                               size="sm"
                             >
+                              <Book className="w-4 h-4" />
                               View
                             </Button>
                           </Link>
@@ -485,8 +367,8 @@ const StudentRecord: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
                       <div className="flex flex-col items-center gap-2">
-                        <PackageX className="w-20 h-20 text-muted-foreground" />
-                        <p className="text-muted-foreground text-2xl">
+                        <PackageX className="w-20 h-20 text-gray-300" />
+                        <p className="text-gray-300 text-2xl">
                           No students found.
                         </p>
                       </div>

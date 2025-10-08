@@ -20,7 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 
 const AccountSettings = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -67,14 +66,13 @@ const AccountSettings = () => {
   };
 
   return (
-    <div className="space-y-8 p-4 md:p-8 max-w-4xl mx-auto">
+    <div className="space-y-8 p-4 md:p-8 max-w-4xl">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
         <p className="text-muted-foreground">
           Manage your account settings and preferences.
         </p>
       </div>
-      <Separator />
 
       {/* Profile Section */}
       <Card>

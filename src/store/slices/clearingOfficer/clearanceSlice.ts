@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface Course {
+  id: number;
   title: string;
   description: string;
   dueDate: string;
@@ -26,6 +27,7 @@ interface ClearanceState {
 
 const initialRequirements: Course[] = [
   {
+    id: 1,
     title: "CC107",
     description: "Advanced topics in data structures and algorithms.",
     dueDate: "May 15, 2025",
@@ -35,6 +37,7 @@ const initialRequirements: Course[] = [
     requirements: ["CC107"],
   },
   {
+    id: 2,
     title: "SE102",
     description: "Principles of software design and architecture.",
     dueDate: "April 28, 2025",
@@ -44,6 +47,7 @@ const initialRequirements: Course[] = [
     requirements: ["SE102", "SE103", "SE104"],
   },
   {
+    id: 3,
     title: "IS301",
     description: "In-depth study of database management systems.",
     dueDate: "June 5, 2025",
@@ -53,6 +57,7 @@ const initialRequirements: Course[] = [
     requirements: ["IS301", "IS302"],
   },
   {
+    id: 4,
     title: "CS404",
     description: "Exploring the fundamentals of AI and machine learning.",
     dueDate: "May 20, 2025",
