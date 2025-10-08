@@ -120,10 +120,11 @@ const AdminNavbar = ({ toggleSidebar }: NavbarProps) => {
         <div className="flex items-center justify-between h-16">
           {/* Title */}
           <Button
+            variant="ghost"
             onClick={toggleSidebar}
-            className="lg:hidden rounded-md hover:bg-white/10 mr-2"
+            className="lg:hidden rounded-md hover:bg-gray-200 mr-2"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-12 w-12" />
           </Button>
           <div className="flex flex-shrink-0">
             {/* <h1 className="text-xl font-bold text-foreground">Your App</h1> */}

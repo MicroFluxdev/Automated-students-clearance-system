@@ -75,12 +75,11 @@ export default function Register() {
   return (
     <div className="min-h-screen flex">
       {/* Left side: Image */}
-      <div className="hidden lg:flex flex-1 max-h-screen items-center justify-center bg-gray-900">
+      <div className="hidden lg:flex flex-1 max-h-screen items-center justify-center bg-white">
         <img
-          src="https://ncmc.edu.ph/img/home_cover.jpg"
+          src="/sign/signup.jpg"
           alt="Register illustration"
-          className="object-cover w-full h-full max-h-screen opacity-80"
-          style={{ filter: "brightness(0.6)" }}
+          className="object-cover w-full h-full max-h-screen"
         />
       </div>
       {/* Right side: Register form */}

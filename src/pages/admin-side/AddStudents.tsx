@@ -146,6 +146,7 @@ const AddStudents = () => {
         <Space direction="vertical" className="w-full">
           <div>
             <label className="block mb-2">Student Name</label>
+
             <Input
               value={newStudent.name}
               onChange={(e) =>

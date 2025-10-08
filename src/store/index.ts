@@ -7,6 +7,10 @@ export const store = configureStore({
     clearance: clearanceReducer,
     student: studentReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false, // allow function storage in confirmDialog
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

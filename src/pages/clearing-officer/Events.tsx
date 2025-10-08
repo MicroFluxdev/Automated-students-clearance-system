@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -116,10 +117,14 @@ const Events = () => {
                 Create Event
               </Button>
             </DialogTrigger>
+
             <DialogContent className="sm:max-w-[525px] w-[95%] rounded-xl">
               <DialogHeader>
                 <DialogTitle>Add new event</DialogTitle>
               </DialogHeader>
+              <DialogDescription>
+                Manage students for Automated Student Clearance System
+              </DialogDescription>
               <form onSubmit={handleCreateEvent} className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="event-title">Title</Label>
@@ -229,12 +234,9 @@ const Events = () => {
 
                 {/* Action Button */}
                 <div className="p-4 sm:p-6 flex items-center justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full sm:w-auto"
-                  >
-                    View Details
+                  <Button size="sm" className="w-full sm:w-auto space-x-2">
+                    <Calendar />
+                    Add to Calendar
                   </Button>
                 </div>
               </CardContent>

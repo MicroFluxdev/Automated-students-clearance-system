@@ -253,6 +253,7 @@ const StudentRecord: React.FC = () => {
                   <TableHead className="w-[50px]">
                     <TooltipDemo isSelected={isAllSelected}>
                       <Checkbox
+                        className="border border-blue-600 hover:border-blue-700 hover:border-2"
                         checked={isAllSelected}
                         onCheckedChange={handleSelectAll}
                         aria-label="Select all"
@@ -279,6 +280,7 @@ const StudentRecord: React.FC = () => {
                     <TableRow key={student.id}>
                       <TableCell>
                         <Checkbox
+                          className="border border-blue-600 hover:border-blue-700 hover:border-2"
                           checked={selectedStudents.includes(student.id)}
                           onCheckedChange={(checked) =>
                             handleSelectStudent(student.id, !!checked)

@@ -75,12 +75,11 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left side: Image */}
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-gray-900">
+      <div className="hidden lg:flex flex-1 items-center justify-center ">
         <img
-          src="https://ncmc.edu.ph/img/home_cover.jpg"
+          src="/sign/signin.png"
           alt="Login illustration"
-          className="object-cover w-full h-full max-h-screen opacity-80"
-          style={{ filter: "brightness(0.6)" }}
+          className="object-cover w-full h-full max-h-screen"
         />
       </div>
       {/* Right side: Login form */}

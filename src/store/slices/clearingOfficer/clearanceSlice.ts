@@ -22,6 +22,13 @@ interface ClearanceState {
     department: string;
     requirements: string[];
   };
+  confirmDialog: {
+    isOpen: boolean;
+    type: "single" | "multiple" | null;
+    studentName?: string;
+    onConfirm?: (() => void) | null;
+  };
+
   requirements: Course[];
 }
 
@@ -79,6 +86,12 @@ const initialState: ClearanceState = {
     dueDate: "",
     department: "",
   },
+  confirmDialog: {
+    isOpen: false,
+    type: null,
+    studentName: undefined,
+    onConfirm: null,
+  },
   requirements: initialRequirements,
 };
 
@@ -106,6 +119,14 @@ const clearanceSlice = createSlice({
       state.newRequirement = initialState.newRequirement; // reset form
       state.isDialogOpen = false;
     },
+    setConfirmDialog(
+      state,
+      action: PayloadAction<Partial<ClearanceState["confirmDialog"]>>
+    ) {
+      // Redux Toolkit’s serializableCheck may warn about storing functions.
+      // To suppress, ensure the store config disables serializableCheck or store only an identifier.
+      state.confirmDialog = { ...state.confirmDialog, ...action.payload };
+    },
   },
 });
 
@@ -115,5 +136,6 @@ export const {
   setIsDialogOpen,
   setNewRequirement,
   addRequirement,
+  setConfirmDialog,
 } = clearanceSlice.actions;
 export default clearanceSlice.reducer;
