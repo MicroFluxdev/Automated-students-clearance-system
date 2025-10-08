@@ -126,9 +126,9 @@ const AdminNavbar = ({ toggleSidebar }: NavbarProps) => {
             <Menu className="h-6 w-6" />
           </Button>
           <div className="flex flex-shrink-0">
-            <h1 className="text-xl font-bold text-foreground">Your App</h1>
+            {/* <h1 className="text-xl font-bold text-foreground">Your App</h1> */}
             {/* Search bar or other center content */}
-            <div className="flex-1 flex justify-center px-4">
+            <div className="flex-1 flex justify-center">
               <div className="relative">
                 <Button
                   variant="ghost"

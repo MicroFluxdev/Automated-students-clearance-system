@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Button, Input, Table, Modal, Select, Space } from "antd";
+import { Card, Button, Input, Table, Modal, Select, Space, Grid } from "antd";
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -7,6 +7,9 @@ import {
   MailOutlined,
   PhoneOutlined,
 } from "@ant-design/icons";
+import { type ColumnsType } from "antd/es/table";
+
+const { useBreakpoint } = Grid;
 
 interface Student {
   id: number;
@@ -25,6 +28,7 @@ const departments = [
 ];
 
 const AddStudents = () => {
+  const screens = useBreakpoint();
   const [students, setStudents] = useState<Student[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newStudent, setNewStudent] = useState<Partial<Student>>({
@@ -46,12 +50,7 @@ const AddStudents = () => {
           department: newStudent.department,
         },
       ]);
-      setNewStudent({
-        name: "",
-        email: "",
-        phone: "",
-        department: "",
-      });
+      setNewStudent({ name: "", email: "", phone: "", department: "" });
       setIsModalOpen(false);
     }
   };
@@ -60,7 +59,7 @@ const AddStudents = () => {
     setStudents(students.filter((student) => student.id !== id));
   };
 
-  const columns = [
+  const columns: ColumnsType<Student> = [
     {
       title: "Name",
       dataIndex: "name",
@@ -71,6 +70,7 @@ const AddStudents = () => {
           {name}
         </Space>
       ),
+      responsive: ["xs", "sm", "md", "lg", "xl"],
     },
     {
       title: "Email",
@@ -82,6 +82,7 @@ const AddStudents = () => {
           {email}
         </Space>
       ),
+      responsive: ["sm", "md", "lg", "xl"], // hidden on mobile
     },
     {
       title: "Phone",
@@ -93,11 +94,13 @@ const AddStudents = () => {
           {phone || "Not provided"}
         </Space>
       ),
+      responsive: ["md", "lg", "xl"], // hidden on mobile
     },
     {
       title: "Department",
       dataIndex: "department",
       key: "department",
+      responsive: ["sm", "md", "lg", "xl"], // hidden on mobile
     },
     {
       title: "Actions",
@@ -110,28 +113,28 @@ const AddStudents = () => {
           onClick={() => handleDeleteStudent(record.id)}
         />
       ),
+      responsive: ["xs", "sm", "md", "lg", "xl"],
     },
   ];
 
   return (
     <div className="p-6">
-      <div className="flex justify-between mb-6">
+      <div className="flex flex-col md:flex-row justify-between mb-6 gap-2 md:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             Student Management
           </h1>
           <p className="text-gray-500">Add and manage students</p>
         </div>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setIsModalOpen(true)}
+          className="self-start md:self-center"
+        >
+          Add New Student
+        </Button>
       </div>
-
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={() => setIsModalOpen(true)}
-        className="mb-6"
-      >
-        Add New Student
-      </Button>
 
       <Modal
         title="Add New Student"
@@ -146,10 +149,7 @@ const AddStudents = () => {
             <Input
               value={newStudent.name}
               onChange={(e) =>
-                setNewStudent({
-                  ...newStudent,
-                  name: e.target.value,
-                })
+                setNewStudent({ ...newStudent, name: e.target.value })
               }
               placeholder="Enter student name"
             />
@@ -159,10 +159,7 @@ const AddStudents = () => {
             <Input
               value={newStudent.email}
               onChange={(e) =>
-                setNewStudent({
-                  ...newStudent,
-                  email: e.target.value,
-                })
+                setNewStudent({ ...newStudent, email: e.target.value })
               }
               placeholder="Enter student email"
             />
@@ -172,10 +169,7 @@ const AddStudents = () => {
             <Input
               value={newStudent.phone}
               onChange={(e) =>
-                setNewStudent({
-                  ...newStudent,
-                  phone: e.target.value,
-                })
+                setNewStudent({ ...newStudent, phone: e.target.value })
               }
               placeholder="Enter student phone"
             />
@@ -200,8 +194,35 @@ const AddStudents = () => {
         </Space>
       </Modal>
 
-      <Card>
-        <Table columns={columns} dataSource={students} rowKey="id" />
+      <Card className="overflow-x-auto">
+        <Table
+          columns={columns}
+          dataSource={students}
+          rowKey="id"
+          scroll={{ x: "max-content" }}
+          pagination={{ pageSize: 5 }}
+          expandable={
+            !screens.sm
+              ? {
+                  expandRowByClick: true,
+                  expandedRowRender: (record: Student) => (
+                    <div className="space-y-1">
+                      {/* Show all fields except name */}
+                      <p>
+                        <MailOutlined /> Email: {record.email}
+                      </p>
+                      <p>
+                        <PhoneOutlined /> Phone:{" "}
+                        {record.phone || "Not provided"}
+                      </p>
+                      <p>Department: {record.department}</p>
+                    </div>
+                  ),
+                  rowExpandable: () => true,
+                }
+              : undefined
+          }
+        />
       </Card>
     </div>
   );

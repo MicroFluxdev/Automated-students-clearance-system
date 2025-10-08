@@ -133,14 +133,15 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
           {/* Title */}
           <Button
             onClick={toggleSidebar}
-            className="lg:hidden rounded-md hover:bg-white/10 mr-2"
+            className="lg:hidden rounded-md hover:bg-gray-100 mr-2"
+            variant="ghost"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-12 w-12" />
           </Button>
           <div className="flex flex-shrink-0">
-            <h1 className="text-xl font-bold text-foreground">Your App</h1>
+            {/* <h1 className="text-xl font-bold text-foreground">Your App</h1> */}
             {/* Search bar or other center content */}
-            <div className="flex-1 flex justify-center px-4">
+            <div className="flex-1 flex justify-center">
               <div className="relative">
                 <Button
                   variant="ghost"

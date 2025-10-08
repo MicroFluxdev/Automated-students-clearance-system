@@ -7,7 +7,10 @@ import {
   MailOutlined,
   PhoneOutlined,
 } from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import { Grid } from "antd";
 
+const { useBreakpoint } = Grid;
 interface ClearingOfficer {
   id: number;
   name: string;
@@ -25,6 +28,7 @@ const departments = [
 ];
 
 const AddClearingOfficer = () => {
+  const screens = useBreakpoint();
   const [officers, setOfficers] = useState<ClearingOfficer[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newOfficer, setNewOfficer] = useState<Partial<ClearingOfficer>>({
@@ -60,7 +64,7 @@ const AddClearingOfficer = () => {
     setOfficers(officers.filter((officer) => officer.id !== id));
   };
 
-  const columns = [
+  const columns: ColumnsType<ClearingOfficer> = [
     {
       title: "Name",
       dataIndex: "name",
@@ -71,6 +75,7 @@ const AddClearingOfficer = () => {
           {name}
         </Space>
       ),
+      responsive: ["xs", "sm", "md", "lg", "xl"],
     },
     {
       title: "Email",
@@ -82,6 +87,7 @@ const AddClearingOfficer = () => {
           {email}
         </Space>
       ),
+      responsive: ["sm", "md", "lg", "xl"], // hidden on mobile
     },
     {
       title: "Phone",
@@ -93,11 +99,13 @@ const AddClearingOfficer = () => {
           {phone || "Not provided"}
         </Space>
       ),
+      responsive: ["md", "lg", "xl"], // hidden on mobile
     },
     {
       title: "Department",
       dataIndex: "department",
       key: "department",
+      responsive: ["sm", "md", "lg", "xl"], // hidden on mobile
     },
     {
       title: "Actions",
@@ -110,27 +118,28 @@ const AddClearingOfficer = () => {
           onClick={() => handleDeleteOfficer(record.id)}
         />
       ),
+      responsive: ["xs", "sm", "md", "lg", "xl"],
     },
   ];
 
   return (
     <div className="p-6">
-      <div className="flex justify-between mb-6">
+      <div className="flex flex-col md:flex-row justify-between mb-6 gap-2 md:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             Clearing Officers Management
           </h1>
           <p className="text-gray-500">Manage clearing officers</p>
         </div>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setIsModalOpen(true)}
+          className="self-start md:self-center"
+        >
+          Add New Officer
+        </Button>
       </div>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={() => setIsModalOpen(true)}
-        className="mb-6"
-      >
-        Add New Officer
-      </Button>
 
       <Modal
         title="Add New Clearing Officer"
@@ -199,8 +208,35 @@ const AddClearingOfficer = () => {
         </Space>
       </Modal>
 
-      <Card>
-        <Table columns={columns} dataSource={officers} rowKey="id" />
+      <Card className="overflow-x-auto">
+        <Table
+          columns={columns}
+          dataSource={officers}
+          rowKey="id"
+          scroll={{ x: "max-content" }}
+          pagination={{ pageSize: 5 }}
+          expandable={
+            !screens.sm
+              ? {
+                  expandRowByClick: true,
+                  expandedRowRender: (record: ClearingOfficer) => (
+                    <div className="space-y-1">
+                      {/* Show all fields except name */}
+                      <p>
+                        <MailOutlined /> Email: {record.email}
+                      </p>
+                      <p>
+                        <PhoneOutlined /> Phone:{" "}
+                        {record.phone || "Not provided"}
+                      </p>
+                      <p>Department: {record.department}</p>
+                    </div>
+                  ),
+                  rowExpandable: () => true,
+                }
+              : undefined
+          }
+        />
       </Card>
     </div>
   );
