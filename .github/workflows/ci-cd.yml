@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x] # ✅ Upgrade Node to match react-router 7.x
+        node-version: [20.x] # ✅ use Node 20 for react-router 7.x
 
     steps:
       - name: 🧭 Checkout Repository
@@ -22,20 +22,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "pnpm" # ✅ Enable pnpm caching for faster builds
+          cache: "pnpm"
 
       - name: 🧰 Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.2 # ✅ Match your local pnpm version (or adjust if you use another)
+          version: 9.12.2 # ✅ match your local pnpm version (or latest stable)
 
       - name: 📦 Install Dependencies
-        run: pnpm install --frozen-lockfile=false # ✅ Avoid strict lockfile mismatch errors
+        run: pnpm install --frozen-lockfile=false # avoids strict lockfile mismatches
 
       - name: 🧪 Run Tests
         run: |
           echo "No tests configured — skipping"
-          # Uncomment when you have tests
+          # Uncomment below when tests exist
           # pnpm test
 
       - name: 🏗️ Build Vite Project
