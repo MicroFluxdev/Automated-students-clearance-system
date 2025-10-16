@@ -80,6 +80,7 @@ export default function Register() {
           src="/sign/signup.jpg"
           alt="Register illustration"
           className="object-cover w-full h-full max-h-screen"
+          loading="lazy"
         />
       </div>
       {/* Right side: Register form */}

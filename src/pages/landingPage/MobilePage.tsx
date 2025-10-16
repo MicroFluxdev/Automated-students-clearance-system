@@ -1,0 +1,159 @@
+// StudentAppDownload.jsx
+// Updated: Responsive implementation for all breakpoints (mobile-first, accessible, keyboard-friendly)
+
+import { motion } from "framer-motion";
+import { Apple, Play } from "lucide-react";
+
+// Helper for responsiveness and accessibility:
+// - Mobile-first layout stacks vertically, phone mockup below content and CTAs
+// - Switches to 2-column layout on md+ screens
+// - Adapt height, paddings, and mockup sizing at each breakpoint
+// - Buttons are large, keyboard accessible
+// - QR code floats responsively
+
+export default function StudentAppDownload() {
+  return (
+    <section id="download" className="w-full">
+      <div className="min-h-[80vh] bg-gradient-to-b from-gray-100 to-white flex flex-col justify-center py-12 px-4 sm:py-16 md:py-20 lg:px-30">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center max-w-6xl mx-auto">
+          {/* Left column: copy + CTAs */}
+          <div className="space-y-6 flex flex-col justify-center">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-slate-900">
+              The Student App
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-teal-500 to-sky-400 ml-2 inline-block">
+                for school, simplified
+              </span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-600 max-w-xl">
+              Get assignments, schedules, group chats and campus updates — all
+              in one sleek student app. Download now to stay on top of classes,
+              deadlines, and student life.
+            </p>
+
+            <div className="flex flex-col xs:flex-row xs:items-center xs:space-x-3 sm:space-x-4 space-y-3 xs:space-y-0 w-full max-w-md">
+              <a
+                href="#"
+                aria-label="Download for iPhone"
+                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-900 text-white shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 hover:scale-[1.03] active:scale-100 transition-transform text-base sm:text-lg w-full xs:w-auto justify-center"
+                tabIndex={0}
+              >
+                <Apple className="w-5 h-5" aria-hidden="true" />
+                Download for iPhone
+              </a>
+              <a
+                href="#"
+                aria-label="Download for Android"
+                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border border-slate-200 text-slate-900 hover:bg-slate-50 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 transition text-base sm:text-lg w-full xs:w-auto justify-center"
+                tabIndex={0}
+              >
+                <Play className="w-5 h-5" aria-hidden="true" />
+                Download for Android
+              </a>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
+              <span className="inline-flex items-center gap-2">
+                <span
+                  className="w-2 h-2 rounded-full bg-green-400 block"
+                  aria-hidden="true"
+                />
+                4.8 ★ (12k+ reviews)
+              </span>
+              <span className="hidden xs:inline">•</span>
+              <span>Trusted by 1,200+ campuses</span>
+            </div>
+
+            <div className="mt-3 md:mt-4 text-slate-500 text-sm max-w-md">
+              <strong>Tip:</strong> Use the QR code on your phone to open the
+              app store directly.
+            </div>
+          </div>
+
+          {/* Right column: phone mockup */}
+          <div className="flex items-center justify-center min-h-[300px]">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="relative w-[220px] sm:w-[250px] md:w-[300px] lg:w-[340px] flex-shrink-0"
+            >
+              {/* Decorative glowing background */}
+              <div
+                className="absolute -inset-3 sm:-inset-6 rounded-3xl blur-2xl sm:blur-3xl opacity-40"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(99,102,241,0.22), rgba(34,211,238,0.16))",
+                }}
+              />
+
+              {/* Phone frame */}
+              <div
+                className="relative rounded-3xl bg-gradient-to-b from-slate-800 via-slate-900 to-black shadow-2xl overflow-hidden"
+                style={{ borderRadius: "36px" }}
+              >
+                <div
+                  className="h-[420px] sm:h-[530px] md:h-[620px] lg:h-[650px] w-full max-w-full flex items-center justify-center p-3 sm:p-4 md:p-6"
+                  style={{ aspectRatio: "9/19.5" }}
+                >
+                  <div className="relative w-full h-full bg-white rounded-2xl overflow-hidden">
+                    <div className="absolute inset-0 flex animate-slide-x">
+                      <div className="min-w-full flex items-center justify-center bg-[linear-gradient(135deg,#eef2ff,#f0f9ff)]">
+                        <div className="text-slate-400 text-xs sm:text-sm text-center px-2">
+                          Schedule & Assignments
+                        </div>
+                      </div>
+                      <div className="min-w-full flex items-center justify-center bg-[linear-gradient(135deg,#fff7ed,#fff1f2)]">
+                        <div className="text-slate-400 text-xs sm:text-sm text-center px-2">
+                          Chat with classmates
+                        </div>
+                      </div>
+                      <div className="min-w-full flex items-center justify-center bg-[linear-gradient(135deg,#f0fdf4,#ecfeff)]">
+                        <div className="text-slate-400 text-xs sm:text-sm text-center px-2">
+                          Campus News Feed
+                        </div>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+                      <div className="h-1 w-16 sm:w-24 rounded-full bg-slate-200/40" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating QR, adjusts size/offset for mobile vs desktop */}
+              <div className="absolute -bottom-7 sm:-bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-white rounded-xl shadow-md border border-slate-100">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-slate-50 flex items-center justify-center text-xs text-slate-400">
+                    QR
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Tailwind CSS animation keyframes - no style leaks */}
+        <style>{`
+        @keyframes slide-x {
+          0% { transform: translateX(0%); }
+          20% { transform: translateX(0%); }
+          33% { transform: translateX(-100%); }
+          53% { transform: translateX(-100%); }
+          66% { transform: translateX(-200%); }
+          86% { transform: translateX(-200%); }
+          100% { transform: translateX(0%); }
+        }
+        .animate-slide-x {
+          animation: slide-x 12s linear infinite;
+        }
+        @media (max-width: 639px) {
+          .sm\\:w-24 { width: 6rem !important; }
+          .sm\\:h-16 { height: 4rem !important; }
+          .sm\\:gap-4 { gap: 1rem !important; }
+        }
+      `}</style>
+      </div>
+    </section>
+  );
+}

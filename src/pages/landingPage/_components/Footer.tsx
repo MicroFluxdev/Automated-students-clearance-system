@@ -1,51 +1,108 @@
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Twitter,
-  Linkedin,
-  Facebook,
-  GraduationCap,
-} from "lucide-react";
+import { Mail, Phone, MapPin, Twitter, Linkedin, Facebook } from "lucide-react";
+import { motion, type Variants } from "framer-motion";
 
 const Footer = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
-    <footer
+    <motion.footer
       id="contact"
       className="bg-white border-t border-gray-200 text-gray-700 lg:px-30"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      variants={containerVariants}
     >
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          variants={containerVariants}
+        >
           {/* Brand Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <GraduationCap className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">
-                StudentFlow
-              </span>
-            </div>
-            <p className="text-gray-500 leading-relaxed">
+          <motion.div className="space-y-4" variants={itemVariants}>
+            <motion.div
+              className="flex items-center gap-2"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <motion.div
+                className="p-2 bg-blue-500 rounded-lg"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.2 }}
+              >
+                <img
+                  className="h-8 w-8 rounded-md object-cover"
+                  src="/MICRO FLUX LOGO.png"
+                  alt="Menu icon"
+                />
+              </motion.div>
+              <span className="text-2xl font-bold text-gray-900">ASCS</span>
+            </motion.div>
+            <motion.p
+              className="text-gray-500 leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
               Transforming educational administration through intelligent
               automation and seamless digital experiences.
-            </p>
-            <div className="flex gap-4">
-              <button className="p-2 rounded-full hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition">
-                <Twitter className="h-4 w-4" />
-              </button>
-              <button className="p-2 rounded-full hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition">
-                <Linkedin className="h-4 w-4" />
-              </button>
-              <button className="p-2 rounded-full hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition">
-                <Facebook className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+            </motion.p>
+            <motion.div
+              className="flex gap-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              {[
+                { icon: Twitter, delay: 0.5 },
+                { icon: Linkedin, delay: 0.6 },
+                { icon: Facebook, delay: 0.7 },
+              ].map(({ icon: Icon, delay }) => (
+                <motion.button
+                  key={delay}
+                  className="p-2 rounded-full hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3, delay }}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Icon className="h-4 w-4" />
+                </motion.button>
+              ))}
+            </motion.div>
+          </motion.div>
 
           {/* Product Links */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900">Product</h3>
+          <motion.div className="space-y-4" variants={itemVariants}>
+            <motion.h3
+              className="font-semibold text-gray-900"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              Product
+            </motion.h3>
             <div className="space-y-2">
               {[
                 "Features",
@@ -53,21 +110,31 @@ const Footer = () => {
                 "Integrations",
                 "API Documentation",
                 "Security",
-              ].map((item) => (
-                <a
+              ].map((item, index) => (
+                <motion.a
                   key={item}
                   href="#"
                   className="block text-gray-500 hover:text-blue-600 transition"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                  whileHover={{ x: 5, scale: 1.02 }}
                 >
                   {item}
-                </a>
+                </motion.a>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Company Links */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900">Company</h3>
+          <motion.div className="space-y-4" variants={itemVariants}>
+            <motion.h3
+              className="font-semibold text-gray-900"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              Company
+            </motion.h3>
             <div className="space-y-2">
               {[
                 "About Us",
@@ -75,62 +142,100 @@ const Footer = () => {
                 "News & Blog",
                 "Case Studies",
                 "Partners",
-              ].map((item) => (
-                <a
+              ].map((item, index) => (
+                <motion.a
                   key={item}
                   href="#"
                   className="block text-gray-500 hover:text-blue-600 transition"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                  whileHover={{ x: 5, scale: 1.02 }}
                 >
                   {item}
-                </a>
+                </motion.a>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900">Contact</h3>
+          <motion.div className="space-y-4" variants={itemVariants}>
+            <motion.h3
+              className="font-semibold text-gray-900"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              Contact
+            </motion.h3>
             <div className="space-y-3">
-              <div className="flex items-center gap-3 text-gray-500">
-                <Mail className="h-4 w-4 text-blue-600" />
-                <span>hello@studentflow.com</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-500">
-                <Phone className="h-4 w-4 text-blue-600" />
-                <span>(555) 123-4567</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-500">
-                <MapPin className="h-4 w-4 text-blue-600" />
-                <span>San Francisco, CA</span>
-              </div>
+              {[
+                { icon: Mail, text: "hello@studentflow.com", delay: 0.3 },
+                { icon: Phone, text: "(555) 123-4567", delay: 0.4 },
+                { icon: MapPin, text: "San Francisco, CA", delay: 0.5 },
+              ].map(({ icon: Icon, text, delay }) => (
+                <motion.div
+                  key={text}
+                  className="flex items-center gap-3 text-gray-500"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.4, delay }}
+                  whileHover={{ x: 5, scale: 1.02 }}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Icon className="h-4 w-4 text-blue-600" />
+                  </motion.div>
+                  <span>{text}</span>
+                </motion.div>
+              ))}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Separator */}
-        <div className="my-8 border-t border-gray-200" />
+        <motion.div
+          className="my-8 border-t border-gray-200"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+        />
 
         {/* Footer Bottom */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-          <div className="text-gray-500">
+        <motion.div
+          className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <motion.div
+            className="text-gray-500"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
             © 2024 StudentFlow. All rights reserved.
-          </div>
+          </motion.div>
           <div className="flex gap-6">
             {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
-              (item) => (
-                <a
+              (item, index) => (
+                <motion.a
                   key={item}
                   href="#"
                   className="text-gray-500 hover:text-blue-600 transition"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}
+                  whileHover={{ y: -2, scale: 1.05 }}
                 >
                   {item}
-                </a>
+                </motion.a>
               )
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </footer>
+    </motion.footer>
   );
 };
 

@@ -38,7 +38,6 @@ interface CloseSidebarProps {
 
 export function AdminSideMenu({ closeSidebar }: CloseSidebarProps) {
   const location = useLocation();
-
   const currentPath = location.pathname;
 
   const isActive = (path: string) => {
@@ -105,7 +104,7 @@ export function AdminSideMenu({ closeSidebar }: CloseSidebarProps) {
                 key={item.label}
                 to={item.to}
                 className={cn(
-                  "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 group",
+                  "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 group cursor-pointer",
                   active
                     ? "bg-blue-600 text-white shadow-sm"
                     : "text-gray-200 hover:bg-gray-800 hover:text-white"
@@ -122,7 +121,7 @@ export function AdminSideMenu({ closeSidebar }: CloseSidebarProps) {
                   )}
                 />
 
-                <span className="z-10 relative animate-fade-in">
+                <span className="z-10 relative animate-fade-in flex-1">
                   {item.label}
                 </span>
               </NavLink>

@@ -24,6 +24,15 @@ import RootPages from "@/pages/landingPage/RootPages";
 import ClearingOfficerLayout from "@/layouts/ClearingOfficerLayout";
 import SampleQrCode from "@/pages/SampleQrCode";
 import ViewPermit from "@/pages/TestingQrCodePermit";
+// Enrollment System Imports
+import EnrollmentDashboard from "@/pages/enrollmentSide/EnrollmentDashboard";
+import StudentManagement from "@/pages/enrollmentSide/StudentManagement";
+import CourseManagement from "@/pages/enrollmentSide/CourseManagement";
+import SemesterManagement from "@/pages/enrollmentSide/SemesterManagement";
+import StudentEnrollment from "@/pages/enrollmentSide/StudentEnrollment";
+import EnrollmentRecords from "@/pages/enrollmentSide/EnrollmentRecords";
+import EnrollmentLayout from "@/layouts/EnrollmentLayout";
+import EnrollmentLogin from "@/pages/enrollmentSide/EnrollmentLogin";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -47,6 +56,7 @@ const AppRoutes: React.FC = () => {
         <Route path="addStudents" element={<AddStudents />} />
         <Route path="addClearingOfficer" element={<AddClearingOfficer />} />
         <Route path="adminSettings" element={<AdminSettings />} />
+
         <Route path="*" element={<Unauthorized />} />
       </Route>
       {/**Route for clearing officer */}
@@ -71,6 +81,8 @@ const AppRoutes: React.FC = () => {
       <Route path="permit" element={<ViewQrCodePermit />} />
       <Route path="sampleQrCode" element={<SampleQrCode />} />
       <Route path="viewPermit" element={<ViewPermit />} />
+
+      <Route path="enrollmentLogin" element={<EnrollmentLogin />} />
       <Route
         path="login"
         element={
@@ -87,6 +99,22 @@ const AppRoutes: React.FC = () => {
           </GuestRoute>
         }
       />
+      {/* Enrollment System Routes */}
+      <Route
+        path="/enrollment"
+        element={
+          // <ProtectedRoute allowedRoles={["admin"]}>
+          <EnrollmentLayout />
+          // </ProtectedRoute>
+        }
+      >
+        <Route index element={<EnrollmentDashboard />} />
+        <Route path="students" element={<StudentManagement />} />
+        <Route path="courses" element={<CourseManagement />} />
+        <Route path="semester" element={<SemesterManagement />} />
+        <Route path="enroll" element={<StudentEnrollment />} />
+        <Route path="records" element={<EnrollmentRecords />} />
+      </Route>
 
       <Route path="unauthorized" element={<Unauthorized />} />
     </Routes>
