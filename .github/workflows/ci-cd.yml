@@ -29,7 +29,7 @@ jobs:
       - name: 🧪 Run Tests
         run: |
           echo "No tests configured — skipping"
-          # Uncomment below when you have test setup
+          # Uncomment below when you have test setup.
           # pnpm test
 
       - name: 🏗️ Build Vite Project
