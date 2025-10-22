@@ -24,16 +24,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isAuthenticated = Boolean(accessToken && user);
   const role = user?.role;
 
-  console.log("🔍 User:", user);
-  console.log("🔍 Role:", role);
-  console.log("🔍 Is Authenticated:", isAuthenticated);
+  // console.log("🔍 User:", user);
+  // console.log("🔍 Role:", role);
+  // console.log("🔍 Is Authenticated:", isAuthenticated);
 
   /**
    * Handles user login.
    */
   const login = async (email: string, password: string) => {
     console.log("🔑 Starting login process...");
-    const res = await axiosInstance.post("/auth/login", { email, password });
+    const res = await axiosInstance.post(
+      "/auth/login",
+      { email, password },
+      { withCredentials: true }
+    );
     const token = res.data.accessToken;
     const userData = res.data.user;
 
