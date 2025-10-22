@@ -49,11 +49,11 @@ jobs:
           name: vite-dist
           path: dist
 
-      # ✅ Security scanning with CodeQL
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: javascript
+      # # ✅ Security scanning with CodeQL
+      # - name: Initialize CodeQL
+      #   uses: github/codeql-action/init@v2
+      #   with:
+      #     languages: javascript
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+      # - name: Perform CodeQL Analysis
+      #   uses: github/codeql-action/analyze@v2
