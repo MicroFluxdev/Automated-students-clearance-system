@@ -22,9 +22,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "pnpm"
 
-      # ✅ Install pnpm globally (fixes PATH issue)
       - name: 🧰 Install pnpm globally
         run: npm install -g pnpm@9.12.2
 
