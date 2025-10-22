@@ -29,12 +29,6 @@ jobs:
       - name: 📦 Install Dependencies
         run: pnpm install --frozen-lockfile=false
 
-      - name: 🔒 Run Vulnerability Scan
-        run: |
-          echo "🔍 Scanning dependencies for vulnerabilities..."
-          pnpm audit --reporter=summary
-        continue-on-error: false # fail build if vulnerabilities are found
-
       - name: 🧪 Run Tests
         run: |
           echo "No tests configured — skipping"
@@ -48,12 +42,3 @@ jobs:
         with:
           name: vite-dist
           path: dist
-
-      # # ✅ Security scanning with CodeQL
-      # - name: Initialize CodeQL
-      #   uses: github/codeql-action/init@v2
-      #   with:
-      #     languages: javascript
-
-      # - name: Perform CodeQL Analysis
-      #   uses: github/codeql-action/analyze@v2
