@@ -61,7 +61,7 @@ const Testimonials = () => {
               },
             }}
           >
-            Trusted by Leading
+            Powered by
             <motion.span
               className="text-blue-600"
               variants={{
@@ -74,7 +74,7 @@ const Testimonials = () => {
               }}
             >
               {" "}
-              Institutions
+              MicroFlux
             </motion.span>
           </motion.h2>
           <motion.p
@@ -88,8 +88,9 @@ const Testimonials = () => {
               },
             }}
           >
-            See what educators and students are saying about their experience
-            with StudentFlow.
+            Leveraging Microflux's expertise, the Automated Student Clearance System (ASCS) 
+            is making significant impacts across campuses. Institutions, faculty, and students 
+            trust ASCS to streamline the clearance process, minimize errors, and enhance overall efficiency.
           </motion.p>
         </motion.div>
 
