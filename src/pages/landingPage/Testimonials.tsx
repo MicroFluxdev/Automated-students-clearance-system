@@ -2,30 +2,30 @@ import { motion } from "framer-motion";
 
 const testimonials = [
   {
-    name: "Dr. Sarah Martinez",
+    name: "Salman",
     role: "Dean of Student Affairs",
-    institution: "University of California",
+    institution: "North Central Mindanao College",
     avatar: "/placeholder.svg",
     content:
-      "StudentFlow has completely transformed our clearance process. What used to take weeks now takes just days. Our students are happier, and our staff is more efficient.",
+      "ASCS, rovides a clean and intuitive interface that makes student clearance simple and visually engaging.",
     rating: 5,
   },
   {
-    name: "Michael Chen",
-    role: "Senior Student",
-    institution: "MIT",
+    name: "Anthony",
+    role: "Software Developer",
+    institution: "North Central Mindanao College",
     avatar: "/placeholder.svg",
     content:
-      "As a graduating student, I can't imagine going through clearance the old way. Everything is transparent, fast, and I always know exactly what I need to do next.",
+      "Built by our software developers, ASCS delivers fast, secure, and reliable automation to streamline student clearance processes.      ",
     rating: 5,
   },
   {
-    name: "Prof. Emily Johnson",
-    role: "Registrar",
-    institution: "Stanford University",
+    name: "Cawasa",
+    role: "Analyst",
+    institution: "North Central Mindanao College",
     avatar: "/placeholder.svg",
     content:
-      "The analytics and reporting features give us insights we never had before. We can identify bottlenecks and improve our processes continuously.",
+      "With insights from our finance director, ASCS ensures cost-effective operations and transparent tracking of institutional resources.",
     rating: 5,
   },
 ];

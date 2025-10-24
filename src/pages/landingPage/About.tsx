@@ -85,10 +85,9 @@ const About = () => {
                   },
                 }}
               >
-                StudentFlow revolutionizes how educational institutions manage
-                student processes. Our automated system eliminates bureaucratic
-                bottlenecks, reduces manual errors, and creates a seamless
-                experience for both students and administrators.
+                ASCS revolutionizes how educational institutions manage student clearance. 
+                Our automated platform eliminates bottlenecks, reduces manual errors, and provides a seamless, 
+                transparent experience for both students and administrative staff.
               </motion.p>
             </div>
 
