@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../authentication/useAuth";
 
 interface Props {
@@ -8,15 +8,23 @@ interface Props {
 
 const GuestRoute: React.FC<Props> = ({ children }) => {
   const { isAuthenticated, role } = useAuth();
+  const location = useLocation();
 
   // Redirect authenticated users to their respective dashboards
   if (isAuthenticated) {
+    // On the login page, let the page handle showing success modal and navigation
+    if (location.pathname === "/login") {
+      return <>{children}</>;
+    }
     if (role === "admin") {
       return <Navigate to="/admin-side" replace />;
-    } else if (role === "clearingOfficer") {
+    }
+    if (role === "clearingOfficer") {
       return <Navigate to="/clearing-officer" replace />;
     }
-    return <Navigate to="/unauthorized" replace />;
+    // For other roles (e.g., student), allow staying on the page so the Login screen
+    // can handle showing an info/error modal instead of redirecting away immediately.
+    return <>{children}</>;
   }
 
   return <>{children}</>;
