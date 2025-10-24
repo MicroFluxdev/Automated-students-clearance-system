@@ -1,5 +1,6 @@
-import { Mail, Phone, MapPin, Twitter, Linkedin, Facebook } from "lucide-react";
+import { Phone, MapPin, Twitter, Linkedin, Facebook } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
+import { FacebookFilled } from "@ant-design/icons";
 
 const Footer = () => {
   const containerVariants = {
@@ -133,7 +134,7 @@ const Footer = () => {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              Company
+              Institutions
             </motion.h3>
             <div className="space-y-2">
               {[
@@ -169,9 +170,9 @@ const Footer = () => {
             </motion.h3>
             <div className="space-y-3">
               {[
-                { icon: Mail, text: "hello@studentflow.com", delay: 0.3 },
-                { icon: Phone, text: "(555) 123-4567", delay: 0.4 },
-                { icon: MapPin, text: "San Francisco, CA", delay: 0.5 },
+                { icon: FacebookFilled, text: "MicroFlux", delay: 0.3 },
+                { icon: Phone, text: "+639100734410", delay: 0.4 },
+                { icon: MapPin, text: "Lanao del Norte, Philippines", delay: 0.5 },
               ].map(({ icon: Icon, text, delay }) => (
                 <motion.div
                   key={text}
@@ -214,7 +215,7 @@ const Footer = () => {
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
-            © 2024 StudentFlow. All rights reserved.
+            © 2024 MicroFlu. All rights reserved.
           </motion.div>
           <div className="flex gap-6">
             {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(

@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 const CallToAction = () => {
@@ -91,8 +91,8 @@ const CallToAction = () => {
               },
             }}
           >
-            Join hundreds of institutions already using StudentFlow to
-            streamline their processes and improve student satisfaction.
+            Be part of the growing number of institutions transforming manual clearance into
+            a seamless, paperless experience.
           </motion.p>
 
           <motion.div
@@ -108,7 +108,7 @@ const CallToAction = () => {
               },
             }}
           >
-            {["Free 30-day trial", "No setup fees", "Cancel anytime"].map(
+            {["Ease of Access", "24/7 Operation", "Zero Setup Hassle"].map(
               (text, idx) => (
                 <motion.div
                   key={idx}
@@ -147,37 +147,22 @@ const CallToAction = () => {
               },
             }}
           >
-            <motion.button
-              className="px-12 py-4 text-lg bg-white text-blue-700 rounded-md font-semibold shadow-md flex items-center justify-center"
-              whileHover={{
-                scale: 1.05,
-                backgroundColor: "#f8fafc",
-                boxShadow: "0 20px 40px rgba(255,255,255,0.3)",
-              }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              Start Free Trial
-              <motion.div
-                whileHover={{ x: 5 }}
+
+            <a href="https://www.facebook.com/MicroFluxOfficialPage" target="_blank" rel="noopener noreferrer">
+              <motion.button
+                className="px-12 py-4 text-lg bg-white/20 border border-white/30 text-white rounded-md font-semibold"
+                whileHover={{
+                  scale: 1.05,
+                  backgroundColor: "rgba(255,255,255,0.3)",
+                  borderColor: "rgba(255,255,255,0.5)",
+                }}
+                whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </motion.div>
-            </motion.button>
+                Contact Us
+              </motion.button>
+            </a>
 
-            <motion.button
-              className="px-12 py-4 text-lg bg-white/20 border border-white/30 text-white rounded-md font-semibold"
-              whileHover={{
-                scale: 1.05,
-                backgroundColor: "rgba(255,255,255,0.3)",
-                borderColor: "rgba(255,255,255,0.5)",
-              }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              Contact Sales
-            </motion.button>
           </motion.div>
 
           <motion.p
@@ -191,21 +176,13 @@ const CallToAction = () => {
               },
             }}
           >
-            Questions? Call us at{" "}
+            Message us on our Facebook Page:{" "}
             <motion.span
               className="font-semibold"
               whileHover={{ scale: 1.05, color: "white" }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              (555) 123-4567
-            </motion.span>{" "}
-            or email{" "}
-            <motion.span
-              className="font-semibold"
-              whileHover={{ scale: 1.05, color: "white" }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              hello@studentflow.com
+              MicroFlux
             </motion.span>
           </motion.p>
         </motion.div>
