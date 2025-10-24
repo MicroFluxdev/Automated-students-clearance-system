@@ -84,7 +84,7 @@ const Features = () => {
               },
             }}
           >
-            Powerful Features for
+            Features of
             <motion.span
               className="text-blue-600"
               variants={{
@@ -97,7 +97,7 @@ const Features = () => {
               }}
             >
               {" "}
-              Modern Education
+              Automated Student Clearance System
             </motion.span>
           </motion.h2>
           <motion.p

@@ -1,4 +1,4 @@
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -149,7 +149,7 @@ const Hero = () => {
               </motion.button>
             </Link>
 
-            {/* Watch Demo Button */}
+            {/* Sign Up */}
             <Link to="/register">
               <motion.button
                 className="flex items-center justify-center px-8 py-3 text-lg bg-blue-700 text-white hover:bg-blue-800 transition duration-200 rounded-lg"
@@ -164,9 +164,9 @@ const Hero = () => {
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
-                  <Play className="mr-2 h-5 w-5" />
+                  <UserPlus  className="mr-2 h-5 w-5" />
                 </motion.div>
-                Watch Demo
+                Sign Up
               </motion.button>
             </Link>
           </motion.div>
@@ -186,9 +186,9 @@ const Hero = () => {
             }}
           >
             {[
-              { text: "99% Uptime", delay: 0 },
-              { text: "500+ Institutions", delay: 0.1 },
-              { text: "24/7 Support", delay: 0.2 },
+              { text: "Automated", delay: 0 },
+              { text: "Paperless", delay: 0.1 },
+              { text: "24/7 Online", delay: 0.2 },
             ].map((metric, index) => (
               <motion.div
                 key={index}

@@ -19,16 +19,22 @@ export default function StudentAppDownload() {
           {/* Left column: copy + CTAs */}
           <div className="space-y-6 flex flex-col justify-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-slate-900">
-              The Student App
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-teal-500 to-sky-400 ml-2 inline-block">
-                for school, simplified
+              An&nbsp;
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-500 to-rose-600">
+                ASCS
+              </span>
+              &nbsp;App for
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-teal-500 to-sky-400 ml-0 inline-block">
+                North Central
+              </span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-teal-500 to-sky-400 ml-0 inline-block">
+                Mindanao College
               </span>
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 max-w-xl">
-              Get assignments, schedules, group chats and campus updates — all
-              in one sleek student app. Download now to stay on top of classes,
-              deadlines, and student life.
+              Say goodbye to tiring manual procedures and hello to a more innovative way of getting cleared. Our system brings everything you need into one platform,
+              from digital submissions to real-time status monitoring. Stay informed, stay organized, and finish your clearance without stress or delays.
             </p>
 
             <div className="flex flex-col xs:flex-row xs:items-center xs:space-x-3 sm:space-x-4 space-y-3 xs:space-y-0 w-full max-w-md">
@@ -58,10 +64,10 @@ export default function StudentAppDownload() {
                   className="w-2 h-2 rounded-full bg-green-400 block"
                   aria-hidden="true"
                 />
-                4.8 ★ (12k+ reviews)
+                0 ★ (0 reviews)
               </span>
               <span className="hidden xs:inline">•</span>
-              <span>Trusted by 1,200+ campuses</span>
+              <span>Made by MicroFlux</span>
             </div>
 
             <div className="mt-3 md:mt-4 text-slate-500 text-sm max-w-md">
@@ -98,21 +104,18 @@ export default function StudentAppDownload() {
                 >
                   <div className="relative w-full h-full bg-white rounded-2xl overflow-hidden">
                     <div className="absolute inset-0 flex animate-slide-x">
-                      <div className="min-w-full flex items-center justify-center bg-[linear-gradient(135deg,#eef2ff,#f0f9ff)]">
-                        <div className="text-slate-400 text-xs sm:text-sm text-center px-2">
-                          Schedule & Assignments
-                        </div>
-                      </div>
-                      <div className="min-w-full flex items-center justify-center bg-[linear-gradient(135deg,#fff7ed,#fff1f2)]">
-                        <div className="text-slate-400 text-xs sm:text-sm text-center px-2">
-                          Chat with classmates
-                        </div>
-                      </div>
-                      <div className="min-w-full flex items-center justify-center bg-[linear-gradient(135deg,#f0fdf4,#ecfeff)]">
-                        <div className="text-slate-400 text-xs sm:text-sm text-center px-2">
-                          Campus News Feed
-                        </div>
-                      </div>
+                      <div
+                        className="min-w-full flex items-center justify-center bg-cover bg-center rounded-2xl"
+                        style={{ backgroundImage: `url('/landingpage/login.jpg')` }}
+                      ></div>
+                      <div
+                        className="min-w-full flex items-center justify-center bg-cover bg-center rounded-2xl"
+                        style={{ backgroundImage: `url('/landingpage/home.jpg')` }}
+                      ></div>
+                      <div
+                        className="min-w-full flex items-center justify-center bg-cover bg-center rounded-2xl"
+                        style={{ backgroundImage: `url('/landingpage/qr1222.jpg')` }}
+                      ></div>
                     </div>
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center">
                       <div className="h-1 w-16 sm:w-24 rounded-full bg-slate-200/40" />
@@ -122,11 +125,13 @@ export default function StudentAppDownload() {
               </div>
 
               {/* Floating QR, adjusts size/offset for mobile vs desktop */}
-              <div className="absolute -bottom-7 sm:-bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-4">
-                <div className="p-2 sm:p-3 bg-white rounded-xl shadow-md border border-slate-100">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-slate-50 flex items-center justify-center text-xs text-slate-400">
-                    QR
-                  </div>
+              <div className="absolute -bottom-4 sm:-bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center z-20">
+                <div className="bg-white rounded-xl shadow-md border-4 border-blue-500 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden flex items-center justify-center">
+                  <img
+                    src="/landingpage/qr2.jpg"
+                    alt="ASCS QR Code"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
             </motion.div>
@@ -136,14 +141,15 @@ export default function StudentAppDownload() {
         {/* Tailwind CSS animation keyframes - no style leaks */}
         <style>{`
         @keyframes slide-x {
-          0% { transform: translateX(0%); }
-          20% { transform: translateX(0%); }
-          33% { transform: translateX(-100%); }
-          53% { transform: translateX(-100%); }
-          66% { transform: translateX(-200%); }
-          86% { transform: translateX(-200%); }
-          100% { transform: translateX(0%); }
+        0% { transform: translateX(0%); }
+        25% { transform: translateX(0%); }
+        33% { transform: translateX(-100%); }
+        58% { transform: translateX(-100%); }
+        66% { transform: translateX(-200%); }
+        91% { transform: translateX(-200%); }
+        100% { transform: translateX(0%); }
         }
+
         .animate-slide-x {
           animation: slide-x 12s linear infinite;
         }
