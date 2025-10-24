@@ -24,9 +24,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isAuthenticated = Boolean(accessToken && user);
   const role = user?.role;
 
-  // console.log("🔍 User:", user);
-  // console.log("🔍 Role:", role);
-  // console.log("🔍 Is Authenticated:", isAuthenticated);
+  console.log("🔍 User:", user);
+  console.log("🔍 Role:", role);
+  console.log("🔍 Is Authenticated:", isAuthenticated);
 
   /**
    * Handles user login.

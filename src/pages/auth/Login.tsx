@@ -1,6 +1,6 @@
 import { useAuth } from "@/authentication/useAuth";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginData } from "@/lib/validation";
@@ -15,6 +15,9 @@ export default function Login() {
     useState<boolean>(false);
 
   const { login, role, user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  console.log("Im from Log in page", role);
 
   // Redirect or show modal based on role if already authenticated
   useEffect(() => {
@@ -160,6 +163,13 @@ export default function Login() {
         isOpen={isSuccessModalVisible}
         onOk={() => {
           setIsSuccessModalVisible(false);
+          if (role === "admin") {
+            navigate("/admin-side", { replace: true });
+          } else if (role === "clearingOfficer") {
+            navigate("/clearing-officer", { replace: true });
+          } else if (role === "student") {
+            navigate("/", { replace: true });
+          }
         }}
         role={role || ""}
         successTitle="Login Successful"
