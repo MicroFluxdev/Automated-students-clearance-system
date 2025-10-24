@@ -38,8 +38,9 @@ export default function StudentAppDownload() {
             </p>
 
             <div className="flex flex-col xs:flex-row xs:items-center xs:space-x-3 sm:space-x-4 space-y-3 xs:space-y-0 w-full max-w-md">
+              {/* iPhone (just link, App Store handles download) */}
               <a
-                href="#"
+                href="https://apps.apple.com/app/your-iphone-app-link" // replace with actual iPhone app link if available
                 aria-label="Download for iPhone"
                 className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-900 text-white shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 hover:scale-[1.03] active:scale-100 transition-transform text-base sm:text-lg w-full xs:w-auto justify-center"
                 tabIndex={0}
@@ -47,8 +48,11 @@ export default function StudentAppDownload() {
                 <Apple className="w-5 h-5" aria-hidden="true" />
                 Download for iPhone
               </a>
+
+              {/* Android (direct APK download) */}
               <a
-                href="#"
+                href="https://release-assets.githubusercontent.com/github-production-release-asset/1055960089/d84948f2-4b47-4241-8f82-dd81618c6eeb?sp=r&sv=2018-11-09&sr=b&spr=https&se=2025-10-23T16%3A55%3A06Z&rscd=attachment%3B+filename%3DASCS-app.v1.0.0.apk&rsct=application%2Fvnd.android.package-archive&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2025-10-23T15%3A54%3A31Z&ske=2025-10-23T16%3A55%3A06Z&sks=b&skv=2018-11-09&sig=1iK6vp3pgMwuK6gD53oiSnGS1mm5x%2F%2Br8tHZtz8MPLI%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc2MTIzNzAzMCwibmJmIjoxNzYxMjM1MjMwLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.r_mrngdjUDdPAGhS5QGOhHRvZGvccN9tc7Z1Vr7Ic3M&response-content-disposition=attachment%3B%20filename%3DASCS-app.v1.0.0.apk&response-content-type=application%2Fvnd.android.package-archive"
+                download
                 aria-label="Download for Android"
                 className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border border-slate-200 text-slate-900 hover:bg-slate-50 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 transition text-base sm:text-lg w-full xs:w-auto justify-center"
                 tabIndex={0}
@@ -57,6 +61,7 @@ export default function StudentAppDownload() {
                 Download for Android
               </a>
             </div>
+
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
               <span className="inline-flex items-center gap-2">

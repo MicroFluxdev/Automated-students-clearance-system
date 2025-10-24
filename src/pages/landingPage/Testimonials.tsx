@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 const testimonials = [
   {
     name: "Salman",
-    role: "Dean of Student Affairs",
+    role: "Graphic Designer",
     institution: "North Central Mindanao College",
     avatar: "/placeholder.svg",
     content:
