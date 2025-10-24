@@ -20,7 +20,7 @@ const Hero = () => {
       <motion.div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
         style={{
-          backgroundImage: `url('https://ncmc.edu.ph/img/home_cover.jpg')`,
+          backgroundImage: `url('/landingpage/homebg.jpg')`,
         }}
         initial={{ scale: 1.1, opacity: 0 }}
         animate={{ scale: 1, opacity: 0.2 }}
