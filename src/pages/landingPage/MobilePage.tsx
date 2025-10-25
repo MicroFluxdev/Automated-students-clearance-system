@@ -33,8 +33,11 @@ export default function StudentAppDownload() {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 max-w-xl">
-              Say goodbye to tiring manual procedures and hello to a more innovative way of getting cleared. Our system brings everything you need into one platform,
-              from digital submissions to real-time status monitoring. Stay informed, stay organized, and finish your clearance without stress or delays.
+              Say goodbye to tiring manual procedures and hello to a more
+              innovative way of getting cleared. Our system brings everything
+              you need into one platform, from digital submissions to real-time
+              status monitoring. Stay informed, stay organized, and finish your
+              clearance without stress or delays.
             </p>
 
             <div className="flex flex-col xs:flex-row xs:items-center xs:space-x-3 sm:space-x-4 space-y-3 xs:space-y-0 w-full max-w-md">
@@ -61,7 +64,6 @@ export default function StudentAppDownload() {
                 Download for Android
               </a>
             </div>
-
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
               <span className="inline-flex items-center gap-2">
@@ -111,15 +113,21 @@ export default function StudentAppDownload() {
                     <div className="absolute inset-0 flex animate-slide-x">
                       <div
                         className="min-w-full flex items-center justify-center bg-cover bg-center rounded-2xl"
-                        style={{ backgroundImage: `url('/landingpage/login.jpg')` }}
+                        style={{
+                          backgroundImage: `url('/landingpage/login.jpg')`,
+                        }}
                       ></div>
                       <div
                         className="min-w-full flex items-center justify-center bg-cover bg-center rounded-2xl"
-                        style={{ backgroundImage: `url('/landingpage/home.jpg')` }}
+                        style={{
+                          backgroundImage: `url('/landingpage/home.jpg')`,
+                        }}
                       ></div>
                       <div
                         className="min-w-full flex items-center justify-center bg-cover bg-center rounded-2xl"
-                        style={{ backgroundImage: `url('/landingpage/qr1222.jpg')` }}
+                        style={{
+                          backgroundImage: `url('/landingpage/qr1222.jpg')`,
+                        }}
                       ></div>
                     </div>
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center">
