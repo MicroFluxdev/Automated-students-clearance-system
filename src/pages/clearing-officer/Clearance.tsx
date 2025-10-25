@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Search, FolderOpen, BookOpen, Loader2 } from "lucide-react";
+import { Search, FolderOpen, Loader2 } from "lucide-react";
 
 import ReqDialogForm from "./_components/ReqDialogForm";
 import RequirementCard from "./_components/RequirementCard";
@@ -24,6 +24,7 @@ import {
 } from "@/store/slices/clearingOfficer/clearanceSlice";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import axiosInstance from "@/api/axios";
 import { useAuth } from "@/authentication/useAuth";
 import { message } from "antd";
 
@@ -68,7 +69,6 @@ const Clearance = () => {
 
       setLoading(true);
       try {
-        // Combine firstName and lastName, then encode for URL
         const schoolId = user?.schoolId;
         const encodedSchoolId = encodeURIComponent(schoolId);
         console.log(
@@ -77,7 +77,9 @@ const Clearance = () => {
           "| Encoded:",
           encodedSchoolId
         );
-        const response = await axios.get(
+
+        // Using axiosInstance with the integration endpoint
+        const response = await axiosInstance.get(
           `http://localhost:4000/intigration/getCoursesBySchoolId/${encodedSchoolId}`
         );
 
@@ -89,7 +91,11 @@ const Clearance = () => {
         setCourses(coursesData);
       } catch (error) {
         console.error("Error fetching courses:", error);
-        message.error("Failed to fetch courses");
+        const errorMessage =
+          axios.isAxiosError(error) && error.response?.data?.message
+            ? error.response.data.message
+            : "Failed to fetch courses";
+        message.error(errorMessage);
         setCourses([]); // Reset to empty array on error
       } finally {
         setLoading(false);
@@ -109,26 +115,103 @@ const Clearance = () => {
 
   const filteredRequirements = requirements.filter(
     (req) =>
-      (req.title.toLowerCase().includes(search.toLowerCase()) ||
+      (req.courseCode.toLowerCase().includes(search.toLowerCase()) ||
+        req.courseName.toLowerCase().includes(search.toLowerCase()) ||
         req.description.toLowerCase().includes(search.toLowerCase())) &&
       (selectedCategory === "all" || req.department === selectedCategory)
   );
 
-  const handleCreateRequirement = () => {
-    // Handle form submission logic here
-    console.log("Creating requirement:", newRequirement);
-    dispatch(setIsDialogOpen(false));
-    // Reset form
-    dispatch(
-      setNewRequirement({
-        title: "",
-        description: "",
-        dueDate: "",
-        department: "",
-        requirements: [],
-      })
-    );
+  const handleCreateRequirement = async () => {
+    try {
+      // Validate required fields
+      if (!newRequirement.courseCode) {
+        message.error("Please select a course");
+        return;
+      }
+      if (!newRequirement.dueDate) {
+        message.error("Please select a due date");
+        return;
+      }
+      if (newRequirement.requirements.length === 0) {
+        message.error("Please add at least one requirement");
+        return;
+      }
+
+      // Show loading message
+      const hideLoading = message.loading("Creating requirement...", 0);
+
+      // Convert dueDate to ISO DateTime format (MongoDB expects DateTime)
+      const dueDateISO = new Date(newRequirement.dueDate).toISOString();
+
+      // Make API call to create requirement
+      const response = await axiosInstance.post("/req/createReq", {
+        courseCode: newRequirement.courseCode,
+        courseName: newRequirement.courseName,
+        yearLevel: newRequirement.yearLevel,
+        semester: newRequirement.semester,
+        requirements: newRequirement.requirements,
+        department: newRequirement.department,
+        dueDate: dueDateISO,
+        description: newRequirement.description,
+      });
+
+      // Hide loading message
+      hideLoading();
+
+      // Show success message
+      message.success("Requirement created successfully!");
+      console.log("Created requirement:", response.data);
+
+      // Close dialog
+      dispatch(setIsDialogOpen(false));
+
+      // Reset form
+      dispatch(
+        setNewRequirement({
+          courseCode: "",
+          courseName: "",
+          yearLevel: "",
+          semester: "",
+          requirements: [],
+          department: "",
+          dueDate: "",
+          description: "",
+        })
+      );
+
+      // Optional: Refresh the requirements list or add to local state
+      // You might want to fetch the updated list or add to Redux state
+    } catch (error) {
+      console.error("Error creating requirement:", error);
+
+      // Extract detailed error message
+      let errorMessage = "Failed to create requirement. Please try again.";
+
+      if (axios.isAxiosError(error)) {
+        // Log full error response for debugging
+        console.error("Error response:", error.response?.data);
+
+        // Try to get the most specific error message
+        if (error.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response?.status === 400) {
+          errorMessage = "Invalid data. Please check all required fields.";
+        }
+      }
+
+      message.error(errorMessage);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-6  min-h-screen">
@@ -148,18 +231,18 @@ const Clearance = () => {
           {/* Dialog Form - responsive width */}
           <div className="w-full sm:w-auto">
             <ReqDialogForm
+              courses={courses}
               isDialogOpen={isDialogOpen}
               setIsDialogOpen={(value) => dispatch(setIsDialogOpen(value))}
               newRequirement={newRequirement}
               setNewRequirement={(value) => dispatch(setNewRequirement(value))}
               handleCreateRequirement={handleCreateRequirement}
-              categories={categories}
             />
           </div>
         </header>
 
         {/* My Courses Section */}
-        <Card className="mb-6 p-6 shadow-lg">
+        {/* <Card className="mb-6 p-6 shadow-lg">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="h-6 w-6 text-blue-500" />
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
@@ -184,30 +267,37 @@ const Clearance = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.isArray(courses) && courses.map((course) => (
-                <Card
-                  key={course.id}
-                  className="p-4 border border-gray-200 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start gap-3">
-                    <BookOpen className="h-5 w-5 text-blue-500 mt-1 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">
-                        {course.courseCode}
-                      </h3>
-                      <p className="text-gray-600 text-xs sm:text-sm mt-1 line-clamp-2">
-                        {course.courseName}
-                      </p>
-                      <p className="text-gray-500 text-xs mt-1">
-                        {course.yearLevel}
-                      </p>
+              {Array.isArray(courses) &&
+                courses.map((course) => (
+                  <Card
+                    key={course.id}
+                    className="p-4 border border-gray-200 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start gap-3">
+                      <BookOpen className="h-5 w-5 text-blue-500 mt-1 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">
+                          {course.courseCode}
+                        </h3>
+                        <p className="text-gray-600 text-xs sm:text-sm mt-1 line-clamp-2">
+                          {course.courseName}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {course.yearLevel}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {course.semester}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {course.departments}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))}
             </div>
           )}
-        </Card>
+        </Card> */}
 
         <Card className="flex flex-col sm:flex-row items-center gap-4 px-5 shadow-gray-100">
           <div className="relative flex-1 w-full sm:w-auto ">
@@ -248,19 +338,23 @@ const Clearance = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
-            {filteredRequirements.map((req, index) => (
-              <RequirementCard
-                key={req.id} // ✅ unique key
-                index={index}
-                title={req.title}
-                department={req.department}
-                completed={req.completed}
-                description={req.description}
-                dueDate={req.dueDate}
-                students={req.students}
-                requirements={req.requirements}
-              />
-            ))}
+            {Array.isArray(courses) &&
+              courses.map((course, index) => (
+                <RequirementCard
+                  key={course.id} // ✅ unique key
+                  index={index}
+                  courseCode={course.courseCode}
+                  courseName={course.courseName}
+                  yearLevel={course.yearLevel}
+                  semester={course.semester}
+                  department={course.departments}
+                  completed={true}
+                  description={course.description}
+                  dueDate={"2023-12-31"}
+                  students={10}
+                  requirements={["Requirement 1", "Requirement 2"]}
+                />
+              ))}
           </div>
         )}
       </div>

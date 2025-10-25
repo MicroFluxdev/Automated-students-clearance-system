@@ -33,6 +33,7 @@ import StudentEnrollment from "@/pages/enrollmentSide/StudentEnrollment";
 import EnrollmentRecords from "@/pages/enrollmentSide/EnrollmentRecords";
 import EnrollmentLayout from "@/layouts/EnrollmentLayout";
 import EnrollmentLogin from "@/pages/enrollmentSide/EnrollmentLogin";
+import ViewCourses from "@/pages/clearing-officer/ViewCourses";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -75,6 +76,7 @@ const AppRoutes: React.FC = () => {
         <Route path="events" element={<Events />} />
         <Route path="accountSettings" element={<AccountSettings />} />
         <Route path="viewClearance" element={<ViewClearance />} />
+        <Route path="viewCourses" element={<ViewCourses />} />
         <Route path="*" element={<Unauthorized />} />
       </Route>
       {/**General Route */}
