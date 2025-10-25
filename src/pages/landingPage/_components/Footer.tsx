@@ -1,4 +1,4 @@
-import { Phone, MapPin, Linkedin, Facebook, Instagram } from "lucide-react";
+import { Phone, MapPin, Github, Facebook, Instagram } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
 import { FacebookFilled } from "@ant-design/icons";
 
@@ -78,7 +78,7 @@ const Footer = () => {
               {[
                 { icon: Instagram, delay: 0.5, href: "https://www.instagram.com/microflux.official/" },
                 { icon: Facebook, delay: 0.7, href: "https://www.facebook.com/MicroFluxOfficialPage" },
-                { icon: Linkedin, delay: 0.6, href: "https://www.linkedin.com/in/YourLinkedIn" },
+                { icon: Github, delay: 0.6, href: "https://github.com/MicroFluxdev" },
               ].map(({ icon: Icon, delay, href }) => (
                 <motion.a
                   key={delay}

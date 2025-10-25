@@ -158,18 +158,6 @@ const About = () => {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </motion.div>
               </motion.button>
-              <motion.button
-                className="px-8 py-3 border border-gray-300 text-gray-700 rounded-md text-base font-medium hover:bg-gray-100 transition"
-                whileHover={{
-                  scale: 1.05,
-                  backgroundColor: "#f3f4f6",
-                  borderColor: "#6b7280",
-                }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                Schedule a Demo
-              </motion.button>
             </motion.div>
           </motion.div>
 
@@ -237,9 +225,9 @@ const About = () => {
                       delay: 0.8,
                     }}
                   >
-                    500+
+                    ASCS
                   </motion.div>
-                  <div className="text-white/80">Educational Institutions</div>
+                  <div className="text-white/80">Highlights</div>
                 </motion.div>
 
                 <motion.div
@@ -256,7 +244,7 @@ const About = () => {
                   }}
                 >
                   {[
-                    { number: "1M+", label: "Students Served" },
+                    { number: "95%", label: "Error Reduction" },
                     { number: "99.9%", label: "Uptime SLA" },
                   ].map((stat, index) => (
                     <motion.div
@@ -309,7 +297,7 @@ const About = () => {
                   }}
                 >
                   {[
-                    { number: "80%", label: "Faster Processing" },
+                    { number: "27001", label: "GDPR compliant" },
                     { number: "24/7", label: "Support Available" },
                   ].map((stat, index) => (
                     <motion.div

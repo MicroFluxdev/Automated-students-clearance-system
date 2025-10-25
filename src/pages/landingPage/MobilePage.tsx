@@ -51,7 +51,7 @@ export default function StudentAppDownload() {
 
               {/* Android (direct APK download) */}
               <a
-                href="https://release-assets.githubusercontent.com/github-production-release-asset/1055960089/d84948f2-4b47-4241-8f82-dd81618c6eeb?sp=r&sv=2018-11-09&sr=b&spr=https&se=2025-10-23T16%3A55%3A06Z&rscd=attachment%3B+filename%3DASCS-app.v1.0.0.apk&rsct=application%2Fvnd.android.package-archive&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2025-10-23T15%3A54%3A31Z&ske=2025-10-23T16%3A55%3A06Z&sks=b&skv=2018-11-09&sig=1iK6vp3pgMwuK6gD53oiSnGS1mm5x%2F%2Br8tHZtz8MPLI%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc2MTIzNzAzMCwibmJmIjoxNzYxMjM1MjMwLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.r_mrngdjUDdPAGhS5QGOhHRvZGvccN9tc7Z1Vr7Ic3M&response-content-disposition=attachment%3B%20filename%3DASCS-app.v1.0.0.apk&response-content-type=application%2Fvnd.android.package-archive"
+                href="https://github.com/anthonyc-dev/ASCS-App/releases/download/v1.0.0/ASCS-app.v1.0.0.apk"
                 download
                 aria-label="Download for Android"
                 className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border border-slate-200 text-slate-900 hover:bg-slate-50 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 transition text-base sm:text-lg w-full xs:w-auto justify-center"
@@ -76,8 +76,8 @@ export default function StudentAppDownload() {
             </div>
 
             <div className="mt-3 md:mt-4 text-slate-500 text-sm max-w-md">
-              <strong>Tip:</strong> Use the QR code on your phone to open the
-              app store directly.
+              <strong>Tip:</strong> Use the QR code on your phone to downoad the
+              app directly.
             </div>
           </div>
 
@@ -130,10 +130,10 @@ export default function StudentAppDownload() {
               </div>
 
               {/* Floating QR, adjusts size/offset for mobile vs desktop */}
-              <div className="absolute -bottom-4 sm:-bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center z-20">
-                <div className="bg-white rounded-xl shadow-md border-4 border-blue-500 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden flex items-center justify-center">
+              <div className="absolute -bottom-10 sm:-bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center z-20">
+                <div className="bg-white rounded-xl shadow-md border-2 border-blue-500 w-16 h-16 sm:w-25 sm:h-25 overflow-hidden flex items-center justify-center">
                   <img
-                    src="/landingpage/qr2.jpg"
+                    src="public/landingpage/QRCODEASCS.png"
                     alt="ASCS QR Code"
                     className="w-full h-full object-cover"
                   />
