@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Search, FolderOpen } from "lucide-react";
+import { Search, FolderOpen, BookOpen, Loader2 } from "lucide-react";
 
 import ReqDialogForm from "./_components/ReqDialogForm";
 import RequirementCard from "./_components/RequirementCard";
@@ -22,53 +22,32 @@ import {
   // addRequirement,
   setNewRequirement,
 } from "@/store/slices/clearingOfficer/clearanceSlice";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "@/authentication/useAuth";
+import { message } from "antd";
 
-// interface Course {
-//   title: string;
-//   description: string;
-//   dueDate: string;
-//   completed: boolean;
-//   students: number;
-//   department: string;
-// }
-
-// const requirements: Course[] = [
-//   {
-//     title: "CC107",
-//     description: "Advanced topics in data structures and algorithms. ",
-//     dueDate: "May 15, 2025",
-//     completed: true,
-//     students: 45,
-//     department: "BS-Computer Science",
-//   },
-//   {
-//     title: "SE102 ",
-//     description: "Principles of software design and architecture.",
-//     dueDate: "April 28, 2025",
-//     completed: false,
-//     students: 38,
-//     department: "BS-Education",
-//   },
-//   {
-//     title: "IS301",
-//     description: "In-depth study of database management systems.",
-//     dueDate: "June 5, 2025",
-//     completed: false,
-//     students: 52,
-//     department: "BS-Administration",
-//   },
-//   {
-//     title: "CS404 ",
-//     description: "Exploring the fundamentals of AI and machine learning.",
-//     dueDate: "May 20, 2025",
-//     completed: true,
-//     students: 30,
-//     department: "BS-Accounting",
-//   },
-// ];
+interface Course {
+  id: string;
+  courseCode: string;
+  courseName: string;
+  schedules: Array<{
+    day: string;
+    timeStart: string;
+    timeEnd: string;
+    room: string;
+    instructor: string;
+  }>;
+  units: number;
+  departments: string[];
+  semester: string;
+  yearLevel: string;
+  description?: string;
+}
 
 const Clearance = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { user } = useAuth();
   const {
     search,
     selectedCategory,
@@ -76,6 +55,49 @@ const Clearance = () => {
     newRequirement,
     requirements,
   } = useSelector((state: RootState) => state.clearance);
+
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch courses by instructor
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!user?.schoolId) {
+        return;
+      }
+
+      setLoading(true);
+      try {
+        // Combine firstName and lastName, then encode for URL
+        const schoolId = user?.schoolId;
+        const encodedSchoolId = encodeURIComponent(schoolId);
+        console.log(
+          "Fetching courses for:",
+          schoolId,
+          "| Encoded:",
+          encodedSchoolId
+        );
+        const response = await axios.get(
+          `http://localhost:4000/intigration/getCoursesBySchoolId/${encodedSchoolId}`
+        );
+
+        // Backend returns { instructor: "...", courses: [...] }
+        // Extract the courses array from the response
+        const coursesData = response.data?.courses || [];
+        console.log("Fetched courses:", coursesData);
+        console.log("Full response:", response.data);
+        setCourses(coursesData);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        message.error("Failed to fetch courses");
+        setCourses([]); // Reset to empty array on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [user?.schoolId]);
 
   const categories = [
     "all",
@@ -135,6 +157,57 @@ const Clearance = () => {
             />
           </div>
         </header>
+
+        {/* My Courses Section */}
+        <Card className="mb-6 p-6 shadow-lg">
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen className="h-6 w-6 text-blue-500" />
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+              My Courses
+            </h2>
+          </div>
+          <p className="text-gray-500 mb-4 text-sm sm:text-base">
+            Courses assigned to{" "}
+            {user?.firstName && user?.lastName
+              ? `${user.firstName} ${user.lastName}`
+              : "you"}
+          </p>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            </div>
+          ) : !Array.isArray(courses) || courses.length === 0 ? (
+            <div className="text-center py-8">
+              <FolderOpen className="mx-auto h-12 w-12 text-gray-400" />
+              <p className="mt-2 text-gray-500">No courses found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.isArray(courses) && courses.map((course) => (
+                <Card
+                  key={course.id}
+                  className="p-4 border border-gray-200 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start gap-3">
+                    <BookOpen className="h-5 w-5 text-blue-500 mt-1 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">
+                        {course.courseCode}
+                      </h3>
+                      <p className="text-gray-600 text-xs sm:text-sm mt-1 line-clamp-2">
+                        {course.courseName}
+                      </p>
+                      <p className="text-gray-500 text-xs mt-1">
+                        {course.yearLevel}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </Card>
 
         <Card className="flex flex-col sm:flex-row items-center gap-4 px-5 shadow-gray-100">
           <div className="relative flex-1 w-full sm:w-auto ">
