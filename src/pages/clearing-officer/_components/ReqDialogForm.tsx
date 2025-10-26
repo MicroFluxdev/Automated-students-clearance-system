@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X } from "lucide-react";
-import { useState, type KeyboardEvent } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import { DatePicker } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 
@@ -43,30 +43,24 @@ interface Course {
   description?: string;
 }
 
+// Define the requirement type
+type Requirement = {
+  courseCode: string;
+  courseName: string;
+  yearLevel: string;
+  semester: string;
+  requirements: string[];
+  department: string;
+  dueDate: string;
+  description: string;
+};
+
 interface ReqDialogFormProps {
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
   courses: Course[];
-  newRequirement: {
-    courseCode: string;
-    courseName: string;
-    yearLevel: string;
-    semester: string;
-    requirements: string[];
-    department: string;
-    dueDate: string;
-    description: string;
-  };
-  setNewRequirement: (requirement: {
-    courseCode: string;
-    courseName: string;
-    yearLevel: string;
-    semester: string;
-    requirements: string[];
-    department: string;
-    dueDate: string;
-    description: string;
-  }) => void;
+  newRequirement: Requirement;
+  setNewRequirement: (requirement: Requirement) => void;
   handleCreateRequirement: () => void;
 }
 
@@ -80,12 +74,19 @@ const ReqDialogForm = ({
 }: ReqDialogFormProps) => {
   const [inputValue, setInputValue] = useState("");
 
-  // Handler for course selection
-  const handleCourseSelect = (courseCode: string) => {
+  // Use ref to always have the latest requirement value without causing re-renders
+  const requirementRef = useRef(newRequirement);
+
+  useEffect(() => {
+    requirementRef.current = newRequirement;
+  }, [newRequirement]);
+
+  // Handler for course selection - Memoized, no dependency on newRequirement
+  const handleCourseSelect = useCallback((courseCode: string) => {
     const selectedCourse = courses.find((c) => c.courseCode === courseCode);
     if (selectedCourse) {
       setNewRequirement({
-        ...newRequirement,
+        ...requirementRef.current,
         courseCode: selectedCourse.courseCode,
         courseName: selectedCourse.courseName,
         yearLevel: selectedCourse.yearLevel,
@@ -94,12 +95,12 @@ const ReqDialogForm = ({
         description: selectedCourse.description || "",
       });
     }
-  };
+  }, [courses, setNewRequirement]);
 
-  // Clear course selection and reset auto-filled fields
-  const clearCourseSelection = () => {
+  // Clear course selection - Memoized, no dependency on newRequirement
+  const clearCourseSelection = useCallback(() => {
     setNewRequirement({
-      ...newRequirement,
+      ...requirementRef.current,
       courseCode: "",
       courseName: "",
       yearLevel: "",
@@ -107,30 +108,59 @@ const ReqDialogForm = ({
       department: "",
       description: "",
     });
-  };
+  }, [setNewRequirement]);
 
-  // Add requirement tag
-  const addRequirement = (value: string) => {
+  // Add requirement tag - Memoized, no dependency on newRequirement
+  const addRequirement = useCallback((value: string) => {
     const trimmedValue = value.trim();
-    if (trimmedValue && !newRequirement.requirements.includes(trimmedValue)) {
+    if (trimmedValue && !requirementRef.current.requirements.includes(trimmedValue)) {
       setNewRequirement({
-        ...newRequirement,
-        requirements: [...newRequirement.requirements, trimmedValue],
+        ...requirementRef.current,
+        requirements: [...requirementRef.current.requirements, trimmedValue],
       });
       setInputValue("");
     }
-  };
+  }, [setNewRequirement]);
 
-  // Remove requirement tag
-  const removeRequirement = (index: number) => {
+  // Remove requirement tag - Memoized, no dependency on newRequirement
+  const removeRequirement = useCallback((index: number) => {
     setNewRequirement({
-      ...newRequirement,
-      requirements: newRequirement.requirements.filter((_, i) => i !== index),
+      ...requirementRef.current,
+      requirements: requirementRef.current.requirements.filter((_, i: number) => i !== index),
     });
-  };
+  }, [setNewRequirement]);
 
-  // Handle key press (Enter or comma)
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  // Handle input change - Memoized
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  }, []);
+
+  // Handle description change - Memoized, NO dependency on newRequirement!
+  const handleDescriptionChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setNewRequirement({
+      ...requirementRef.current,
+      description: newValue,
+    });
+  }, [setNewRequirement]);
+
+  // Handle date change - Memoized, no dependency on newRequirement
+  const handleDateChange = useCallback((date: Dayjs | null) => {
+    setNewRequirement({
+      ...requirementRef.current,
+      dueDate: date ? date.format("YYYY-MM-DD") : "",
+    });
+  }, [setNewRequirement]);
+
+  // Handle blur on input - Memoized
+  const handleInputBlur = useCallback(() => {
+    if (inputValue.trim()) {
+      addRequirement(inputValue);
+    }
+  }, [inputValue, addRequirement]);
+
+  // Handle key press (Enter or comma) - Memoized
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addRequirement(inputValue);
@@ -142,7 +172,35 @@ const ReqDialogForm = ({
       // Remove last tag on backspace when input is empty
       removeRequirement(newRequirement.requirements.length - 1);
     }
-  };
+  }, [inputValue, newRequirement.requirements.length, addRequirement, removeRequirement]);
+
+  // Memoize placeholder text to avoid recalculation
+  const inputPlaceholder = useMemo(() => {
+    return newRequirement.requirements.length === 0
+      ? "e.g., ID Card, Clearance Form, Library Card"
+      : "Add another...";
+  }, [newRequirement.requirements.length]);
+
+  // Memoize requirement badges to prevent re-rendering
+  const requirementBadges = useMemo(() => {
+    return newRequirement.requirements.map((req, index) => (
+      <Badge
+        key={`${req}-${index}`}
+        variant="secondary"
+        className="flex items-center gap-1 px-2 py-1"
+      >
+        <span>{req}</span>
+        <button
+          type="button"
+          onClick={() => removeRequirement(index)}
+          className="ml-1 rounded-full hover:bg-gray-300 p-0.5"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </Badge>
+    ));
+  }, [newRequirement.requirements, removeRequirement]);
+
   return (
     <div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -257,38 +315,15 @@ const ReqDialogForm = ({
                 </Label>
                 <div className="min-h-[42px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <div className="flex flex-wrap gap-2">
-                    {newRequirement.requirements.map((req, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="flex items-center gap-1 px-2 py-1"
-                      >
-                        <span>{req}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeRequirement(index)}
-                          className="ml-1 rounded-full hover:bg-gray-300 p-0.5"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
+                    {requirementBadges}
                     <Input
                       id="requirements"
                       type="text"
-                      placeholder={
-                        newRequirement.requirements.length === 0
-                          ? "e.g., ID Card, Clearance Form, Library Card"
-                          : "Add another..."
-                      }
+                      placeholder={inputPlaceholder}
                       value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
+                      onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      onBlur={() => {
-                        if (inputValue.trim()) {
-                          addRequirement(inputValue);
-                        }
-                      }}
+                      onBlur={handleInputBlur}
                       className="border-0 shadow-none focus-visible:ring-0 flex-1 min-w-[200px] h-6 px-0"
                     />
                   </div>
@@ -305,12 +340,7 @@ const ReqDialogForm = ({
                       ? dayjs(newRequirement.dueDate)
                       : null
                   }
-                  onChange={(date: Dayjs | null) => {
-                    setNewRequirement({
-                      ...newRequirement,
-                      dueDate: date ? date.format("YYYY-MM-DD") : "",
-                    });
-                  }}
+                  onChange={handleDateChange}
                   format="YYYY-MM-DD"
                   placeholder="Select due date"
                   className="w-full"
@@ -325,12 +355,7 @@ const ReqDialogForm = ({
                   id="description"
                   placeholder="Enter requirement description"
                   value={newRequirement.description}
-                  onChange={(e) =>
-                    setNewRequirement({
-                      ...newRequirement,
-                      description: e.target.value,
-                    })
-                  }
+                  onChange={handleDescriptionChange}
                   rows={4}
                   className="resize-none"
                 />

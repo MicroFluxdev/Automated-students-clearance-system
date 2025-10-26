@@ -9,6 +9,7 @@ import {
   Book,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/authentication/useAuth";
 
 const navbar = [
   {
@@ -45,6 +46,11 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
   const location = useLocation();
 
   const currentPath = location.pathname;
+  const { user } = useAuth();
+
+  console.log("lala", user);
+
+  const userName = `${user?.firstName} ${user?.lastName}`;
 
   const isActive = (path: string) => {
     if (path === "/clearing-officer" && currentPath === "/clearing-officer")
@@ -155,15 +161,18 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
           <div className="flex items-center gap-3">
             <img
               alt=""
-              src="https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
+              src="https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
               className="size-10 rounded-full object-cover"
             />
 
             <div>
-              <p className="font-medium text-xs text-blue-600">
-                Anthony Crausus
+              <p className="font-medium text-xs text-blue-600">{userName}</p>
+              {/* <p className="text-xs text-gray-400">{user?.email}</p> */}
+              <p className="text-xs text-gray-400">
+                {user?.role === "clearingOfficer"
+                  ? "Clearing Officer"
+                  : "Who are you?"}
               </p>
-              <p className="text-xs text-gray-400">anthony.dev@gmail.com</p>
             </div>
           </div>
         </div>

@@ -19,6 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     tokenService.getUserData()
   );
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Computed values
   const isAuthenticated = Boolean(accessToken && user);
@@ -156,6 +157,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(null);
         }
       }
+
+      // Mark initialization as complete
+      setIsInitialized(true);
     };
     tryInitialRefresh();
   }, []);
@@ -222,6 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         user,
         role,
         isAuthenticated,
+        isInitialized,
         login,
         registerUser,
         logout,

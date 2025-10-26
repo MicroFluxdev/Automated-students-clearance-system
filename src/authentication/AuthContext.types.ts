@@ -33,6 +33,7 @@ export interface AuthContextType {
   user: User | null;
   role?: string;
   isAuthenticated: boolean;
+  isInitialized: boolean;
   login: (email: string, password: string) => Promise<void>;
   registerUser: (
     schoolId: string,
