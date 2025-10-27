@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   Search,
   ChevronLeft,
@@ -140,34 +140,27 @@ export function AdminSideMenu({ closeSidebar }: CloseSidebarProps) {
       {/* Footer */}
       <div className="px-3 py-4">
         {/* Upgrade Button */}
-        <div className={cn("mt-auto rounded-lg hover:bg-gray-800")}>
-          {/* // <div className="rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 p-3 animate-fade-in">
-          //   <h4 className="text-sm font-medium text-blue-700 mb-1">
-          //     Upgrade to Pro
-          //   </h4>
-          //   <p className="text-xs text-blue-600 mb-2">
-          //     Get access to all features
-          //   </p>
-          //   <button className="w-full rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-blue-700 hover:scale-105 active:scale-95">
-          //     Upgrade Now
-          //   </button>
-          // </div> */}
-          <div className="rounded-lg  p-3 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <img
-                alt=""
-                src="https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
-                className="size-10 rounded-full object-cover"
-              />
+        <Link to="/admin-side/adminSettings">
+          <div className={cn("mt-auto rounded-lg hover:bg-gray-800")}>
+            <div className="rounded-lg  p-3 animate-fade-in">
+              <div className="flex items-center gap-3">
+                <img
+                  alt=""
+                  src="https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                  className="size-10 rounded-full object-cover"
+                />
 
-              <div>
-                <p className="font-medium text-xs text-blue-600">{userName}</p>
-                {/* <p className="text-xs text-gray-400">{user?.email}</p> */}
-                <p className="text-xs text-gray-400">{user?.role}</p>
+                <div>
+                  <p className="font-medium text-xs text-blue-600">
+                    {userName}
+                  </p>
+                  {/* <p className="text-xs text-gray-400">{user?.email}</p> */}
+                  <p className="text-xs text-gray-400">{user?.role}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   );

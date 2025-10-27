@@ -71,7 +71,10 @@ const AppRoutes: React.FC = () => {
       >
         <Route index element={<Dashboard />} />
         <Route path="clearance" element={<Clearance />} />
-        <Route path="student-records" element={<StudentRecord />} />
+        <Route
+          path="student-records/:courseCode"
+          element={<StudentRecord />}
+        />
         <Route path="requirements" element={<Requirements />} />
         <Route path="events" element={<Events />} />
         <Route path="accountSettings" element={<AccountSettings />} />
