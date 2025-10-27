@@ -7,7 +7,6 @@ import {
   Popconfirm,
   Tooltip,
   Card,
-  Spin,
   Dropdown,
   type MenuProps,
 } from "antd";
@@ -54,6 +53,12 @@ export interface RequirementData {
   updatedAt?: string;
 }
 
+interface StudentRecordData {
+  _id?: string;
+  id?: string;
+  schoolId?: string;
+}
+
 const RequirementsTable: React.FC<RequirementsTableProps> = ({
   data,
   loading = false,
@@ -68,6 +73,13 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
     {}
   );
   const [isFetchingCounts, setIsFetchingCounts] = useState(false);
+  const [studentRecords, setStudentRecords] = useState<StudentRecordData[]>([]);
+
+  console.log("Student records array:", studentRecords);
+
+  // If you want to log schoolIds of all student records:
+  const schoolIds = studentRecords.map((record) => record.schoolId ?? "N/A");
+  console.log("Student schoolIds:", schoolIds);
 
   // 🔹 Fetch student count for each courseCode
   useEffect(() => {
@@ -86,9 +98,19 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
 
               const students = Array.isArray(res) ? res : res.data || [];
               counts[req.courseCode] = students.length || 0;
-              console.log(
-                `✓ Course ${req.courseCode}: ${students.length} students`
+
+              // Log course info with student count and schoolIds
+              const schoolIds = students.map(
+                (student: { schoolId?: string; studentId?: string }) =>
+                  student.schoolId || student.studentId || "N/A"
               );
+              console.log(
+                `✓ Course ${req.courseCode}: ${students.length} students`,
+                schoolIds.length > 0
+                  ? `\n  School IDs: ${schoolIds.join(", ")}`
+                  : ""
+              );
+              setStudentRecords(students);
             } catch (error: unknown) {
               const axiosError = error as {
                 response?: { status?: number };
@@ -307,21 +329,19 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
   return (
     <div className="w-full">
       <Card title="Requirements" style={{ marginBottom: "16px" }}>
-        <Spin spinning={loading || isFetchingCounts}>
-          <Table<RequirementData>
-            columns={columns}
-            dataSource={tableData}
-            loading={loading || isFetchingCounts}
-            rowKey={(record) => record._id || record.id || record.courseCode}
-            pagination={{
-              defaultPageSize: 10,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20", "50"],
-            }}
-            scroll={{ x: "max-content" }}
-            bordered
-          />
-        </Spin>
+        <Table<RequirementData>
+          columns={columns}
+          dataSource={tableData}
+          loading={loading || isFetchingCounts}
+          rowKey={(record) => record._id || record.id || record.courseCode}
+          pagination={{
+            defaultPageSize: 10,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20", "50"],
+          }}
+          scroll={{ x: "max-content" }}
+          bordered
+        />
       </Card>
 
       <ViewRequirementsModal

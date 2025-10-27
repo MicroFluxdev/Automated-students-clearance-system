@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   Search,
   ChevronLeft,
@@ -157,25 +157,27 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
           //     Upgrade Now
           //   </button>
           // </div> */}
-        <div className="rounded-lg hover:bg-gray-800 p-3 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <img
-              alt=""
-              src="https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
-              className="size-10 rounded-full object-cover"
-            />
+        <Link to="/clearing-officer/accountSettings">
+          <div className="rounded-lg hover:bg-gray-800 p-3 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <img
+                alt=""
+                src="https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                className="size-10 rounded-full object-cover"
+              />
 
-            <div>
-              <p className="font-medium text-xs text-blue-600">{userName}</p>
-              {/* <p className="text-xs text-gray-400">{user?.email}</p> */}
-              <p className="text-xs text-gray-400">
-                {user?.role === "clearingOfficer"
-                  ? "Clearing Officer"
-                  : "Who are you?"}
-              </p>
+              <div>
+                <p className="font-medium text-xs text-blue-600">{userName}</p>
+                {/* <p className="text-xs text-gray-400">{user?.email}</p> */}
+                <p className="text-xs text-gray-400">
+                  {user?.role === "clearingOfficer"
+                    ? "Clearing Officer"
+                    : "Who are you?"}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   );
