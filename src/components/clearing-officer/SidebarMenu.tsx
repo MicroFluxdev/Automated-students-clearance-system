@@ -25,7 +25,7 @@ const navbar = [
   {
     to: "/clearing-officer/clearance",
     icon: GraduationCap,
-    label: "Clearance",
+    label: "Requirements",
   },
   {
     to: "/clearing-officer/events",

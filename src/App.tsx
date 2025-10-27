@@ -3,10 +3,13 @@ import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes";
 import { ToastContainer } from "react-toastify";
 import { useRedirectService } from "./authentication/useRedirectService";
+import { useAuth } from "./authentication/useAuth";
+import LogoutLoadingOverlay from "./components/LogoutLoadingOverlay";
 
 // Component to initialize redirect service inside Router context
 const AppWithRedirectService: React.FC = () => {
   useRedirectService(); // Initialize redirect service with navigate function
+  const { logoutLoading } = useAuth();
 
   return (
     <>
@@ -24,6 +27,7 @@ const AppWithRedirectService: React.FC = () => {
         theme="light"
         style={{ zIndex: 9999 }}
       />
+      {logoutLoading && <LogoutLoadingOverlay />}
     </>
   );
 };

@@ -148,7 +148,7 @@ const ViewCourses = () => {
               All Courses
             </h1>
             <p className="text-gray-500 mt-1 text-sm sm:text-base">
-              Browse and explore all available courses
+              Browse and explore your all available courses
             </p>
           </div>
         </header>

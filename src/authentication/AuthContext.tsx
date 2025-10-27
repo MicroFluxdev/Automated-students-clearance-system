@@ -19,6 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     tokenService.getUserData()
   );
   const [loading, setLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Computed values
@@ -91,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
    * Logs out the user, clears all local storage, and redirects to login.
    */
   const logout = async () => {
+    setLogoutLoading(true);
     try {
       const currentToken = tokenService.getAccessToken();
       await axiosInstance.post(
@@ -105,6 +107,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       );
     } catch (error) {
       console.error("Logout failed on server:", error);
+    } finally {
+      setLogoutLoading(false);
     }
 
     // Local cleanup
@@ -116,6 +120,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       "You have been logged out successfully.",
       false
     );
+    // Note: setLogoutLoading(false) not needed as user will be redirected
+  };
+
+  /**
+   * Updates the user data in both state and localStorage
+   */
+  const updateUser = (userData: User) => {
+    tokenService.setUserData(userData);
+    setUser(userData);
   };
 
   /**
@@ -232,6 +245,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         logout,
         loading,
         setLoading,
+        logoutLoading,
+        updateUser,
       }}
     >
       {children}

@@ -17,7 +17,7 @@ export default function Login() {
   const { login, role, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  console.log("Im from Log in page", user?.firstName);
+  console.log("Im from Log in page", user?.phoneNumber);
 
   // Redirect or show modal based on role if already authenticated
   useEffect(() => {
