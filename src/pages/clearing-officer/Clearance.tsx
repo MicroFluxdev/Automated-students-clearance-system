@@ -221,6 +221,11 @@ const Clearance = () => {
         );
 
         const coursesData = response.data?.courses || [];
+
+        coursesData.forEach((course: Course) => {
+          console.log(course.courseCode);
+        });
+
         console.log("✅ Fetched courses for dialog:", coursesData);
         setCourses(coursesData);
       } catch (error) {
