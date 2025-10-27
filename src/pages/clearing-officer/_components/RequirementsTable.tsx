@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -26,6 +26,7 @@ import {
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import ViewRequirementsModal from "./ViewRequirementsModal";
+import { getAllStudentSpecificSubject } from "@/services/intigration.services";
 
 interface RequirementsTableProps {
   data: RequirementData[];
@@ -60,18 +61,81 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
   onDelete,
   onView,
 }) => {
-  // State for View Requirements Modal
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedRequirement, setSelectedRequirement] =
     useState<RequirementData | null>(null);
+  const [studentCounts, setStudentCounts] = useState<Record<string, number>>(
+    {}
+  );
+  const [isFetchingCounts, setIsFetchingCounts] = useState(false);
 
-  // Handler to open view modal
+  // 🔹 Fetch student count for each courseCode
+  useEffect(() => {
+    const fetchStudentCounts = async () => {
+      if (data.length === 0) return;
+
+      setIsFetchingCounts(true);
+      try {
+        const counts: Record<string, number> = {};
+
+        // Fetch student counts for each course in parallel
+        await Promise.all(
+          data.map(async (req) => {
+            try {
+              const res = await getAllStudentSpecificSubject(req.courseCode);
+
+              const students = Array.isArray(res) ? res : res.data || [];
+              counts[req.courseCode] = students.length || 0;
+              console.log(
+                `✓ Course ${req.courseCode}: ${students.length} students`
+              );
+            } catch (error: unknown) {
+              const axiosError = error as {
+                response?: { status?: number };
+                message?: string;
+              };
+              if (
+                axiosError?.response?.status === 404 ||
+                axiosError?.message?.includes("No students found")
+              ) {
+                counts[req.courseCode] = 0;
+                console.log(
+                  `✓ Course ${req.courseCode}: 0 students (no enrollments yet)`
+                );
+              } else {
+                console.error(
+                  `✗ Error fetching students for ${req.courseCode}:`,
+                  axiosError?.message || error
+                );
+                counts[req.courseCode] = 0;
+              }
+            }
+          })
+        );
+
+        console.log("Student counts loaded:", counts);
+        setStudentCounts(counts);
+      } catch (error) {
+        console.error("Error fetching student counts:", error);
+      } finally {
+        setIsFetchingCounts(false);
+      }
+    };
+
+    fetchStudentCounts();
+  }, [data]);
+
+  const tableData: RequirementData[] = data.map((req) => ({
+    ...req,
+    students: studentCounts[req.courseCode] || 0,
+  }));
+
+  // 🔹 Handlers
   const handleViewRequirements = (record: RequirementData) => {
     setSelectedRequirement(record);
     setViewModalVisible(true);
   };
 
-  // Handler to close view modal
   const handleCloseViewModal = () => {
     setViewModalVisible(false);
     setSelectedRequirement(null);
@@ -98,65 +162,11 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
       key: "description",
       width: 400,
       render: (_: unknown, record: RequirementData) => (
-        <Space wrap>
-          <div className="text-sm text-gray-500">{record.description}</div>
-        </Space>
+        <div className="text-sm text-gray-500">{record.description}</div>
       ),
     },
-    // {
-    //   title: "Departments",
-    //   dataIndex: "department",
-    //   key: "department",
-    //   render: (department: string) => {
-    //     if (!department || department.trim() === "") {
-    //       return <span className="text-gray-400">None</span>;
-    //     }
-
-    //     // Split departments by comma and trim whitespace
-    //     const departments = department
-    //       .split(",")
-    //       .map((dept) => dept.trim())
-    //       .filter((dept) => dept !== "");
-
-    //     return (
-    //       <div className="flex flex-col gap-1">
-    //         <Tag color="orange" className="text-center" title={departments[0]}>
-    //           {departments[0]}
-    //         </Tag>
-    //         {departments.length > 1 && (
-    //           <Tooltip
-    //             title={
-    //               <div className="bg-white rounded-lg shadow-sm p-2 max-h-56 overflow-auto">
-    //                 <div className="divide-y divide-gray-100">
-    //                   {departments.slice(1).map((dept) => (
-    //                     <div
-    //                       key={dept}
-    //                       className="py-2 px-3 text-sm text-gray-700"
-    //                     >
-    //                       <span className="inline-block w-2 mr-2 text-orange-500">
-    //                         •
-    //                       </span>
-    //                       <span>{dept}</span>
-    //                     </div>
-    //                   ))}
-    //                 </div>
-    //               </div>
-    //             }
-    //           >
-    //             <span className="text-xs text-blue-600 cursor-pointer hover:underline">
-    //               +{departments.length - 1} more
-    //             </span>
-    //           </Tooltip>
-    //         )}
-    //       </div>
-    //     );
-    //   },
-    //   responsive: ["sm", "md", "lg", "xl"],
-    // },
-
     {
-      title: "Semester",
-      dataIndex: "semester",
+      title: "Semester / Year",
       key: "semester",
       render: (_, record) => (
         <Space wrap direction="vertical">
@@ -164,7 +174,6 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
           <Tag color="green">{record.yearLevel || "Not specified"}</Tag>
         </Space>
       ),
-      responsive: ["sm", "md", "lg", "xl"],
     },
     {
       title: "Requirements",
@@ -186,19 +195,11 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
               <Tooltip
                 title={
                   <div className="bg-white rounded-lg p-3 shadow-sm max-h-56 overflow-auto">
-                    <div className="flex flex-col gap-2">
-                      {requirements.slice(1).map((req, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-start text-sm text-gray-700"
-                        >
-                          <span className="mr-2 text-orange-500 font-bold">
-                            •
-                          </span>
-                          <span className="leading-tight">{req}</span>
-                        </div>
-                      ))}
-                    </div>
+                    {requirements.slice(1).map((req, idx) => (
+                      <div key={idx} className="text-sm text-gray-700">
+                        • {req}
+                      </div>
+                    ))}
                   </div>
                 }
               >
@@ -211,15 +212,12 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
         );
       },
     },
-
     {
       title: "Due Date",
       dataIndex: "dueDate",
       key: "dueDate",
-
       sorter: (a, b) =>
         new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
-      responsive: ["md"] as ("xs" | "sm" | "md" | "lg" | "xl" | "xxl")[],
       render: (date: string) => {
         const formattedDate = format(new Date(date), "MMM dd, yyyy");
         const isOverdue = new Date(date) < new Date();
@@ -237,10 +235,8 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
       title: "Students",
       dataIndex: "students",
       key: "students",
-
       align: "center",
       sorter: (a, b) => (a.students || 0) - (b.students || 0),
-      responsive: ["lg"] as ("xs" | "sm" | "md" | "lg" | "xl" | "xxl")[],
       render: (students: number = 0) => (
         <Space>
           <TeamOutlined />
@@ -251,7 +247,6 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
     {
       title: "Actions",
       key: "actions",
-
       render: (_: unknown, record: RequirementData) => {
         const viewMenuItems: MenuProps["items"] = [
           {
@@ -295,9 +290,8 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
             <Tooltip title="Delete">
               <Popconfirm
                 title="Delete this requirement?"
-                description="Are you sure you want to delete this requirement? This action cannot be undone."
                 onConfirm={() => onDelete?.(record)}
-                okText="Yes, delete"
+                okText="Yes"
                 cancelText="Cancel"
                 okButtonProps={{ danger: true }}
               >
@@ -312,35 +306,24 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
 
   return (
     <div className="w-full">
-      <Card
-        title="Requirements"
-        style={{ marginBottom: "16px", marginTop: "16px" }}
-      >
-        <Spin spinning={loading}>
+      <Card title="Requirements" style={{ marginBottom: "16px" }}>
+        <Spin spinning={loading || isFetchingCounts}>
           <Table<RequirementData>
             columns={columns}
-            dataSource={data}
-            loading={loading}
+            dataSource={tableData}
+            loading={loading || isFetchingCounts}
             rowKey={(record) => record._id || record.id || record.courseCode}
             pagination={{
               defaultPageSize: 10,
               showSizeChanger: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} requirements`,
               pageSizeOptions: ["5", "10", "20", "50"],
-
-              className: "px-4 py-3",
             }}
-            scroll={{
-              x: "max-content",
-              y: undefined,
-            }}
+            scroll={{ x: "max-content" }}
             bordered
           />
         </Spin>
       </Card>
 
-      {/* View Requirements Modal */}
       <ViewRequirementsModal
         visible={viewModalVisible}
         requirement={selectedRequirement}

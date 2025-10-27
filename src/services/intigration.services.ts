@@ -11,7 +11,20 @@ export const getAllStudentSpecificSubject = async (courseCode: string) => {
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error("Error fetching students by subject:", error);
+      // 404 is expected when no students are enrolled - don't log as error
+      if (error.response?.status === 404) {
+        throw (
+          error.response?.data || {
+            message: `No students found enrolled in or requiring the subject '${courseCode}'`,
+          }
+        );
+      }
+
+      // Log other errors (500, network issues, etc.)
+      console.error(
+        `Error fetching students for ${courseCode}:`,
+        error.message
+      );
       throw (
         error.response?.data || {
           message: "Failed to fetch students by subject",
