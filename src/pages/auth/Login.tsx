@@ -7,6 +7,7 @@ import { loginSchema, type LoginData } from "@/lib/validation";
 import FormInput from "@/components/myUi/auth/FormInput";
 import AuthButton from "@/components/myUi/auth/AuthButton";
 import StatusModal from "@/components/myUi/auth/StatusModal";
+import { message } from "antd";
 
 export default function Login() {
   const [error, setError] = useState<string>("");
@@ -49,7 +50,7 @@ export default function Login() {
 
     try {
       await login(data.email, data.password);
-
+      message.success("Login successfully!");
       setIsSuccessModalVisible(true);
     } catch (error: unknown) {
       const axiosError = error as {

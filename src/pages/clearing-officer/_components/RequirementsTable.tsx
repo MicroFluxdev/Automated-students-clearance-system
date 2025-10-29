@@ -66,14 +66,12 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
   const [studentCounts, setStudentCounts] = useState<Record<string, number>>(
     {}
   );
-  const [isFetchingCounts, setIsFetchingCounts] = useState(false);
 
   // 🔹 Fetch student count for each courseCode
   useEffect(() => {
     const fetchStudentCounts = async () => {
       if (data.length === 0) return;
 
-      setIsFetchingCounts(true);
       try {
         const counts: Record<string, number> = {};
 
@@ -117,8 +115,6 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
         setStudentCounts(counts);
       } catch (error) {
         console.error("Error fetching student counts:", error);
-      } finally {
-        setIsFetchingCounts(false);
       }
     };
 
@@ -306,13 +302,17 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
     },
   ];
 
+  // Only show loading during initial data fetch, not during student count fetch
+  // This prevents multiple loading indicators from appearing
+  const isInitialLoading = loading && data.length === 0;
+
   return (
     <div className="w-full">
       <Card title="Requirements" style={{ marginBottom: "16px" }}>
         <Table<RequirementData>
           columns={columns}
           dataSource={tableData}
-          loading={loading || isFetchingCounts}
+          loading={isInitialLoading}
           rowKey={(record) => record._id || record.id || record.courseCode}
           pagination={{
             defaultPageSize: 10,

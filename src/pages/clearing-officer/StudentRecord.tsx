@@ -88,7 +88,6 @@ const StudentRecord: React.FC = () => {
     courseCode: string;
   }>();
 
-  // Local state management (no Redux)
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [studentList, setStudentList] = useState<Student[]>([]);
   const [search, setSearch] = useState("");
@@ -103,7 +102,6 @@ const StudentRecord: React.FC = () => {
   const statuses = ["all", "Signed", "Incomplete", "Missing"];
   const studentsPerPage = 10;
 
-  // Fetch students enrolled in the specific course
   useEffect(() => {
     const fetchStudents = async () => {
       if (!courseCode) {
@@ -149,14 +147,12 @@ const StudentRecord: React.FC = () => {
             );
             console.log("Detailed students response:", detailedResponse);
 
-            // The response is already an array of students
             if (
               Array.isArray(detailedResponse) &&
               detailedResponse.length > 0
             ) {
               detailedStudents = detailedResponse as ApiStudentData[];
             } else {
-              // Fall back to basic student data if no detailed data returned
               detailedStudents = students;
             }
           } catch (detailError) {
