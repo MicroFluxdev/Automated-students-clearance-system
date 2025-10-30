@@ -986,26 +986,29 @@ const StudentRecord: React.FC = () => {
             </div>
           ) : (
             <>
-              {selectedStudents.length > 0 && (
-                <div className="flex items-center gap-2 mb-4">
-                  <Button
-                    size="sm"
-                    onClick={handleSignSelected}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Sign Selected ({selectedStudents.length})
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={handleUndoSelected}
-                  >
-                    <Undo className="w-4 h-4 mr-2" />
-                    Undo Selected ({selectedStudents.length})
-                  </Button>
-                </div>
-              )}
+              {/* Fixed height container to prevent table shifting */}
+              <div className="mb-4 min-h-[40px] flex items-center">
+                {selectedStudents.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleSignSelected}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Sign Selected ({selectedStudents.length})
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={handleUndoSelected}
+                    >
+                      <Undo className="w-4 h-4 mr-2" />
+                      Undo Selected ({selectedStudents.length})
+                    </Button>
+                  </div>
+                )}
+              </div>
               <div className="rounded-md border">
                 <Table>
                   <TableHeader className="bg-gray-50">
