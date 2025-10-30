@@ -81,7 +81,7 @@ interface Student {
   profilePic: string;
   status: string;
   initials: string;
-  studentRequirementId?: string; // Store the student requirement ID from the database
+  studentRequirementId?: string;
 }
 
 interface ConfirmDialog {
@@ -548,7 +548,9 @@ const StudentRecord: React.FC = () => {
                   : req
               )
             );
-            console.log("✅ Updated requirements in state with status: incomplete");
+            console.log(
+              "✅ Updated requirements in state with status: incomplete"
+            );
 
             // Update local state for all selected students
             setStudentList((prev) =>
@@ -603,9 +605,13 @@ const StudentRecord: React.FC = () => {
       return;
     }
 
-    console.log("Student ID Number:", student.id_no);
-    console.log("Clearing Officer ID:", user?.id);
-    console.log("Requirement ID:", reqId);
+    console.log("🎯 handleSignToggle called for:", student.name);
+    console.log("   - Student ID:", studentId);
+    console.log("   - Student ID Number:", student.id_no);
+    console.log("   - Current Status:", student.status);
+    console.log("   - Student Requirement ID:", student.studentRequirementId);
+    console.log("   - Clearing Officer ID:", user?.id);
+    console.log("   - Requirement ID:", reqId);
 
     if (student?.status === "Signed") {
       // If student is already signed, show confirmation to undo
@@ -627,6 +633,56 @@ const StudentRecord: React.FC = () => {
             );
             console.log("📋 Student ID Number:", student.id_no);
             console.log("📊 Current Status:", student.status);
+
+            // If no ID in student object, try to find it in allStudentRequirements
+            if (!student.studentRequirementId) {
+              console.log(
+                "⚠️ No studentRequirementId in student object, searching allStudentRequirements..."
+              );
+              console.log(
+                "   - Total requirements in state:",
+                allStudentRequirements.length
+              );
+              console.log("   - Looking for:", {
+                studentId: student.id_no,
+                coId: user?.id,
+                requirementId: reqId,
+              });
+
+              const matchingReq = findExistingStudentRequirement(
+                allStudentRequirements,
+                student.id_no,
+                user?.id || "",
+                reqId || ""
+              );
+              console.log(
+                "   - Found in allStudentRequirements?",
+                !!matchingReq
+              );
+              if (matchingReq) {
+                const foundId = matchingReq._id || matchingReq.id;
+                console.log("   - Found ID:", foundId);
+                console.log("   - Matching requirement:", matchingReq);
+
+                // Update the student requirement ID in the actual state
+                student.studentRequirementId = foundId;
+
+                // Also update the studentList state to persist this
+                setStudentList((prev) =>
+                  prev.map((s) =>
+                    s.id === studentId
+                      ? { ...s, studentRequirementId: foundId }
+                      : s
+                  )
+                );
+                console.log("✅ Updated studentRequirementId in state");
+              } else {
+                console.error(
+                  "❌ Could not find matching requirement in allStudentRequirements"
+                );
+                console.log("   - All requirements:", allStudentRequirements);
+              }
+            }
 
             // Check if student has a studentRequirementId to update
             if (student.studentRequirementId) {
@@ -657,12 +713,15 @@ const StudentRecord: React.FC = () => {
                 // Update allStudentRequirements state
                 setAllStudentRequirements((prev) =>
                   prev.map((req) =>
-                    (req._id === student.studentRequirementId || req.id === student.studentRequirementId)
+                    req._id === student.studentRequirementId ||
+                    req.id === student.studentRequirementId
                       ? { ...req, status: "incomplete" }
                       : req
                   )
                 );
-                console.log("✅ Updated requirement in state with status: incomplete");
+                console.log(
+                  "✅ Updated requirement in state with status: incomplete"
+                );
 
                 // Update local state
                 setStudentList((prev) =>
@@ -767,7 +826,7 @@ const StudentRecord: React.FC = () => {
           if (result) {
             setAllStudentRequirements((prev) =>
               prev.map((req) =>
-                (req._id === existingId || req.id === existingId)
+                req._id === existingId || req.id === existingId
                   ? { ...req, status: "signed" }
                   : req
               )

@@ -67,8 +67,13 @@ export const createStudentRequirement = async (
     );
 
     console.log("✅ Response received:", response.data);
+
+    // Check if response has nested data property
+    const requirementData = response.data.data || response.data;
+    console.log("✅ Extracted requirement data:", requirementData);
+
     message.success("Student requirement created successfully");
-    return response.data;
+    return requirementData;
   } catch (error: unknown) {
     console.error("❌ Full error object:", error);
 
@@ -157,9 +162,16 @@ export const getAllStudentRequirements = async (): Promise<
     );
 
     console.log("✅ Response received:", response.data);
-    console.log(`✅ Total requirements fetched: ${response.data?.length || 0}`);
 
-    return response.data;
+    // Check if response has nested data property (array might be in response.data.data or response.data)
+    const requirements = Array.isArray(response.data)
+      ? response.data
+      : response.data.data || [];
+
+    console.log(`✅ Total requirements fetched: ${requirements.length}`);
+    console.log("✅ Sample requirement:", requirements[0]);
+
+    return requirements;
   } catch (error: unknown) {
     console.error("❌ Full error object:", error);
 
@@ -250,9 +262,14 @@ export const updateStudentRequirement = async (
     );
 
     console.log("✅ Update response received:", response.data);
-    console.log("✅ Updated status:", response.data?.status);
+
+    // Check if response has nested data property
+    const requirementData = response.data.data || response.data;
+    console.log("✅ Extracted requirement data:", requirementData);
+    console.log("✅ Updated status:", requirementData?.status);
+
     message.success("Student requirement updated successfully");
-    return response.data;
+    return requirementData;
   } catch (error: unknown) {
     console.error("❌ Full error object:", error);
 
