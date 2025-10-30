@@ -55,6 +55,8 @@ import {
   createBulkStudentRequirements,
   updateStudentRequirement,
   getAllStudentRequirements,
+  findExistingStudentRequirement,
+  type StudentRequirement,
 } from "@/services/studentRequirementService";
 
 interface ApiStudentData {
@@ -108,6 +110,9 @@ const StudentRecord: React.FC = () => {
     isOpen: false,
   });
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [allStudentRequirements, setAllStudentRequirements] = useState<
+    StudentRequirement[]
+  >([]);
 
   const statuses = ["all", "Signed", "Incomplete", "Missing"];
   const studentsPerPage = 10;
@@ -213,6 +218,9 @@ const StudentRecord: React.FC = () => {
             `✅ Fetched ${allRequirements.length} student requirements`
           );
 
+          // Store all requirements in state for later use when signing
+          setAllStudentRequirements(allRequirements);
+
           // Filter requirements that match the current requirement ID
           const relevantRequirements = allRequirements.filter(
             (req) => req.requirementId === reqId
@@ -231,8 +239,9 @@ const StudentRecord: React.FC = () => {
             (student) => {
               const requirement = requirementMap.get(student.id_no);
               if (requirement) {
+                const reqId = requirement._id || requirement.id;
                 console.log(
-                  `✓ Student ${student.id_no} has requirement with status: ${requirement.status}`
+                  `✓ Student ${student.id_no} has requirement with status: ${requirement.status}, _id: ${reqId}`
                 );
                 return {
                   ...student,
@@ -244,7 +253,7 @@ const StudentRecord: React.FC = () => {
                       : requirement.status === "missing"
                       ? "Missing"
                       : "Incomplete",
-                  studentRequirementId: requirement.id || requirement._id,
+                  studentRequirementId: reqId,
                 };
               }
               return student;
@@ -349,27 +358,115 @@ const StudentRecord: React.FC = () => {
         0
       );
 
-      // Prepare bulk requirements data
-      const bulkRequirements = selectedStudentsData.map((student) => ({
-        studentId: student.id_no,
-        coId: user.id,
-        requirementId: reqId,
-        status: "signed" as const,
-      }));
+      console.log("🔍 Checking for existing requirements in bulk sign...");
 
-      // Create student requirements in database
-      const results = await createBulkStudentRequirements(bulkRequirements);
+      // Separate students into those with existing requirements and those without
+      const studentsToUpdate: Array<{
+        student: (typeof selectedStudentsData)[0];
+        existingReqId: string;
+      }> = [];
+      const studentsToCreate: typeof selectedStudentsData = [];
+
+      selectedStudentsData.forEach((student) => {
+        const existingRequirement = findExistingStudentRequirement(
+          allStudentRequirements,
+          student.id_no,
+          user.id,
+          reqId
+        );
+
+        if (existingRequirement) {
+          const existingId = existingRequirement._id || existingRequirement.id;
+          console.log(
+            `♻️ Student ${student.id_no} has existing requirement: ${existingId}`
+          );
+          studentsToUpdate.push({ student, existingReqId: existingId! });
+        } else {
+          console.log(`➕ Student ${student.id_no} needs new requirement`);
+          studentsToCreate.push(student);
+        }
+      });
+
+      console.log(
+        `📊 Summary: ${studentsToUpdate.length} to update, ${studentsToCreate.length} to create`
+      );
+
+      const studentReqIdMap = new Map<string, string>();
+
+      // Update existing requirements
+      if (studentsToUpdate.length > 0) {
+        console.log("🔄 Updating existing requirements...");
+        const updatePromises = studentsToUpdate.map(
+          ({ student, existingReqId }) =>
+            updateStudentRequirement(
+              existingReqId,
+              "signed",
+              student.id_no,
+              user.id,
+              reqId
+            ).then((result) => ({ student, result, existingReqId }))
+        );
+
+        const updateResults = await Promise.allSettled(updatePromises);
+        const successfulUpdateIds: string[] = [];
+
+        updateResults.forEach((promiseResult) => {
+          if (promiseResult.status === "fulfilled") {
+            const { student, existingReqId } = promiseResult.value;
+            studentReqIdMap.set(student.id_no, existingReqId);
+            successfulUpdateIds.push(existingReqId);
+            console.log(`✅ Updated ${student.id_no} -> ${existingReqId}`);
+          }
+        });
+
+        // Update allStudentRequirements state for successfully updated requirements
+        if (successfulUpdateIds.length > 0) {
+          setAllStudentRequirements((prev) =>
+            prev.map((req) =>
+              successfulUpdateIds.includes(req._id || req.id || "")
+                ? { ...req, status: "signed" }
+                : req
+            )
+          );
+          console.log(
+            `✅ Updated ${successfulUpdateIds.length} requirements in state with status: signed`
+          );
+        }
+      }
+
+      // Create new requirements
+      let createResults: StudentRequirement[] = [];
+      if (studentsToCreate.length > 0) {
+        console.log("➕ Creating new requirements...");
+        const bulkRequirements = studentsToCreate.map((student) => ({
+          studentId: student.id_no,
+          coId: user.id,
+          requirementId: reqId,
+          status: "signed" as const,
+        }));
+
+        createResults = await createBulkStudentRequirements(bulkRequirements);
+
+        if (createResults && createResults.length > 0) {
+          console.log("📦 Bulk create results:", createResults);
+
+          createResults.forEach((result, index) => {
+            const studentIdNo = bulkRequirements[index].studentId;
+            const storedId = result._id || result.id || "";
+            console.log(`✅ Created ${studentIdNo} -> ${storedId}`);
+            studentReqIdMap.set(studentIdNo, storedId);
+          });
+
+          // Add new requirements to state
+          setAllStudentRequirements((prev) => [...prev, ...createResults]);
+        }
+      }
 
       hideLoading();
 
-      if (results && results.length > 0) {
-        // Create a map of student ID to student requirement ID
-        const studentReqIdMap = new Map<string, string>();
-        results.forEach((result, index) => {
-          const studentIdNo = bulkRequirements[index].studentId;
-          studentReqIdMap.set(studentIdNo, result._id || result.id || "");
-        });
+      const totalProcessed = studentsToUpdate.length + createResults.length;
 
+      if (totalProcessed > 0) {
         // Update local state to reflect the signed status and store student requirement IDs
         setStudentList((prev) =>
           prev.map((student) =>
@@ -387,7 +484,7 @@ const StudentRecord: React.FC = () => {
           "✅ Stored student requirement IDs:",
           Array.from(studentReqIdMap.entries())
         );
-        message.success(`Successfully signed ${results.length} student(s)`);
+        message.success(`Successfully signed ${totalProcessed} student(s)`);
       } else {
         message.error("Failed to sign students");
       }
@@ -423,7 +520,10 @@ const StudentRecord: React.FC = () => {
             const updatePromises = studentsWithReqIds.map((student) =>
               updateStudentRequirement(
                 student.studentRequirementId!,
-                "incomplete"
+                "incomplete",
+                student.id_no,
+                user?.id,
+                reqId
               )
             );
 
@@ -436,6 +536,20 @@ const StudentRecord: React.FC = () => {
             ).length;
             const failedCount = results.length - successCount;
 
+            // Update allStudentRequirements state for successfully updated students
+            const successfulReqIds = studentsWithReqIds
+              .filter((_, index) => results[index].status === "fulfilled")
+              .map((s) => s.studentRequirementId);
+
+            setAllStudentRequirements((prev) =>
+              prev.map((req) =>
+                successfulReqIds.includes(req._id || req.id)
+                  ? { ...req, status: "incomplete" }
+                  : req
+              )
+            );
+            console.log("✅ Updated requirements in state with status: incomplete");
+
             // Update local state for all selected students
             setStudentList((prev) =>
               prev.map((student) =>
@@ -443,7 +557,8 @@ const StudentRecord: React.FC = () => {
                   ? {
                       ...student,
                       status: "Incomplete",
-                      studentRequirementId: undefined,
+                      // Keep the studentRequirementId so we can re-sign later
+                      studentRequirementId: student.studentRequirementId,
                     }
                   : student
               )
@@ -505,8 +620,9 @@ const StudentRecord: React.FC = () => {
               "🔄 Attempting to undo signature for student:",
               student.name
             );
+            console.log("👤 Full student object:", student);
             console.log(
-              "🔑 Student Requirement ID:",
+              "🔑 Student Requirement ID (_id to use in API):",
               student.studentRequirementId
             );
             console.log("📋 Student ID Number:", student.id_no);
@@ -520,11 +636,17 @@ const StudentRecord: React.FC = () => {
                 "📤 Sending update request with ID:",
                 student.studentRequirementId
               );
+              console.log("📤 Additional data - Student ID:", student.id_no);
+              console.log("📤 Additional data - CO ID:", user?.id);
+              console.log("📤 Additional data - Requirement ID:", reqId);
 
               // Update the student requirement status to "incomplete"
               const result = await updateStudentRequirement(
                 student.studentRequirementId,
-                "incomplete"
+                "incomplete",
+                student.id_no,
+                user?.id,
+                reqId
               );
 
               console.log("📥 Update result:", result);
@@ -532,6 +654,16 @@ const StudentRecord: React.FC = () => {
               hideLoading();
 
               if (result) {
+                // Update allStudentRequirements state
+                setAllStudentRequirements((prev) =>
+                  prev.map((req) =>
+                    (req._id === student.studentRequirementId || req.id === student.studentRequirementId)
+                      ? { ...req, status: "incomplete" }
+                      : req
+                  )
+                );
+                console.log("✅ Updated requirement in state with status: incomplete");
+
                 // Update local state
                 setStudentList((prev) =>
                   prev.map((s) =>
@@ -539,7 +671,8 @@ const StudentRecord: React.FC = () => {
                       ? {
                           ...s,
                           status: "Incomplete",
-                          studentRequirementId: undefined,
+                          // Keep the studentRequirementId so we can re-sign later
+                          studentRequirementId: student.studentRequirementId,
                         }
                       : s
                   )
@@ -593,21 +726,83 @@ const StudentRecord: React.FC = () => {
           return;
         }
 
-        // Show loading message
+        // Check if student requirement already exists
+        const existingRequirement = findExistingStudentRequirement(
+          allStudentRequirements,
+          student.id_no,
+          user.id,
+          reqId
+        );
+
+        console.log("🔍 Checking for existing requirement...");
+        console.log("   - Student ID:", student.id_no);
+        console.log("   - CO ID:", user.id);
+        console.log("   - Requirement ID:", reqId);
+        console.log("   - Existing requirement found:", existingRequirement);
+
         const hideLoading = message.loading("Signing student...", 0);
 
-        // Prepare the data
-        const requirementData = {
-          studentId: student.id_no,
-          coId: user.id,
-          requirementId: reqId,
-          status: "signed" as const,
-        };
+        let result: StudentRequirement | null = null;
+        let storedId: string | undefined;
 
-        console.log("📦 Prepared requirement data:", requirementData);
+        if (existingRequirement) {
+          // Update existing requirement
+          const existingId = existingRequirement._id || existingRequirement.id;
+          console.log(
+            "♻️ Requirement exists! Updating status to 'signed' for ID:",
+            existingId
+          );
 
-        // Create student requirement in database
-        const result = await createStudentRequirement(requirementData);
+          result = await updateStudentRequirement(
+            existingId!,
+            "signed",
+            student.id_no,
+            user.id,
+            reqId
+          );
+
+          storedId = existingId;
+
+          // Update the requirement in allStudentRequirements state
+          if (result) {
+            setAllStudentRequirements((prev) =>
+              prev.map((req) =>
+                (req._id === existingId || req.id === existingId)
+                  ? { ...req, status: "signed" }
+                  : req
+              )
+            );
+            console.log("✅ Updated requirement in state with status: signed");
+          }
+        } else {
+          // Create new student requirement
+          console.log("➕ No existing requirement found. Creating new one...");
+
+          const requirementData = {
+            studentId: student.id_no,
+            coId: user.id,
+            requirementId: reqId,
+            status: "signed" as const,
+          };
+
+          console.log("📦 Prepared requirement data:", requirementData);
+
+          result = await createStudentRequirement(requirementData);
+          storedId = result?._id || result?.id;
+
+          console.log("📦 Full API response:", result);
+          console.log("🔑 Extracted _id:", result?._id);
+          console.log("🔑 Extracted id:", result?.id);
+          console.log("✅ Will store student requirement ID:", storedId);
+
+          // Add new requirement to state
+          if (result) {
+            setAllStudentRequirements((prev) => [
+              ...prev,
+              result as StudentRequirement,
+            ]);
+          }
+        }
 
         hideLoading();
 
@@ -619,14 +814,10 @@ const StudentRecord: React.FC = () => {
                 ? {
                     ...s,
                     status: "Signed",
-                    studentRequirementId: result._id || result.id,
+                    studentRequirementId: storedId,
                   }
                 : s
             )
-          );
-          console.log(
-            "✅ Stored student requirement ID:",
-            result.id || result.id
           );
           message.success(`${student.name} signed successfully`);
         } else {

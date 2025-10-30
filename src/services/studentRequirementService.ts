@@ -145,7 +145,9 @@ export const createBulkStudentRequirements = async (
  * Get all student requirements with populated requirement and clearingOfficer data
  * GET /studentReq/getAllStudentRequirements
  */
-export const getAllStudentRequirements = async (): Promise<StudentRequirement[]> => {
+export const getAllStudentRequirements = async (): Promise<
+  StudentRequirement[]
+> => {
   try {
     console.log("📤 Fetching all student requirements");
     console.log("📍 Endpoint: GET /studentReq/getAllStudentRequirements");
@@ -185,22 +187,66 @@ export const getAllStudentRequirements = async (): Promise<StudentRequirement[]>
 };
 
 /**
+ * Find existing student requirement by studentId, coId, and requirementId
+ * Returns the student requirement if it exists, null otherwise
+ */
+export const findExistingStudentRequirement = (
+  allRequirements: StudentRequirement[],
+  studentId: string,
+  coId: string,
+  requirementId: string
+): StudentRequirement | null => {
+  const found = allRequirements.find(
+    (req) =>
+      req.studentId === studentId &&
+      req.coId === coId &&
+      req.requirementId === requirementId
+  );
+  return found || null;
+};
+
+/**
  * Update student requirement by ID
  * PUT /studentReq/updateStudentRequirement/:id
  */
 export const updateStudentRequirement = async (
   id: string,
-  status: "signed" | "incomplete" | "missing"
+  status: "signed" | "incomplete" | "missing",
+  studentId?: string,
+  coId?: string,
+  requirementId?: string
 ): Promise<StudentRequirement | null> => {
   try {
     console.log("📤 Updating student requirement:");
     console.log("   - ID:", id);
     console.log("   - New Status:", status);
-    console.log("📍 Full Endpoint: PUT", `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/studentReq/updateStudentRequirement/${id}`);
+    console.log("   - Student ID:", studentId);
+    console.log("   - CO ID:", coId);
+    console.log("   - Requirement ID:", requirementId);
+    console.log(
+      "📍 Full Endpoint: PUT",
+      `${
+        import.meta.env.VITE_API_URL || "http://localhost:3000"
+      }/studentReq/updateStudentRequirement/${studentId}`
+    );
+
+    // Prepare request body - include all fields if provided
+    const requestBody: {
+      status: string;
+      studentId?: string;
+      coId?: string;
+      requirementId?: string;
+    } = { status };
+
+    if (studentId) requestBody.studentId = studentId;
+    if (coId) requestBody.coId = coId;
+    if (requirementId) requestBody.requirementId = requirementId;
+
+    console.log("📦 Request body:", requestBody);
 
     const response = await axiosInstance.put(
-      `/studentReq/updateStudentRequirement/${id}`,
-      { status }
+      `/studentReq/updateStudentRequirement/${studentId}`,
+      requestBody
     );
 
     console.log("✅ Update response received:", response.data);
