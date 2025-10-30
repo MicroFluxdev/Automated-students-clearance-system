@@ -249,7 +249,7 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
             key: "view-student",
             label: (
               <Link
-                to={`/clearing-officer/student-records/${record.courseCode}`}
+                to={`/clearing-officer/student-records/${record.courseCode}/${record._id || record.id}`}
               >
                 <Space>
                   <UserOutlined />

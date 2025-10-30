@@ -44,12 +44,18 @@ import {
 } from "@/components/ui/dialog";
 import TooltipDemo from "@/components/HoverToolip";
 import PaginationComponent from "./_components/PaginationComponent";
-import { Spin } from "antd";
+import { Spin, message } from "antd";
 import {
   getAllStudentSpecificSubject,
   getMultipleStudentsBySchoolIds,
 } from "@/services/intigration.services";
 import { useAuth } from "@/authentication/useAuth";
+import {
+  createStudentRequirement,
+  createBulkStudentRequirements,
+  updateStudentRequirement,
+  getAllStudentRequirements,
+} from "@/services/studentRequirementService";
 
 interface ApiStudentData {
   id?: string;
@@ -65,7 +71,7 @@ interface ApiStudentData {
 }
 
 interface Student {
-  id: number;
+  id: string;
   name: string;
   email: string;
   id_no: string;
@@ -73,20 +79,22 @@ interface Student {
   profilePic: string;
   status: string;
   initials: string;
+  studentRequirementId?: string; // Store the student requirement ID from the database
 }
 
 interface ConfirmDialog {
   isOpen: boolean;
   type?: "single" | "multiple";
-  studentId?: number;
+  studentId?: string;
   studentName?: string;
   onConfirm?: () => void;
 }
 
 const StudentRecord: React.FC = () => {
   const navigation = useNavigate();
-  const { courseCode } = useParams<{
+  const { courseCode, reqId } = useParams<{
     courseCode: string;
+    reqId: string;
   }>();
   const { user } = useAuth();
 
@@ -94,7 +102,7 @@ const StudentRecord: React.FC = () => {
   const [studentList, setStudentList] = useState<Student[]>([]);
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialog>({
     isOpen: false,
@@ -170,7 +178,7 @@ const StudentRecord: React.FC = () => {
 
         // Transform API data to match the expected student format
         const transformedStudents = detailedStudents.map(
-          (student: ApiStudentData, index: number) => {
+          (student: ApiStudentData) => {
             const fullName = `${student.firstName || ""} ${
               student.lastName || ""
             }`.trim();
@@ -179,7 +187,7 @@ const StudentRecord: React.FC = () => {
             }`.toUpperCase();
 
             return {
-              id: index + 1,
+              id: student.id || student.schoolId || "N/A",
               name: fullName || "Unknown Student",
               email: student.email ?? "N/A",
               id_no: student.schoolId ?? "N/A",
@@ -191,13 +199,71 @@ const StudentRecord: React.FC = () => {
           }
         );
 
-        setStudentList(transformedStudents);
         console.log(
-          `Fetched and transformed ${transformedStudents.length}  students for course ${courseCode}`
+          `Fetched and transformed ${transformedStudents.length} students for course ${courseCode}`
         );
-        console.log(transformedStudents);
+
+        // Fetch all student requirements to check for existing signed students
+        try {
+          console.log(
+            "🔍 Fetching student requirements to check for signed students..."
+          );
+          const allRequirements = await getAllStudentRequirements();
+          console.log(
+            `✅ Fetched ${allRequirements.length} student requirements`
+          );
+
+          // Filter requirements that match the current requirement ID
+          const relevantRequirements = allRequirements.filter(
+            (req) => req.requirementId === reqId
+          );
+          console.log(
+            `📋 Found ${relevantRequirements.length} requirements for current requirement ID: ${reqId}`
+          );
+
+          // Create a map of studentId -> requirement for quick lookup
+          const requirementMap = new Map(
+            relevantRequirements.map((req) => [req.studentId, req])
+          );
+
+          // Merge student requirements with student data
+          const studentsWithRequirements = transformedStudents.map(
+            (student) => {
+              const requirement = requirementMap.get(student.id_no);
+              if (requirement) {
+                console.log(
+                  `✓ Student ${student.id_no} has requirement with status: ${requirement.status}`
+                );
+                return {
+                  ...student,
+                  status:
+                    requirement.status === "signed"
+                      ? "Signed"
+                      : requirement.status === "incomplete"
+                      ? "Incomplete"
+                      : requirement.status === "missing"
+                      ? "Missing"
+                      : "Incomplete",
+                  studentRequirementId: requirement.id || requirement._id,
+                };
+              }
+              return student;
+            }
+          );
+
+          setStudentList(studentsWithRequirements);
+          console.log(
+            "✅ Students merged with requirements:",
+            studentsWithRequirements
+          );
+        } catch (reqError) {
+          console.warn("⚠️ Could not fetch student requirements:", reqError);
+          // If fetching requirements fails, just use the transformed students without requirements
+          setStudentList(transformedStudents);
+        }
+
         const idNumbers = transformedStudents.map((user) => user.id_no);
-        console.log(idNumbers);
+        console.log("Student ID numbers:", idNumbers);
       } catch (error) {
         console.error("Error fetching students:", error);
         setStudentList([]);
@@ -214,7 +280,7 @@ const StudentRecord: React.FC = () => {
     };
 
     fetchStudents();
-  }, [courseCode]);
+  }, [courseCode, reqId]);
 
   const filteredStudents = useMemo(
     () =>
@@ -242,13 +308,13 @@ const StudentRecord: React.FC = () => {
     setSelectedStudents(checked ? filteredStudents.map((s) => s.id) : []);
   };
 
-  const handleSelectStudent = (studentId: number, checked: boolean) => {
+  const handleSelectStudent = (studentId: string, checked: boolean) => {
     setSelectedStudents((prev) =>
       checked ? [...prev, studentId] : prev.filter((id) => id !== studentId)
     );
   };
 
-  const handleSignSelected = () => {
+  const handleSignSelected = async () => {
     // Get all selected students' id_no
     const selectedStudentsData = studentList.filter((student) =>
       selectedStudents.includes(student.id)
@@ -259,73 +325,317 @@ const StudentRecord: React.FC = () => {
 
     console.log(`Signing ${selectedStudentsData.length} selected students`);
     console.log("Selected Student ID Numbers:", selectedIdNumbers);
-    console.log("Clearing Officer", user?.id);
+    console.log("Clearing Officer ID:", user?.id);
+    console.log("Requirement ID:", reqId);
 
-    setStudentList((prev) =>
-      prev.map((student) =>
-        selectedStudents.includes(student.id)
-          ? { ...student, status: "Signed" }
-          : student
-      )
-    );
-    setSelectedStudents([]);
+    // Validate required data
+    if (!user?.id) {
+      message.error("Clearing officer ID not found");
+      return;
+    }
+    if (!reqId) {
+      message.error("Requirement ID not found");
+      return;
+    }
+    if (selectedStudentsData.length === 0) {
+      message.error("No students selected");
+      return;
+    }
+
+    try {
+      // Show loading message
+      const hideLoading = message.loading(
+        `Signing ${selectedStudentsData.length} student(s)...`,
+        0
+      );
+
+      // Prepare bulk requirements data
+      const bulkRequirements = selectedStudentsData.map((student) => ({
+        studentId: student.id_no,
+        coId: user.id,
+        requirementId: reqId,
+        status: "signed" as const,
+      }));
+
+      // Create student requirements in database
+      const results = await createBulkStudentRequirements(bulkRequirements);
+
+      hideLoading();
+
+      if (results && results.length > 0) {
+        // Create a map of student ID to student requirement ID
+        const studentReqIdMap = new Map<string, string>();
+        results.forEach((result, index) => {
+          const studentIdNo = bulkRequirements[index].studentId;
+          studentReqIdMap.set(studentIdNo, result._id || result.id || "");
+        });
+
+        // Update local state to reflect the signed status and store student requirement IDs
+        setStudentList((prev) =>
+          prev.map((student) =>
+            selectedStudents.includes(student.id)
+              ? {
+                  ...student,
+                  status: "Signed",
+                  studentRequirementId: studentReqIdMap.get(student.id_no),
+                }
+              : student
+          )
+        );
+        setSelectedStudents([]);
+        console.log(
+          "✅ Stored student requirement IDs:",
+          Array.from(studentReqIdMap.entries())
+        );
+        message.success(`Successfully signed ${results.length} student(s)`);
+      } else {
+        message.error("Failed to sign students");
+      }
+    } catch (error) {
+      console.error("Error signing selected students:", error);
+      message.error("An error occurred while signing students");
+    }
   };
 
   const handleUndoSelected = () => {
     setConfirmDialog({
       isOpen: true,
       type: "multiple",
-      onConfirm: () => {
-        setStudentList((prev) =>
-          prev.map((student) =>
+      onConfirm: async () => {
+        try {
+          // Get selected students with their requirement IDs
+          const selectedStudentsData = studentList.filter((student) =>
             selectedStudents.includes(student.id)
-              ? { ...student, status: "Incomplete" }
-              : student
-          )
-        );
-        setSelectedStudents([]);
+          );
+
+          // Filter students that have requirement IDs
+          const studentsWithReqIds = selectedStudentsData.filter(
+            (s) => s.studentRequirementId
+          );
+
+          if (studentsWithReqIds.length > 0) {
+            const hideLoading = message.loading(
+              `Undoing ${studentsWithReqIds.length} signature(s)...`,
+              0
+            );
+
+            // Update all student requirements in parallel
+            const updatePromises = studentsWithReqIds.map((student) =>
+              updateStudentRequirement(
+                student.studentRequirementId!,
+                "incomplete"
+              )
+            );
+
+            const results = await Promise.allSettled(updatePromises);
+
+            hideLoading();
+
+            const successCount = results.filter(
+              (r) => r.status === "fulfilled" && r.value !== null
+            ).length;
+            const failedCount = results.length - successCount;
+
+            // Update local state for all selected students
+            setStudentList((prev) =>
+              prev.map((student) =>
+                selectedStudents.includes(student.id)
+                  ? {
+                      ...student,
+                      status: "Incomplete",
+                      studentRequirementId: undefined,
+                    }
+                  : student
+              )
+            );
+
+            if (failedCount > 0) {
+              message.warning(
+                `Updated ${successCount} signature(s). ${failedCount} failed.`
+              );
+            } else {
+              message.success(
+                `Successfully undone ${successCount} signature(s)`
+              );
+            }
+          } else {
+            // No requirement IDs found, just update local state
+            setStudentList((prev) =>
+              prev.map((student) =>
+                selectedStudents.includes(student.id)
+                  ? { ...student, status: "Incomplete" }
+                  : student
+              )
+            );
+            message.success("Status updated locally");
+          }
+
+          setSelectedStudents([]);
+        } catch (error) {
+          console.error("Error undoing selected students:", error);
+          message.error("An error occurred while undoing signatures");
+        }
         setConfirmDialog({ isOpen: false });
       },
     });
   };
 
-  const handleSignToggle = (studentId: number) => {
+  const handleSignToggle = async (studentId: string) => {
     const student = studentList.find((s) => s.id === studentId);
 
-    if (student) {
-      console.log("Student ID Number:", student.id_no);
+    if (!student) {
+      message.error("Student not found");
+      return;
     }
 
-    console.log("Clearing Officer", user?.id);
+    console.log("Student ID Number:", student.id_no);
+    console.log("Clearing Officer ID:", user?.id);
+    console.log("Requirement ID:", reqId);
 
     if (student?.status === "Signed") {
+      // If student is already signed, show confirmation to undo
       setConfirmDialog({
         isOpen: true,
         type: "single",
         studentId,
         studentName: student.name,
-        onConfirm: () => {
+        onConfirm: async () => {
+          try {
+            console.log(
+              "🔄 Attempting to undo signature for student:",
+              student.name
+            );
+            console.log(
+              "🔑 Student Requirement ID:",
+              student.studentRequirementId
+            );
+            console.log("📋 Student ID Number:", student.id_no);
+            console.log("📊 Current Status:", student.status);
+
+            // Check if student has a studentRequirementId to update
+            if (student.studentRequirementId) {
+              const hideLoading = message.loading("Undoing signature...", 0);
+
+              console.log(
+                "📤 Sending update request with ID:",
+                student.studentRequirementId
+              );
+
+              // Update the student requirement status to "incomplete"
+              const result = await updateStudentRequirement(
+                student.studentRequirementId,
+                "incomplete"
+              );
+
+              console.log("📥 Update result:", result);
+
+              hideLoading();
+
+              if (result) {
+                // Update local state
+                setStudentList((prev) =>
+                  prev.map((s) =>
+                    s.id === studentId
+                      ? {
+                          ...s,
+                          status: "Incomplete",
+                          studentRequirementId: undefined,
+                        }
+                      : s
+                  )
+                );
+                console.log("✅ Local state updated successfully");
+                message.success(`${student.name} signature removed`);
+              } else {
+                console.error("❌ Update returned null");
+                message.error("Failed to undo signature");
+              }
+            } else {
+              console.warn(
+                "⚠️ No student requirement ID found for student:",
+                student.name
+              );
+              console.log(
+                "💡 This might mean the student was never signed in the database"
+              );
+
+              // No student requirement ID found, just update local state
+              setStudentList((prev) =>
+                prev.map((s) =>
+                  s.id === studentId ? { ...s, status: "Incomplete" } : s
+                )
+              );
+              message.warning(
+                "No database record found. Updated locally only."
+              );
+            }
+          } catch (error) {
+            console.error("❌ Error undoing signature:", error);
+            message.error("An error occurred while undoing the signature");
+          }
+          setConfirmDialog({ isOpen: false });
+        },
+      });
+    } else {
+      // Sign the student and save to database
+      try {
+        // Validate required data
+        if (!user?.id) {
+          message.error("Clearing officer ID not found");
+          return;
+        }
+        if (!reqId) {
+          message.error("Requirement ID not found");
+          return;
+        }
+        if (!student.id_no) {
+          message.error("Student ID not found");
+          return;
+        }
+
+        // Show loading message
+        const hideLoading = message.loading("Signing student...", 0);
+
+        // Prepare the data
+        const requirementData = {
+          studentId: student.id_no,
+          coId: user.id,
+          requirementId: reqId,
+          status: "signed" as const,
+        };
+
+        console.log("📦 Prepared requirement data:", requirementData);
+
+        // Create student requirement in database
+        const result = await createStudentRequirement(requirementData);
+
+        hideLoading();
+
+        if (result) {
+          // Update local state to reflect the signed status and store the student requirement ID
           setStudentList((prev) =>
             prev.map((s) =>
               s.id === studentId
                 ? {
                     ...s,
-                    status: s.status === "Signed" ? "Incomplete" : "Signed",
+                    status: "Signed",
+                    studentRequirementId: result._id || result.id,
                   }
                 : s
             )
           );
-          setConfirmDialog({ isOpen: false });
-        },
-      });
-    } else {
-      setStudentList((prev) =>
-        prev.map((s) =>
-          s.id === studentId
-            ? { ...s, status: s.status === "Signed" ? "Incomplete" : "Signed" }
-            : s
-        )
-      );
+          console.log(
+            "✅ Stored student requirement ID:",
+            result.id || result.id
+          );
+          message.success(`${student.name} signed successfully`);
+        } else {
+          message.error("Failed to sign student");
+        }
+      } catch (error) {
+        console.error("Error signing student:", error);
+        message.error("An error occurred while signing the student");
+      }
     }
   };
 
