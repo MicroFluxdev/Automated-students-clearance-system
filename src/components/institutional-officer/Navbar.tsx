@@ -126,8 +126,6 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                         <p className="text-xs leading-none text-muted-foreground mt-1.5">
                           {user?.role === "clearingOfficer"
                             ? "Clearing Officer"
-                            : user?.role === "sao"
-                            ? "SAO"
                             : "Who are you?"}
                         </p>
                       </div>

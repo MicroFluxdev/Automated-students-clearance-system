@@ -18,11 +18,6 @@ const navbar = [
     label: "Dashboard",
   },
   {
-    to: "/clearing-officer/sao",
-    icon: Book,
-    label: "Students",
-  },
-  {
     to: "/clearing-officer/viewCourses",
     icon: Book,
     label: "Courses",
@@ -115,19 +110,13 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
 
         <nav className="space-y-1">
           {navbar.map((item, index) => {
-            // Hide `/clearing-officer/clearance` and `/clearing-officer/viewCourses` if user role is "sao"
-            const shouldHideForSao =
-              user?.role === "sao" &&
-              (item.to === "/clearing-officer/clearance" ||
-                item.to === "/clearing-officer/viewCourses");
-
-            // Show `/clearing-officer/sao` only for "sao" role
-            const shouldHideForNonSao =
-              user?.role !== "sao" && item.to === "/clearing-officer/sao";
-
-            if (shouldHideForSao || shouldHideForNonSao) {
-              return null;
-            }
+            // Hide `/clearing-officer/events` if user role is not "clearingOfficer"
+            // if (
+            //   item.to === "/clearing-officer/events" &&
+            //   user?.role === "clearingOfficer"
+            // ) {
+            //   return null;
+            // }
 
             const active = isActive(item.to);
             const Icon = item.icon;
@@ -180,8 +169,6 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
                 <p className="text-xs text-gray-400">
                   {user?.role === "clearingOfficer"
                     ? "Clearing Officer"
-                    : user?.role === "sao"
-                    ? "SAO"
                     : "Who are you?"}
                 </p>
               </div>

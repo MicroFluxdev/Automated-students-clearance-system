@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/authentication/useAuth";
 
 interface Event {
   id: number;
@@ -73,6 +74,8 @@ const Events = () => {
     setNewEventDateStart("");
   };
 
+  const { role } = useAuth();
+
   const handleCreateEvent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newEventTitle.trim() || !newEventDateStart.trim()) return;
@@ -111,12 +114,14 @@ const Events = () => {
               if (open) resetForm();
             }}
           >
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Event
-              </Button>
-            </DialogTrigger>
+            {role !== "clearingOfficer" && (
+              <DialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Event
+                </Button>
+              </DialogTrigger>
+            )}
 
             <DialogContent className="sm:max-w-[525px] w-[95%] rounded-xl">
               <DialogHeader>

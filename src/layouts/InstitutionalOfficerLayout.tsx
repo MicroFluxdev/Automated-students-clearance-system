@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from "@/components/clearing-officer/Navbar";
-import { EnrollmentSideMenu } from "@/components/enrollment-side/EnrollmentSidebarMenu";
 
-const EnrollmentLayout: React.FC = () => {
+import { AppSidebar } from "../components/institutional-officer/SidebarMenu";
+import Navbar from "@/components/institutional-officer/Navbar";
+
+const InstitutionalOfficerLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = (): void => {
@@ -26,7 +27,7 @@ const EnrollmentLayout: React.FC = () => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:relative`}
       >
-        <EnrollmentSideMenu closeSidebar={toggleSidebar} />
+        <AppSidebar closeSidebar={toggleSidebar} />
       </aside>
 
       <main className="flex-1 overflow-y-auto">
@@ -39,4 +40,4 @@ const EnrollmentLayout: React.FC = () => {
   );
 };
 
-export default EnrollmentLayout;
+export default InstitutionalOfficerLayout;

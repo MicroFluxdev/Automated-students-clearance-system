@@ -168,6 +168,8 @@ export default function Login() {
             navigate("/admin-side", { replace: true });
           } else if (role === "clearingOfficer") {
             navigate("/clearing-officer", { replace: true });
+          } else if (role === "sao") {
+            navigate("/clearing-officer", { replace: true });
           } else if (role === "student") {
             navigate("/", { replace: true });
           }

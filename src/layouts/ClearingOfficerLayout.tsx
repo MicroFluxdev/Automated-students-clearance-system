@@ -1,8 +1,7 @@
+import Navbar from "@/components/clearing-officer/Navbar";
+import { AppSidebar } from "@/components/clearing-officer/SidebarMenu";
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-
-import { AppSidebar } from "../components/clearing-officer/SidebarMenu";
-import Navbar from "@/components/clearing-officer/Navbar";
 
 const ClearingOfficerLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

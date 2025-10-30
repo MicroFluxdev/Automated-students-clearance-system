@@ -24,16 +24,10 @@ import RootPages from "@/pages/landingPage/RootPages";
 import ClearingOfficerLayout from "@/layouts/ClearingOfficerLayout";
 import SampleQrCode from "@/pages/SampleQrCode";
 import ViewPermit from "@/pages/TestingQrCodePermit";
-// Enrollment System Imports
-import EnrollmentDashboard from "@/pages/enrollmentSide/EnrollmentDashboard";
-import StudentManagement from "@/pages/enrollmentSide/StudentManagement";
-import CourseManagement from "@/pages/enrollmentSide/CourseManagement";
-import SemesterManagement from "@/pages/enrollmentSide/SemesterManagement";
-import StudentEnrollment from "@/pages/enrollmentSide/StudentEnrollment";
-import EnrollmentRecords from "@/pages/enrollmentSide/EnrollmentRecords";
-import EnrollmentLayout from "@/layouts/EnrollmentLayout";
+
 import EnrollmentLogin from "@/pages/enrollmentSide/EnrollmentLogin";
 import ViewCourses from "@/pages/clearing-officer/ViewCourses";
+import { SaoOfficer } from "@/pages/institutionalOfficer/sao/indix";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -64,7 +58,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/clearing-officer"
         element={
-          <ProtectedRoute allowedRoles={["clearingOfficer"]}>
+          <ProtectedRoute allowedRoles={["clearingOfficer", "sao"]}>
             <ClearingOfficerLayout />
           </ProtectedRoute>
         }
@@ -80,6 +74,7 @@ const AppRoutes: React.FC = () => {
         <Route path="accountSettings" element={<AccountSettings />} />
         <Route path="viewClearance" element={<ViewClearance />} />
         <Route path="viewCourses" element={<ViewCourses />} />
+        <Route path="sao" element={<SaoOfficer />} />
         <Route path="*" element={<Unauthorized />} />
       </Route>
       {/**General Route */}
@@ -104,22 +99,6 @@ const AppRoutes: React.FC = () => {
           </GuestRoute>
         }
       />
-      {/* Enrollment System Routes */}
-      <Route
-        path="/enrollment"
-        element={
-          // <ProtectedRoute allowedRoles={["admin"]}>
-          <EnrollmentLayout />
-          // </ProtectedRoute>
-        }
-      >
-        <Route index element={<EnrollmentDashboard />} />
-        <Route path="students" element={<StudentManagement />} />
-        <Route path="courses" element={<CourseManagement />} />
-        <Route path="semester" element={<SemesterManagement />} />
-        <Route path="enroll" element={<StudentEnrollment />} />
-        <Route path="records" element={<EnrollmentRecords />} />
-      </Route>
 
       <Route path="unauthorized" element={<Unauthorized />} />
     </Routes>
