@@ -265,5 +265,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     </AuthContext.Provider>
   );
 };
-
-// Export useAuth hook separately to avoid fast refresh issues

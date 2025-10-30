@@ -15,7 +15,10 @@ import RequirementsTable from "./_components/RequirementsTable";
 import type { RequirementData } from "./_components/RequirementsTable";
 import EditRequirementModal from "./_components/EditRequirementModal";
 import type { EditRequirementData } from "./_components/EditRequirementModal";
-import { updateRequirement, deleteRequirement } from "@/api/requirementService";
+import {
+  updateRequirement,
+  deleteRequirement,
+} from "@/services/requirementService";
 
 import { useSelector, useDispatch } from "react-redux";
 import { type RootState, type AppDispatch } from "@/store";

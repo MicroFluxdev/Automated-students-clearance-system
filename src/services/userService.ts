@@ -1,4 +1,4 @@
-import axiosInstance from "./axios";
+import axiosInstance from "../api/axios";
 
 /**
  * Payload for updating user profile information

@@ -49,6 +49,7 @@ import {
   getAllStudentSpecificSubject,
   getMultipleStudentsBySchoolIds,
 } from "@/services/intigration.services";
+import { useAuth } from "@/authentication/useAuth";
 
 interface ApiStudentData {
   id?: string;
@@ -87,6 +88,7 @@ const StudentRecord: React.FC = () => {
   const { courseCode } = useParams<{
     courseCode: string;
   }>();
+  const { user } = useAuth();
 
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [studentList, setStudentList] = useState<Student[]>([]);
@@ -191,8 +193,11 @@ const StudentRecord: React.FC = () => {
 
         setStudentList(transformedStudents);
         console.log(
-          `Fetched and transformed ${transformedStudents.length} students for course ${courseCode}`
+          `Fetched and transformed ${transformedStudents.length}  students for course ${courseCode}`
         );
+        console.log(transformedStudents);
+        const idNumbers = transformedStudents.map((user) => user.id_no);
+        console.log(idNumbers);
       } catch (error) {
         console.error("Error fetching students:", error);
         setStudentList([]);
@@ -244,6 +249,18 @@ const StudentRecord: React.FC = () => {
   };
 
   const handleSignSelected = () => {
+    // Get all selected students' id_no
+    const selectedStudentsData = studentList.filter((student) =>
+      selectedStudents.includes(student.id)
+    );
+    const selectedIdNumbers = selectedStudentsData.map(
+      (student) => student.id_no
+    );
+
+    console.log(`Signing ${selectedStudentsData.length} selected students`);
+    console.log("Selected Student ID Numbers:", selectedIdNumbers);
+    console.log("Clearing Officer", user?.id);
+
     setStudentList((prev) =>
       prev.map((student) =>
         selectedStudents.includes(student.id)
@@ -274,6 +291,13 @@ const StudentRecord: React.FC = () => {
 
   const handleSignToggle = (studentId: number) => {
     const student = studentList.find((s) => s.id === studentId);
+
+    if (student) {
+      console.log("Student ID Number:", student.id_no);
+    }
+
+    console.log("Clearing Officer", user?.id);
+
     if (student?.status === "Signed") {
       setConfirmDialog({
         isOpen: true,

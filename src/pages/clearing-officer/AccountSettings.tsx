@@ -29,7 +29,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/authentication/useAuth";
-import { updateUserProfile, updateUserPassword } from "@/api/userService";
+import { updateUserProfile, updateUserPassword } from "@/services/userService";
 import { toast } from "react-toastify";
 
 const AccountSettings = () => {
