@@ -92,7 +92,7 @@ export default function Login() {
             Welcome back!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Log in to continue to your account
+            Log in to continue
           </p>
         </div>
 
@@ -149,7 +149,7 @@ export default function Login() {
           <div className="text-center text-xs sm:text-sm text-gray-600 mt-5">
             Need help?{" "}
             <Link
-              to="https://ncmcmaranding.com/contact-us"
+              to="https://www.facebook.com/MicroFluxOfficialPage"
               target="_blank"
               className="text-indigo-600 hover:underline hover:text-indigo-500 transition"
             >

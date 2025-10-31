@@ -244,8 +244,8 @@ const About = () => {
                   }}
                 >
                   {[
-                    { number: "95%", label: "Error Reduction" },
-                    { number: "99.9%", label: "Uptime SLA" },
+                    { number: "80%", label: "Reduce Processing Time" },
+                    { number: "90%", label: "Eliminates Manual Clearance" },
                   ].map((stat, index) => (
                     <motion.div
                       key={index}
