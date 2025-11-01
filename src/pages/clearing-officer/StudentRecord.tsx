@@ -11,7 +11,8 @@ import {
   ChevronLeft,
   XCircle,
   Clock,
-  IdCard,
+  Building,
+  Calendar,
 } from "lucide-react";
 import {
   Table,
@@ -69,6 +70,7 @@ interface ApiStudentData {
   phone?: string;
   courseCode?: string;
   yearLevel?: string;
+  department?: string;
   profilePic?: string;
 }
 
@@ -81,6 +83,8 @@ interface Student {
   profilePic: string;
   status: string;
   initials: string;
+  yearLevel: string;
+  department: string;
   studentRequirementId?: string;
 }
 
@@ -198,11 +202,14 @@ const StudentRecord: React.FC = () => {
               id_no: student.schoolId ?? "N/A",
               cp_no: student.phone ?? "N/A",
               profilePic: student.profilePic ?? "",
+              department: student.department ?? "",
+              yearLevel: student.yearLevel ?? "",
               status: "Incomplete", // Default status
               initials: initials || "?",
             };
           }
         );
+        console.log("My console", transformedStudents);
 
         console.log(
           `Fetched and transformed ${transformedStudents.length} students for course ${courseCode}`
@@ -1023,18 +1030,15 @@ const StudentRecord: React.FC = () => {
                           />
                         </TooltipDemo>
                       </TableHead>
-                      <TableHead className="font-semibold">Student</TableHead>
-                      <TableHead className="hidden md:table-cell font-semibold">
-                        ID Number
+                      <TableHead className="">Student</TableHead>
+                      <TableHead className="hidden lg:table-cell ">
+                        Contact
                       </TableHead>
-                      <TableHead className="hidden lg:table-cell font-semibold">
-                        Email
+                      <TableHead className="hidden lg:table-cell ">
+                        Department / Year level
                       </TableHead>
-                      <TableHead className="hidden md:table-cell font-semibold">
-                        Phone
-                      </TableHead>
-                      <TableHead className="font-semibold">Status</TableHead>
-                      <TableHead className="font-semibold">Actions</TableHead>
+                      <TableHead className="">Status</TableHead>
+                      <TableHead className="">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1062,43 +1066,40 @@ const StudentRecord: React.FC = () => {
                                   {student.initials}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="font-medium">
-                                {student.name}
-                              </span>
+                              <div className="flex flex-col justify-center ">
+                                <span>{student.name}</span>
+                                <span className="text-muted-foreground">
+                                  {student.id_no}
+                                </span>
+                              </div>
                             </div>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <div className="flex items-center gap-2">
-                              <IdCard className="w-4 h-4 text-muted-foreground" />
-                              {student.id_no}
+                          <TableCell className="text-muted-foreground hidden lg:table-cell">
+                            <div className="flex flex-col justify-center gap-1">
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" />
+                                <span className="text-sm">{student.email}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4" />
+                                <span className="text-sm">{student.cp_no}</span>
+                              </div>
                             </div>
                           </TableCell>
-                          <TableCell className="hidden lg:table-cell">
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4 text-muted-foreground" />
-                              <span
-                                className={
-                                  student.email === "N/A"
-                                    ? "text-gray-400 italic"
-                                    : ""
-                                }
-                              >
-                                {student.email}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4 text-muted-foreground" />
-                              <span
-                                className={
-                                  student.cp_no === "N/A"
-                                    ? "text-gray-400 italic"
-                                    : ""
-                                }
-                              >
-                                {student.cp_no}
-                              </span>
+                          <TableCell className="text-muted-foreground hidden lg:table-cell">
+                            <div className="flex flex-col justify-center gap-1">
+                              <div className="flex items-center gap-2">
+                                <Building className="h-4 w-4" />
+                                <span className="text-sm">
+                                  {student.department}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                <span className="text-sm">
+                                  {student.yearLevel}
+                                </span>
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
