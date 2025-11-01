@@ -20,12 +20,12 @@ const navbar = [
     label: "Dashboard",
   },
   {
-    to: "/clearing-officer/sao",
+    to: "/clearing-officer/sao/students",
     icon: User,
     label: "Students",
   },
   {
-    to: "/clearing-officer/requirements",
+    to: "/clearing-officer/sao/requirements",
     icon: FileText,
     label: "Requirements",
   },
@@ -131,8 +131,8 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
             // Show `/clearing-officer/sao` and `/clearing-officer/sao/post-requirements` only for "sao" role
             const shouldHideForNonSao =
               user?.role !== "sao" &&
-              (item.to === "/clearing-officer/sao" ||
-                item.to === "/clearing-officer/requirements");
+              (item.to === "/clearing-officer/sao/students" ||
+                item.to === "/clearing-officer/sao/requirements");
 
             if (shouldHideForSao || shouldHideForNonSao) {
               return null;

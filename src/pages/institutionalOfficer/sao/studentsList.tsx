@@ -432,8 +432,12 @@ export const SaoOfficer = () => {
                     </TooltipDemo>
                   </TableHead>
                   <TableHead>Student</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Department / Year level</TableHead>
+                  <TableHead className="hidden lg:table-cell">
+                    Contact
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell">
+                    Department / Year level
+                  </TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -471,7 +475,7 @@ export const SaoOfficer = () => {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-muted-foreground hidden lg:table-cell">
                         <div className="flex flex-col justify-center gap-1">
                           <div className="flex items-center gap-2">
                             <Mail className="h-4 w-4" />
@@ -483,7 +487,7 @@ export const SaoOfficer = () => {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-muted-foreground hidden lg:table-cell">
                         <div className="flex flex-col justify-center gap-1">
                           <div className="flex items-center gap-2">
                             <Building className="h-4 w-4" />

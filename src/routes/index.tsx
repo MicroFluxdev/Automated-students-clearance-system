@@ -64,17 +64,51 @@ const AppRoutes: React.FC = () => {
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="clearance" element={<Clearance />} />
+        <Route
+          path="clearance"
+          element={
+            <ProtectedRoute allowedRoles={["clearingOfficer"]}>
+              <Clearance />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="student-records/:courseCode/:reqId"
-          element={<StudentRecord />}
+          element={
+            <ProtectedRoute allowedRoles={["clearingOfficer"]}>
+              <StudentRecord />
+            </ProtectedRoute>
+          }
         />
-        <Route path="requirements" element={<Requirements />} />
         <Route path="events" element={<Events />} />
         <Route path="accountSettings" element={<AccountSettings />} />
         <Route path="viewClearance" element={<ViewClearance />} />
-        <Route path="viewCourses" element={<ViewCourses />} />
-        <Route path="sao" element={<SaoOfficer />} />
+        <Route
+          path="viewCourses"
+          element={
+            <ProtectedRoute allowedRoles={["clearingOfficer"]}>
+              <ViewCourses />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* sao */}
+        <Route
+          path="sao/requirements"
+          element={
+            <ProtectedRoute allowedRoles={["sao"]}>
+              <Requirements />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="sao/students"
+          element={
+            <ProtectedRoute allowedRoles={["sao"]}>
+              <SaoOfficer />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<Unauthorized />} />
       </Route>
