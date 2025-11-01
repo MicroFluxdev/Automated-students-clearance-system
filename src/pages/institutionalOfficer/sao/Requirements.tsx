@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   Button,
@@ -26,15 +26,22 @@ import {
 import { format } from "date-fns";
 import TextArea from "antd/es/input/TextArea";
 import dayjs, { Dayjs } from "dayjs";
+import {
+  createInstitutionalRequirement,
+  getAllInstitutionalRequirements,
+  updateInstitutionalRequirement,
+  deleteInstitutionalRequirement,
+} from "@/services/institutionalRequirementsService";
 
 interface Requirement {
-  id: number;
-  courseCode: string;
-  names: string[];
+  _id?: string;
+  id?: string;
+  institutionalName: string;
+  requirements: string[];
   description: string;
-  deadline: Date;
-  isOptional: boolean;
+  deadline: Date | string;
   department: string;
+  semester: string;
 }
 
 const departments = [
@@ -45,6 +52,8 @@ const departments = [
   "Software Engineering",
 ];
 
+const semesters = ["1st Semester", "2nd Semester"];
+
 const { Text } = Typography;
 
 // Utility: truncate with ellipsis
@@ -54,6 +63,9 @@ const ellipsize = (text: string, limit = 120) =>
 const Requirements = () => {
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
 
   // Add form state
   const [nameTags, setNameTags] = useState<string[]>([]);
@@ -62,12 +74,14 @@ const Requirements = () => {
     description: string;
     isOptional: boolean;
     department: string;
+    semester: string;
     deadline?: Date;
   }>({
     courseCode: "",
     description: "",
     isOptional: false,
     department: "",
+    semester: "",
   });
 
   // View/Edit modals state
@@ -77,12 +91,14 @@ const Requirements = () => {
   const [editForm, setEditForm] = useState<{
     courseCode: string;
     department: string;
+    semester: string;
     names: string[];
     description: string;
     deadline?: Date;
   }>({
     courseCode: "",
     department: "",
+    semester: "",
     names: [],
     description: "",
     deadline: undefined,
@@ -92,10 +108,61 @@ const Requirements = () => {
     .map((n) => (n || "").trim())
     .filter((n) => n.length > 0);
 
-  const handleAddRequirement = () => {
+  // Fetch requirements on component mount
+  useEffect(() => {
+    fetchRequirements();
+  }, []);
+
+  const fetchRequirements = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllInstitutionalRequirements();
+      console.log("Full response:", response);
+
+      // Handle different response structures
+      let requirementsData = [];
+
+      if (Array.isArray(response)) {
+        requirementsData = response;
+      } else if (response.data && Array.isArray(response.data)) {
+        requirementsData = response.data;
+      } else if (
+        response.requirements &&
+        Array.isArray(response.requirements)
+      ) {
+        requirementsData = response.requirements;
+      }
+
+      console.log("Requirements data:", requirementsData);
+
+      // Map API response to local state format
+      const mappedRequirements = requirementsData.map(
+        (req: Record<string, unknown>) => ({
+          id: req.id as string,
+          institutionalName: req.institutionalName as string,
+          requirements: req.requirements as string[],
+          description: req.description as string,
+          deadline: req.deadline as string,
+          department: req.department as string,
+          semester: req.semester as string,
+        })
+      );
+
+      console.log("Mapped requirements:", mappedRequirements);
+      setRequirements(mappedRequirements);
+    } catch (error) {
+      console.error("Error fetching requirements:", error);
+      message.error("Failed to load requirements.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddRequirement = async () => {
     const hasRequiredFields =
       newRequirement.deadline &&
       newRequirement.department &&
+      newRequirement.semester &&
       normalizedNames.length > 0 &&
       newRequirement.courseCode.trim().length > 0;
 
@@ -104,31 +171,69 @@ const Requirements = () => {
       return;
     }
 
-    const newItem: Requirement = {
-      id: Date.now() + Math.floor(Math.random() * 1_000),
-      courseCode: newRequirement.courseCode.trim(),
-      names: normalizedNames,
-      description: newRequirement.description || "",
-      deadline: newRequirement.deadline as Date,
-      isOptional: newRequirement.isOptional || false,
-      department: newRequirement.department,
-    };
+    setAddLoading(true);
+    try {
+      // Call API to create institutional requirement
+      const payload = {
+        institutionalName: newRequirement.courseCode.trim(),
+        requirements: normalizedNames,
+        department: newRequirement.department,
+        description: newRequirement.description || "",
+        semester: newRequirement.semester,
+        deadline: newRequirement.deadline!.toISOString(),
+      };
 
-    setRequirements((prev) => [...prev, newItem]);
+      await createInstitutionalRequirement(payload);
 
-    // reset
-    setNameTags([]);
-    setNewRequirement({
-      courseCode: "",
-      description: "",
-      isOptional: false,
-      department: "",
-    });
-    setIsModalOpen(false);
+      message.success("Requirement created successfully!");
+
+      // Refresh the requirements list
+      await fetchRequirements();
+
+      // reset
+      setNameTags([]);
+      setNewRequirement({
+        courseCode: "",
+        description: "",
+        isOptional: false,
+        department: "",
+        semester: "",
+      });
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error creating requirement:", error);
+      message.error("Failed to create requirement. Please try again.");
+    } finally {
+      setAddLoading(false);
+    }
   };
 
-  const handleDeleteRequirement = (id: number) => {
-    setRequirements((prev) => prev.filter((req) => req.id !== id));
+  const handleDeleteRequirement = (id: string, institutionalName: string) => {
+    Modal.confirm({
+      title: "Delete Requirement",
+      content: `Are you sure you want to delete "${institutionalName}"? This action cannot be undone.`,
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          console.log("Attempting to delete requirement with ID:", id);
+          await deleteInstitutionalRequirement(id);
+          message.success("Requirement deleted successfully!");
+
+          // Refresh the requirements list
+          await fetchRequirements();
+        } catch (error: unknown) {
+          console.error("Error deleting requirement:", error);
+          const errorMessage =
+            error && typeof error === "object" && "response" in error
+              ? (error.response as { data?: { message?: string } })?.data
+                  ?.message || "Failed to delete requirement. Please try again."
+              : "Failed to delete requirement. Please try again.";
+          message.error(errorMessage);
+        }
+      },
+    });
   };
 
   const openViewModal = (record: Requirement) => {
@@ -138,19 +243,24 @@ const Requirements = () => {
   const openEditModal = (record: Requirement) => {
     setEditItem(record);
     setEditForm({
-      courseCode: record.courseCode,
+      courseCode: record.institutionalName,
       department: record.department,
-      names: [...record.names],
+      semester: record.semester,
+      names: [...record.requirements],
       description: record.description,
-      deadline: record.deadline,
+      deadline:
+        typeof record.deadline === "string"
+          ? new Date(record.deadline)
+          : record.deadline,
     });
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (
       !editForm.courseCode.trim() ||
       !editForm.department ||
+      !editForm.semester ||
       !editForm.deadline ||
       (editForm.names || []).filter((n) => n.trim()).length === 0
     ) {
@@ -158,24 +268,45 @@ const Requirements = () => {
       return;
     }
 
-    setRequirements((prev) =>
-      prev.map((r) =>
-        r.id === editItem?.id
-          ? {
-              ...r,
-              courseCode: editForm.courseCode.trim(),
-              department: editForm.department,
-              names: editForm.names.map((n) => n.trim()).filter((n) => n),
-              description: editForm.description,
-              deadline: editForm.deadline as Date,
-            }
-          : r
-      )
-    );
+    if (!editItem?.id) {
+      message.error("Invalid requirement ID.");
+      return;
+    }
 
-    setIsEditModalOpen(false);
-    setEditItem(null);
-    message.success("Requirement updated.");
+    setUpdateLoading(true);
+    try {
+      const payload = {
+        institutionalName: editForm.courseCode.trim(),
+        requirements: editForm.names.map((n) => n.trim()).filter((n) => n),
+        department: editForm.department,
+        semester: editForm.semester,
+        description: editForm.description,
+        deadline:
+          typeof editForm.deadline === "string"
+            ? editForm.deadline
+            : editForm.deadline.toISOString(),
+      };
+
+      console.log("Updating requirement with payload:", payload);
+      await updateInstitutionalRequirement(editItem.id, payload);
+      message.success("Requirement updated successfully!");
+
+      // Refresh the requirements list
+      await fetchRequirements();
+
+      setIsEditModalOpen(false);
+      setEditItem(null);
+    } catch (error: unknown) {
+      console.error("Error updating requirement:", error);
+      const errorMessage =
+        error && typeof error === "object" && "response" in error
+          ? (error.response as { data?: { message?: string } })?.data
+              ?.message || "Failed to update requirement. Please try again."
+          : "Failed to update requirement. Please try again.";
+      message.error(errorMessage);
+    } finally {
+      setUpdateLoading(false);
+    }
   };
 
   const MAX_VISIBLE_TAGS = 3;
@@ -184,21 +315,21 @@ const Requirements = () => {
   const columns = [
     {
       title: <span className="font-semibold">Institutional name</span>,
-      dataIndex: "courseCode",
-      key: "courseCode",
-      render: (courseCode: string) => (
+      dataIndex: "institutionalName",
+      key: "institutionalName",
+      render: (institutionalName: string) => (
         <span className="text-gray-600 dark:text-gray-400">
-          {courseCode || "No courseCode"}
+          {institutionalName || "No institutional name"}
         </span>
       ),
     },
     {
       title: <span className="font-semibold">Requirements</span>,
-      dataIndex: "names",
-      key: "names",
-      render: (names: string[]) => {
-        const visible = names.slice(0, MAX_VISIBLE_TAGS);
-        const hidden = names.slice(MAX_VISIBLE_TAGS);
+      dataIndex: "requirements",
+      key: "requirements",
+      render: (requirements: string[]) => {
+        const visible = requirements.slice(0, MAX_VISIBLE_TAGS);
+        const hidden = requirements.slice(MAX_VISIBLE_TAGS);
 
         const dropdownMenu = {
           items: hidden.map((n, idx) => ({
@@ -246,6 +377,16 @@ const Requirements = () => {
           <BankOutlined className="text-blue-500 mr-2" />
           <span className="text-gray-700 dark:text-gray-300">{department}</span>
         </div>
+      ),
+    },
+    {
+      title: <span className="font-semibold">Semester</span>,
+      dataIndex: "semester",
+      key: "semester",
+      render: (semester: string) => (
+        <Tag color="green" className="text-sm font-medium px-3 py-1">
+          {semester}
+        </Tag>
       ),
     },
     {
@@ -300,14 +441,18 @@ const Requirements = () => {
       title: <span className="font-semibold">Deadline</span>,
       dataIndex: "deadline",
       key: "deadline",
-      render: (deadline: Date) => (
-        <div className="flex items-center">
-          <CalendarOutlined className="text-blue-500 mr-2" />
-          <span className="text-gray-700 dark:text-gray-300">
-            {format(deadline, "MMM dd, yyyy")}
-          </span>
-        </div>
-      ),
+      render: (deadline: Date | string) => {
+        const date =
+          typeof deadline === "string" ? new Date(deadline) : deadline;
+        return (
+          <div className="flex items-center">
+            <CalendarOutlined className="text-blue-500 mr-2" />
+            <span className="text-gray-700 dark:text-gray-300">
+              {format(date, "MMM dd, yyyy")}
+            </span>
+          </div>
+        );
+      },
     },
     {
       title: <span className="font-semibold">Actions</span>,
@@ -332,7 +477,10 @@ const Requirements = () => {
             type="text"
             danger
             icon={<DeleteOutlined />}
-            onClick={() => handleDeleteRequirement(record.id)}
+            onClick={() =>
+              record.id &&
+              handleDeleteRequirement(record.id, record.institutionalName)
+            }
             className="hover:bg-red-50 dark:hover:bg-red-900/20"
           />
         </Space>
@@ -370,6 +518,7 @@ const Requirements = () => {
         onCancel={() => setIsModalOpen(false)}
         onOk={handleAddRequirement}
         okText="Add Requirement"
+        confirmLoading={addLoading}
       >
         <Space direction="vertical" className="w-full">
           <div>
@@ -423,6 +572,19 @@ const Requirements = () => {
           </div>
 
           <div>
+            <label className="block mb-2">Semester</label>
+            <Select
+              className="w-full"
+              value={newRequirement.semester}
+              onChange={(value) =>
+                setNewRequirement({ ...newRequirement, semester: value })
+              }
+              placeholder="Select semester"
+              options={semesters.map((s) => ({ label: s, value: s }))}
+            />
+          </div>
+
+          <div>
             <label className="block mb-2">Description</label>
             <TextArea
               rows={4}
@@ -466,14 +628,17 @@ const Requirements = () => {
         {viewItem && (
           <Descriptions column={1} bordered size="small">
             <Descriptions.Item label="Institutional name">
-              {viewItem.courseCode}
+              {viewItem.institutionalName}
             </Descriptions.Item>
             <Descriptions.Item label="Department">
               {viewItem.department}
             </Descriptions.Item>
+            <Descriptions.Item label="Semester">
+              <Tag color="green">{viewItem.semester}</Tag>
+            </Descriptions.Item>
             <Descriptions.Item label="Requirements">
               <Space size={[4, 8]} wrap>
-                {viewItem.names.map((n, i) => (
+                {viewItem.requirements.map((n, i) => (
                   <Tag key={i} color="blue">
                     {n}
                   </Tag>
@@ -484,7 +649,12 @@ const Requirements = () => {
               {viewItem.description || "—"}
             </Descriptions.Item>
             <Descriptions.Item label="Deadline">
-              {format(viewItem.deadline, "MMM dd, yyyy")}
+              {format(
+                typeof viewItem.deadline === "string"
+                  ? new Date(viewItem.deadline)
+                  : viewItem.deadline,
+                "MMM dd, yyyy"
+              )}
             </Descriptions.Item>
           </Descriptions>
         )}
@@ -500,6 +670,7 @@ const Requirements = () => {
         }}
         onOk={handleSaveEdit}
         okText="Save Changes"
+        confirmLoading={updateLoading}
       >
         <Space direction="vertical" className="w-full">
           <div>
@@ -547,6 +718,19 @@ const Requirements = () => {
           </div>
 
           <div>
+            <label className="block mb-2">Semester</label>
+            <Select
+              className="w-full"
+              value={editForm.semester}
+              onChange={(value) =>
+                setEditForm((prev) => ({ ...prev, semester: value }))
+              }
+              placeholder="Select semester"
+              options={semesters.map((s) => ({ label: s, value: s }))}
+            />
+          </div>
+
+          <div>
             <label className="block mb-2">Description</label>
             <TextArea
               rows={4}
@@ -582,6 +766,7 @@ const Requirements = () => {
           columns={columns}
           dataSource={requirements}
           rowKey="id"
+          loading={loading}
           className="rounded-lg overflow-hidden"
           rowClassName="hover:bg-gray-50 dark:hover:bg-gray-800/50"
           scroll={{ x: "max-content" }}
