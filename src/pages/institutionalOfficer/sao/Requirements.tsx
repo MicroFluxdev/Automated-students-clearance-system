@@ -345,7 +345,7 @@ const Requirements = () => {
         };
 
         return (
-          <div className="flex flex-wrap items-center gap-6">
+          <div className="flex flex-wrap items-center ">
             <div className="flex flex-wrap gap-2">
               {visible.map((name, i) => (
                 <Tag
@@ -506,18 +506,18 @@ const Requirements = () => {
             onClick={() => setIsModalOpen(true)}
             className="bg-blue-600 hover:bg-blue-700"
           >
-            Add New Requirement
+            Set Requirement
           </Button>
         </div>
       </div>
 
       {/* Add Modal */}
       <Modal
-        title="Add New Requirement"
+        title="Set Requirement"
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         onOk={handleAddRequirement}
-        okText="Add Requirement"
+        okText="Save Requirement"
         confirmLoading={addLoading}
       >
         <Space direction="vertical" className="w-full">
