@@ -7,7 +7,6 @@ import Unauthorized from "../pages/Unauthorized";
 import Dashboard from "../pages/clearing-officer/Dashboard";
 import Clearance from "../pages/clearing-officer/Clearance";
 import StudentRecord from "../pages/clearing-officer/StudentRecord";
-import Requirements from "../pages/clearing-officer/Requirements";
 import Events from "@/pages/clearing-officer/Events";
 import AccountSettings from "@/pages/clearing-officer/AccountSettings";
 import AdminDashboard from "@/pages/admin-side/Dashboard";
@@ -27,7 +26,8 @@ import ViewPermit from "@/pages/TestingQrCodePermit";
 
 import EnrollmentLogin from "@/pages/enrollmentSide/EnrollmentLogin";
 import ViewCourses from "@/pages/clearing-officer/ViewCourses";
-import { SaoOfficer } from "@/pages/institutionalOfficer/sao/indix";
+import { SaoOfficer } from "@/pages/institutionalOfficer/sao/studentsList";
+import Requirements from "@/pages/institutionalOfficer/sao/Requirements";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -75,6 +75,7 @@ const AppRoutes: React.FC = () => {
         <Route path="viewClearance" element={<ViewClearance />} />
         <Route path="viewCourses" element={<ViewCourses />} />
         <Route path="sao" element={<SaoOfficer />} />
+
         <Route path="*" element={<Unauthorized />} />
       </Route>
       {/**General Route */}

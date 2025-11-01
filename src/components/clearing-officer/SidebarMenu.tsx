@@ -7,6 +7,8 @@ import {
   Calendar,
   Settings2,
   Book,
+  User,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/authentication/useAuth";
@@ -19,8 +21,13 @@ const navbar = [
   },
   {
     to: "/clearing-officer/sao",
-    icon: Book,
+    icon: User,
     label: "Students",
+  },
+  {
+    to: "/clearing-officer/requirements",
+    icon: FileText,
+    label: "Requirements",
   },
   {
     to: "/clearing-officer/viewCourses",
@@ -121,9 +128,11 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
               (item.to === "/clearing-officer/clearance" ||
                 item.to === "/clearing-officer/viewCourses");
 
-            // Show `/clearing-officer/sao` only for "sao" role
+            // Show `/clearing-officer/sao` and `/clearing-officer/sao/post-requirements` only for "sao" role
             const shouldHideForNonSao =
-              user?.role !== "sao" && item.to === "/clearing-officer/sao";
+              user?.role !== "sao" &&
+              (item.to === "/clearing-officer/sao" ||
+                item.to === "/clearing-officer/requirements");
 
             if (shouldHideForSao || shouldHideForNonSao) {
               return null;
