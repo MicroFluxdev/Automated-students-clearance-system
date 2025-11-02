@@ -7,7 +7,6 @@ import {
   Calendar,
   Settings2,
   Book,
-  User,
   FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,11 +18,11 @@ const navbar = [
     icon: LayoutDashboard,
     label: "Dashboard",
   },
-  {
-    to: "/clearing-officer/sao/students",
-    icon: User,
-    label: "Students",
-  },
+  // {
+  //   to: "/clearing-officer/sao/students",
+  //   icon: User,
+  //   label: "Students",
+  // },
   {
     to: "/clearing-officer/sao/requirements",
     icon: FileText,

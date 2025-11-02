@@ -102,7 +102,7 @@ const AppRoutes: React.FC = () => {
           }
         />
         <Route
-          path="sao/students"
+          path="sao/students/:reqId"
           element={
             <ProtectedRoute allowedRoles={["sao"]}>
               <SaoOfficer />

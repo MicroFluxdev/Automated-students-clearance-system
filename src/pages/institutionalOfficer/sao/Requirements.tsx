@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   Button,
@@ -14,6 +15,7 @@ import {
   Popover,
   Dropdown,
   Typography,
+  Menu,
 } from "antd";
 import {
   PlusOutlined,
@@ -22,6 +24,8 @@ import {
   CalendarOutlined,
   EyeOutlined,
   EditOutlined,
+  TeamOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import TextArea from "antd/es/input/TextArea";
@@ -61,6 +65,7 @@ const ellipsize = (text: string, limit = 120) =>
   text && text.length > limit ? `${text.slice(0, limit)}…` : text;
 
 const Requirements = () => {
+  const navigate = useNavigate();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -457,34 +462,56 @@ const Requirements = () => {
     {
       title: <span className="font-semibold">Actions</span>,
       key: "actions",
-      render: (_: unknown, record: Requirement) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            onClick={() => openViewModal(record)}
-          >
-            View
-          </Button>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => openEditModal(record)}
-          >
-            Edit
-          </Button>
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() =>
-              record.id &&
-              handleDeleteRequirement(record.id, record.institutionalName)
-            }
-            className="hover:bg-red-50 dark:hover:bg-red-900/20"
-          />
-        </Space>
-      ),
+      render: (_: unknown, record: Requirement) => {
+        // Dropdown menu items for actions
+        const actionMenu = (
+          <Menu>
+            <Menu.Item
+              key="view-students"
+              icon={<TeamOutlined />}
+              onClick={() =>
+                navigate(`/clearing-officer/sao/students/${record.id}`)
+              }
+            >
+              View Students
+            </Menu.Item>
+            <Menu.Item
+              key="view-details"
+              icon={<EyeOutlined />}
+              onClick={() => openViewModal(record)}
+            >
+              View Details
+            </Menu.Item>
+          </Menu>
+        );
+        return (
+          <Space>
+            <Dropdown overlay={actionMenu} trigger={["click"]}>
+              <Button>
+                Views <DownOutlined />
+              </Button>
+            </Dropdown>
+            <Button
+              key="edit"
+              icon={<EditOutlined />}
+              onClick={() => openEditModal(record)}
+            >
+              Edit
+            </Button>
+            <Button
+              key="delete"
+              icon={<DeleteOutlined />}
+              danger
+              onClick={() =>
+                record.id &&
+                handleDeleteRequirement(record.id, record.institutionalName)
+              }
+            >
+              Delete
+            </Button>
+          </Space>
+        );
+      },
     },
   ];
 
