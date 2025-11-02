@@ -23,7 +23,7 @@ import {
   GraduationCap,
   MapPin,
 } from "lucide-react";
-import axiosInstance from "@/api/axios";
+import axiosInstance, { API_URL } from "@/api/axios";
 import { useAuth } from "@/authentication/useAuth";
 import { message } from "antd";
 import axios from "axios";
@@ -77,7 +77,7 @@ const ViewCourses = () => {
         );
         // Using axiosInstance with the integration endpoint
         const response = await axiosInstance.get(
-          `http://localhost:4000/intigration/getCoursesBySchoolId/${encodedSchoolId}`
+          `${API_URL}/intigration/getCoursesBySchoolId/${encodedSchoolId}`
         );
 
         // Extract the courses array from the response

@@ -1122,7 +1122,7 @@ const StudentRecord: React.FC = () => {
                                 variant={
                                   student.status === "Signed"
                                     ? "destructive"
-                                    : "success"
+                                    : "default"
                                 }
                                 size="sm"
                                 onClick={() => handleSignToggle(student.id)}

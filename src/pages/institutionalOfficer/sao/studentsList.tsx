@@ -17,7 +17,9 @@ import {
   Mail,
   Building,
   Calendar,
+  Loader2,
 } from "lucide-react";
+import axiosInstance, { API_URL } from "@/api/axios";
 import {
   Table,
   TableBody,
@@ -46,155 +48,101 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import TooltipDemo from "@/components/HoverToolip";
 
-interface Student {
-  id: number;
-  id_no: string;
-  name: string;
+// API response interface matching the backend data structure
+interface ApiStudent {
+  id: string;
+  schoolId: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  cp_no: string;
-  profilePic: string;
+  phone: string;
+  yearLevel: string;
+  department: string;
+}
+
+// Internal interface for UI state management
+interface Student {
+  id: string;
+  schoolId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
   department: string;
   yearLevel: string;
   status: "Signed" | "Incomplete" | "Missing";
 }
 
-const mockStudents: Student[] = [
-  {
-    id: 1,
-    id_no: "24-0334",
-    name: "John Doe",
-    email: "johndoe@example.com",
-    cp_no: "09123456789",
-    profilePic: "https://randomuser.me/api/portraits/men/1.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Signed",
-  },
-  {
-    id: 2,
-    id_no: "20-0842",
-    name: "Jane Smith",
-    email: "janesmith@example.com",
-    cp_no: "09234567890",
-    profilePic: "https://randomuser.me/api/portraits/women/2.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Incomplete",
-  },
-  {
-    id: 3,
-    id_no: "24-0335",
-    name: "Alice Johnson",
-    email: "alicejohnson@example.com",
-    cp_no: "09345678901",
-    profilePic: "https://randomuser.me/api/portraits/women/3.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Missing",
-  },
-  {
-    id: 4,
-    id_no: "24-0336",
-    name: "Bob Brown",
-    email: "bobbrown@example.com",
-    cp_no: "09456789012",
-    profilePic: "https://randomuser.me/api/portraits/men/4.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Incomplete",
-  },
-  {
-    id: 5,
-    id_no: "21-0567",
-    name: "Charlie Davis",
-    email: "charliedavis@example.com",
-    cp_no: "09567890123",
-    profilePic: "https://randomuser.me/api/portraits/men/5.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Signed",
-  },
-  {
-    id: 6,
-    id_no: "22-0991",
-    name: "Diana Prince",
-    email: "dianaprince@example.com",
-    cp_no: "09678901234",
-    profilePic: "https://randomuser.me/api/portraits/women/6.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Signed",
-  },
-  {
-    id: 7,
-    id_no: "23-0712",
-    name: "Ethan Clark",
-    email: "ethanclark@example.com",
-    cp_no: "09789012345",
-    profilePic: "https://randomuser.me/api/portraits/men/7.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Incomplete",
-  },
-  {
-    id: 8,
-    id_no: "21-0338",
-    name: "Fiona Lee",
-    email: "fionalee@example.com",
-    cp_no: "09890123456",
-    profilePic: "https://randomuser.me/api/portraits/women/8.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Signed",
-  },
-  {
-    id: 9,
-    id_no: "24-0123",
-    name: "George King",
-    email: "georgeking@example.com",
-    cp_no: "09901234567",
-    profilePic: "https://randomuser.me/api/portraits/men/9.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Missing",
-  },
-  {
-    id: 10,
-    id_no: "22-0456",
-    name: "Hannah Wright",
-    email: "hannahwright@example.com",
-    cp_no: "09112223334",
-    profilePic: "https://randomuser.me/api/portraits/women/10.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Incomplete",
-  },
-  {
-    id: 11,
-    id_no: "23-0779",
-    name: "Isaac Newton",
-    email: "isaacnewton@example.com",
-    cp_no: "09223334445",
-    profilePic: "https://randomuser.me/api/portraits/men/11.jpg",
-    department: "BS-Computer Science",
-    yearLevel: "2nd year",
-    status: "Signed",
-  },
-];
-
 export const SaoOfficer = () => {
-  const [students, setStudents] = useState<Student[]>(mockStudents);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch students data from API
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await axiosInstance.get(
+          `${API_URL}/intigration/getAllStudentComparedByIds`
+        );
+
+        console.log("API Response:", response.data); // Debug log
+
+        // Handle different response structures
+        let studentsData: ApiStudent[] = [];
+
+        if (Array.isArray(response.data)) {
+          studentsData = response.data;
+        } else if (response.data && Array.isArray(response.data.data)) {
+          studentsData = response.data.data;
+        } else if (response.data && Array.isArray(response.data.students)) {
+          studentsData = response.data.students;
+        } else {
+          throw new Error(
+            "Invalid response format: expected an array of students"
+          );
+        }
+
+        // Transform API data to match Student interface with default status
+        const transformedStudents: Student[] = studentsData.map(
+          (apiStudent) => ({
+            id: apiStudent.id,
+            schoolId: apiStudent.schoolId,
+            firstName: apiStudent.firstName,
+            lastName: apiStudent.lastName,
+            email: apiStudent.email,
+            phone: apiStudent.phone,
+            department: apiStudent.department,
+            yearLevel: apiStudent.yearLevel,
+            status: "Incomplete", // Default status, can be updated based on business logic
+          })
+        );
+
+        setStudents(transformedStudents);
+      } catch (err) {
+        setError("Failed to fetch students data. Please try again later.");
+        console.error("Error fetching students:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
 
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
+      const fullName = `${student.firstName} ${student.lastName}`;
       const matchesSearch =
-        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.id_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.schoolId.toLowerCase().includes(searchQuery.toLowerCase()) ||
         student.email.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus =
         statusFilter === "all" ||
@@ -231,19 +179,20 @@ export const SaoOfficer = () => {
     }
   };
 
-  const toggleSelect = (id: number) => {
+  const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
     );
   };
 
-  const handleSign = (id: number) => {
+  const handleSign = (id: string) => {
     setStudents((prev) =>
       prev.map((s) =>
         s.id === id
           ? {
               ...s,
-              status: s.status === "Signed" ? "Incomplete" : "Signed",
+              status:
+                s.status === "Signed" ? "Incomplete" : ("Signed" as const),
             }
           : s
       )
@@ -408,211 +357,240 @@ export const SaoOfficer = () => {
         </CardHeader>
 
         <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-[40px] text-center">
-                    <TooltipDemo
-                      isSelected={
-                        selectedIds.length === paginatedStudents.length &&
-                        paginatedStudents.length > 0
-                      }
-                    >
-                      <Checkbox
-                        className="border border-blue-600 hover:border-blue-700 hover:border-2"
-                        checked={
-                          selectedIds.length === paginatedStudents.length &&
-                          paginatedStudents.length > 0
-                        }
-                        onCheckedChange={(checked) =>
-                          toggleSelectAll(checked as boolean)
-                        }
-                      />
-                    </TooltipDemo>
-                  </TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead className="hidden lg:table-cell">
-                    Contact
-                  </TableHead>
-                  <TableHead className="hidden lg:table-cell">
-                    Department / Year level
-                  </TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {paginatedStudents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      No students found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginatedStudents.map((student) => (
-                    <TableRow key={student.id} className="group">
-                      <TableCell className="text-center">
-                        <Checkbox
-                          className="border border-blue-600 hover:border-blue-700 hover:border-2"
-                          checked={selectedIds.includes(student.id)}
-                          onCheckedChange={() => toggleSelect(student.id)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={student.profilePic}
-                            alt={student.name}
-                            className="h-10 w-10 rounded-full object-cover ring-2 ring-background"
-                          />
-                          <div className="flex flex-col justify-center ">
-                            <span>{student.name}</span>
-                            <span className="text-muted-foreground">
-                              {student.id_no}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground hidden lg:table-cell">
-                        <div className="flex flex-col justify-center gap-1">
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            <span className="text-sm">{student.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            <span className="text-sm">{student.cp_no}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground hidden lg:table-cell">
-                        <div className="flex flex-col justify-center gap-1">
-                          <div className="flex items-center gap-2">
-                            <Building className="h-4 w-4" />
-                            <span className="text-sm">
-                              {student.department}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span className="text-sm">{student.yearLevel}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell>{getStatusBadge(student.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex  gap-2">
-                          <Button
-                            className="w-[100px]"
-                            size="sm"
-                            variant={
-                              student.status === "Signed"
-                                ? "destructive"
-                                : "success"
-                            }
-                            onClick={() => handleSign(student.id)}
-                          >
-                            {student.status === "Signed" ? (
-                              <>
-                                <Undo2 className="h-4 w-4 mr-1" /> Cancel
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 mr-1" /> Sign
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            className="bg-yellow-500 hover:bg-yellow-600"
-                            size="sm"
-                          >
-                            <Eye className="h-4 w-4" />
-                            View
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-4">
-            <div className="text-sm text-muted-foreground">
-              Showing <span className="font-medium">{startIndex + 1}</span>–
-              <span className="font-medium">
-                {Math.min(endIndex, filteredStudents.length)}
-              </span>{" "}
-              of <span className="font-medium">{filteredStudents.length}</span>{" "}
-              students
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-              >
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-
-              <span className="text-sm font-medium">
-                Page {currentPage} of {totalPages || 1}
+          {/* Loading State */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-3 text-muted-foreground">
+                Loading students...
               </span>
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-                disabled={currentPage === totalPages || totalPages === 0}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages || totalPages === 0}
-              >
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
-
-              <Select
-                value={itemsPerPage.toString()}
-                onValueChange={(v) => {
-                  setItemsPerPage(Number(v));
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[90px]">
-                  <SelectValue placeholder="Rows" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[5, 10, 20, 50].map((size) => (
-                    <SelectItem key={size} value={size.toString()}>
-                      {size}/page
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
-          </div>
+          ) : error ? (
+            /* Error State */
+            <div className="flex flex-col items-center justify-center py-16">
+              <UserX className="h-12 w-12 text-destructive mb-4" />
+              <p className="text-destructive font-medium">{error}</p>
+              <Button className="mt-4" onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            </div>
+          ) : (
+            /* Table Content */
+            <>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="w-[40px] text-center">
+                        <TooltipDemo
+                          isSelected={
+                            selectedIds.length === paginatedStudents.length &&
+                            paginatedStudents.length > 0
+                          }
+                        >
+                          <Checkbox
+                            className="border border-blue-600 hover:border-blue-700 hover:border-2"
+                            checked={
+                              selectedIds.length === paginatedStudents.length &&
+                              paginatedStudents.length > 0
+                            }
+                            onCheckedChange={(checked) =>
+                              toggleSelectAll(checked as boolean)
+                            }
+                          />
+                        </TooltipDemo>
+                      </TableHead>
+                      <TableHead>Student</TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Contact
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Department / Year level
+                      </TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {paginatedStudents.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          No students found.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      paginatedStudents.map((student) => (
+                        <TableRow key={student.id} className="group">
+                          <TableCell className="text-center">
+                            <Checkbox
+                              className="border border-blue-600 hover:border-blue-700 hover:border-2"
+                              checked={selectedIds.includes(student.id)}
+                              onCheckedChange={() => toggleSelect(student.id)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold ring-2 ring-background">
+                                {student.firstName.charAt(0)}
+                                {student.lastName.charAt(0)}
+                              </div>
+                              <div className="flex flex-col justify-center ">
+                                <span>
+                                  {student.firstName} {student.lastName}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {student.schoolId}
+                                </span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground hidden lg:table-cell">
+                            <div className="flex flex-col justify-center gap-1">
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" />
+                                <span className="text-sm">{student.email}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4" />
+                                <span className="text-sm">{student.phone}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground hidden lg:table-cell">
+                            <div className="flex flex-col justify-center gap-1">
+                              <div className="flex items-center gap-2">
+                                <Building className="h-4 w-4" />
+                                <span className="text-sm">
+                                  {student.department}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                <span className="text-sm">
+                                  {student.yearLevel}
+                                </span>
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          <TableCell>
+                            {getStatusBadge(student.status)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex  gap-2">
+                              <Button
+                                className="w-[100px]"
+                                size="sm"
+                                variant={
+                                  student.status === "Signed"
+                                    ? "destructive"
+                                    : "default"
+                                }
+                                onClick={() => handleSign(student.id)}
+                              >
+                                {student.status === "Signed" ? (
+                                  <>
+                                    <Undo2 className="h-4 w-4 mr-1" /> Cancel
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle2 className="h-4 w-4 mr-1" />{" "}
+                                    Sign
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                className="bg-yellow-500 hover:bg-yellow-600"
+                                size="sm"
+                              >
+                                <Eye className="h-4 w-4" />
+                                View
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing <span className="font-medium">{startIndex + 1}</span>–
+                  <span className="font-medium">
+                    {Math.min(endIndex, filteredStudents.length)}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium">{filteredStudents.length}</span>{" "}
+                  students
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  <span className="text-sm font-medium">
+                    Page {currentPage} of {totalPages || 1}
+                  </span>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages || totalPages === 0}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+
+                  <Select
+                    value={itemsPerPage.toString()}
+                    onValueChange={(v) => {
+                      setItemsPerPage(Number(v));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[90px]">
+                      <SelectValue placeholder="Rows" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[5, 10, 20, 50].map((size) => (
+                        <SelectItem key={size} value={size.toString()}>
+                          {size}/page
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
