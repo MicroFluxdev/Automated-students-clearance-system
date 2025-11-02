@@ -488,7 +488,7 @@ const Requirements = () => {
           <Space>
             <Dropdown overlay={actionMenu} trigger={["click"]}>
               <Button>
-                Views <DownOutlined />
+                Actions <DownOutlined />
               </Button>
             </Dropdown>
             <Button
