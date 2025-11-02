@@ -15,6 +15,7 @@ export interface CreateStudentRequirementDto {
   studentId: string;
   coId: string;
   requirementId: string;
+  signedBy: string;
   status: "signed" | "incomplete" | "missing";
 }
 

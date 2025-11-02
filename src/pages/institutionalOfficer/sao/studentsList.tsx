@@ -121,7 +121,7 @@ export const SaoOfficer = () => {
             phone: apiStudent.phone,
             department: apiStudent.department,
             yearLevel: apiStudent.yearLevel,
-            status: "Incomplete", // Default status, can be updated based on business logic
+            status: "Incomplete",
           })
         );
 

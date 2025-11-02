@@ -204,7 +204,7 @@ const StudentRecord: React.FC = () => {
               profilePic: student.profilePic ?? "",
               department: student.department ?? "",
               yearLevel: student.yearLevel ?? "",
-              status: "Incomplete", // Default status
+              status: "Incomplete",
               initials: initials || "?",
             };
           }
@@ -449,6 +449,7 @@ const StudentRecord: React.FC = () => {
           studentId: student.id_no,
           coId: user.id,
           requirementId: reqId,
+          signedBy: user.role,
           status: "signed" as const,
         }));
 
@@ -848,6 +849,7 @@ const StudentRecord: React.FC = () => {
             studentId: student.id_no,
             coId: user.id,
             requirementId: reqId,
+            signedBy: user.role,
             status: "signed" as const,
           };
 
