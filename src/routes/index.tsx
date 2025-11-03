@@ -86,7 +86,7 @@ const AppRoutes: React.FC = () => {
         <Route
           path="viewCourses"
           element={
-            <ProtectedRoute allowedRoles={["clearingOfficer"]}>
+            <ProtectedRoute allowedRoles={["clearingOfficer", "sao"]}>
               <ViewCourses />
             </ProtectedRoute>
           }

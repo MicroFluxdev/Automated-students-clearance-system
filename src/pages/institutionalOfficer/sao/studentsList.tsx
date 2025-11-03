@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   Search,
   Filter,
@@ -19,6 +19,8 @@ import {
   Building,
   Calendar,
   Loader2,
+  ArrowBigRight,
+  AlertTriangle,
 } from "lucide-react";
 import axiosInstance, { API_URL } from "@/api/axios";
 import { useAuth } from "@/authentication/useAuth";
@@ -57,6 +59,14 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import TooltipDemo from "@/components/HoverToolip";
 
 // API response interface matching the backend data structure
@@ -100,6 +110,13 @@ export const SaoOfficer = () => {
   const [allStudentRequirements, setAllStudentRequirements] = useState<
     StudentRequirement[]
   >([]);
+
+  // State for unsign warning modal
+  const [showUnsignDialog, setShowUnsignDialog] = useState(false);
+  const [unsignTarget, setUnsignTarget] = useState<{
+    type: "single" | "bulk";
+    studentId?: string;
+  } | null>(null);
 
   // Fetch students data from API
   useEffect(() => {
@@ -269,6 +286,97 @@ export const SaoOfficer = () => {
     );
   };
 
+  // Perform the actual unsigning logic
+  const performUnsign = async (id: string) => {
+    const student = students.find((s) => s.id === id);
+
+    if (!student) {
+      message.error("Student not found");
+      return;
+    }
+
+    try {
+      console.log(
+        "🔄 Attempting to undo signature for student:",
+        student.firstName,
+        student.lastName
+      );
+
+      // Check if student has a studentRequirementId to update
+      if (student.studentRequirementId) {
+        const hideLoading = message.loading("Undoing signature...", 0);
+
+        console.log(
+          "📤 Sending update request with ID:",
+          student.studentRequirementId
+        );
+
+        // Update the student requirement status to "incomplete"
+        const result = await updateStudentRequirement(
+          student.studentRequirementId,
+          "incomplete",
+          student.schoolId,
+          user?.id,
+          reqId
+        );
+
+        console.log("📥 Update result:", result);
+
+        hideLoading();
+
+        if (result) {
+          // Update allStudentRequirements state
+          setAllStudentRequirements((prev) =>
+            prev.map((req) =>
+              req._id === student.studentRequirementId ||
+              req.id === student.studentRequirementId
+                ? { ...req, status: "incomplete" }
+                : req
+            )
+          );
+          console.log(
+            "✅ Updated requirement in state with status: incomplete"
+          );
+
+          // Update local state
+          setStudents((prev) =>
+            prev.map((s) =>
+              s.id === id
+                ? {
+                    ...s,
+                    status: "Incomplete",
+                    studentRequirementId: student.studentRequirementId,
+                  }
+                : s
+            )
+          );
+          console.log("✅ Local state updated successfully");
+          message.success(
+            `${student.firstName} ${student.lastName} signature removed`
+          );
+        } else {
+          console.error("❌ Update returned null");
+          message.error("Failed to undo signature");
+        }
+      } else {
+        console.warn(
+          "⚠️ No student requirement ID found for student:",
+          student.firstName,
+          student.lastName
+        );
+
+        // No student requirement ID found, just update local state
+        setStudents((prev) =>
+          prev.map((s) => (s.id === id ? { ...s, status: "Incomplete" } : s))
+        );
+        message.warning("No database record found. Updated locally only.");
+      }
+    } catch (error) {
+      console.error("❌ Error undoing signature:", error);
+      message.error("An error occurred while undoing the signature");
+    }
+  };
+
   const handleSign = async (id: string) => {
     const student = students.find((s) => s.id === id);
 
@@ -290,87 +398,9 @@ export const SaoOfficer = () => {
     console.log("   - Requirement ID:", reqId);
 
     if (student?.status === "Signed") {
-      // If student is already signed, undo the signature
-      try {
-        console.log(
-          "🔄 Attempting to undo signature for student:",
-          student.firstName,
-          student.lastName
-        );
-
-        // Check if student has a studentRequirementId to update
-        if (student.studentRequirementId) {
-          const hideLoading = message.loading("Undoing signature...", 0);
-
-          console.log(
-            "📤 Sending update request with ID:",
-            student.studentRequirementId
-          );
-
-          // Update the student requirement status to "incomplete"
-          const result = await updateStudentRequirement(
-            student.studentRequirementId,
-            "incomplete",
-            student.schoolId,
-            user?.id,
-            reqId
-          );
-
-          console.log("📥 Update result:", result);
-
-          hideLoading();
-
-          if (result) {
-            // Update allStudentRequirements state
-            setAllStudentRequirements((prev) =>
-              prev.map((req) =>
-                req._id === student.studentRequirementId ||
-                req.id === student.studentRequirementId
-                  ? { ...req, status: "incomplete" }
-                  : req
-              )
-            );
-            console.log(
-              "✅ Updated requirement in state with status: incomplete"
-            );
-
-            // Update local state
-            setStudents((prev) =>
-              prev.map((s) =>
-                s.id === id
-                  ? {
-                      ...s,
-                      status: "Incomplete",
-                      studentRequirementId: student.studentRequirementId,
-                    }
-                  : s
-              )
-            );
-            console.log("✅ Local state updated successfully");
-            message.success(
-              `${student.firstName} ${student.lastName} signature removed`
-            );
-          } else {
-            console.error("❌ Update returned null");
-            message.error("Failed to undo signature");
-          }
-        } else {
-          console.warn(
-            "⚠️ No student requirement ID found for student:",
-            student.firstName,
-            student.lastName
-          );
-
-          // No student requirement ID found, just update local state
-          setStudents((prev) =>
-            prev.map((s) => (s.id === id ? { ...s, status: "Incomplete" } : s))
-          );
-          message.warning("No database record found. Updated locally only.");
-        }
-      } catch (error) {
-        console.error("❌ Error undoing signature:", error);
-        message.error("An error occurred while undoing the signature");
-      }
+      // Show confirmation dialog before unsigning
+      setUnsignTarget({ type: "single", studentId: id });
+      setShowUnsignDialog(true);
     } else {
       // Sign the student and save to database
       try {
@@ -493,6 +523,109 @@ export const SaoOfficer = () => {
         message.error("An error occurred while signing the student");
       }
     }
+  };
+
+  // Handle unsign confirmation
+  const handleConfirmUnsign = async () => {
+    if (!unsignTarget) return;
+
+    if (unsignTarget.type === "single" && unsignTarget.studentId) {
+      // Single student unsign
+      await performUnsign(unsignTarget.studentId);
+    } else if (unsignTarget.type === "bulk") {
+      // Bulk unsign
+      await performBulkUnsign();
+    }
+
+    // Close dialog and reset target
+    setShowUnsignDialog(false);
+    setUnsignTarget(null);
+  };
+
+  // Perform bulk unsigning logic
+  const performBulkUnsign = async () => {
+    const selectedStudentsData = students.filter((student) =>
+      selectedIds.includes(student.id)
+    );
+
+    // Filter students that have requirement IDs
+    const studentsWithReqIds = selectedStudentsData.filter(
+      (s) => s.studentRequirementId
+    );
+
+    if (studentsWithReqIds.length > 0) {
+      const hideLoading = message.loading(
+        `Undoing ${studentsWithReqIds.length} signature(s)...`,
+        0
+      );
+
+      // Update all student requirements in parallel
+      const updatePromises = studentsWithReqIds.map((student) =>
+        updateStudentRequirement(
+          student.studentRequirementId!,
+          "incomplete",
+          student.schoolId,
+          user?.id,
+          reqId
+        )
+      );
+
+      const results = await Promise.allSettled(updatePromises);
+
+      hideLoading();
+
+      const successCount = results.filter(
+        (r) => r.status === "fulfilled" && r.value !== null
+      ).length;
+      const failedCount = results.length - successCount;
+
+      // Update allStudentRequirements state for successfully updated students
+      const successfulReqIds = studentsWithReqIds
+        .filter((_, index) => results[index].status === "fulfilled")
+        .map((s) => s.studentRequirementId);
+
+      setAllStudentRequirements((prev) =>
+        prev.map((req) =>
+          successfulReqIds.includes(req._id || req.id)
+            ? { ...req, status: "incomplete" }
+            : req
+        )
+      );
+      console.log("✅ Updated requirements in state with status: incomplete");
+
+      // Update local state for all selected students
+      setStudents((prev) =>
+        prev.map((student) =>
+          selectedIds.includes(student.id)
+            ? {
+                ...student,
+                status: "Incomplete",
+                studentRequirementId: student.studentRequirementId,
+              }
+            : student
+        )
+      );
+
+      if (failedCount > 0) {
+        message.warning(
+          `Updated ${successCount} signature(s). ${failedCount} failed.`
+        );
+      } else {
+        message.success(`Successfully undone ${successCount} signature(s)`);
+      }
+    } else {
+      // No requirement IDs found, just update local state
+      setStudents((prev) =>
+        prev.map((student) =>
+          selectedIds.includes(student.id)
+            ? { ...student, status: "Incomplete" }
+            : student
+        )
+      );
+      message.success("Status updated locally");
+    }
+
+    setSelectedIds([]);
   };
 
   const handleBulkSign = async (sign: boolean) => {
@@ -669,87 +802,9 @@ export const SaoOfficer = () => {
           message.error("Failed to sign students");
         }
       } else {
-        // UNDOING SIGNATURES
-        // Filter students that have requirement IDs
-        const studentsWithReqIds = selectedStudentsData.filter(
-          (s) => s.studentRequirementId
-        );
-
-        if (studentsWithReqIds.length > 0) {
-          const hideLoading = message.loading(
-            `Undoing ${studentsWithReqIds.length} signature(s)...`,
-            0
-          );
-
-          // Update all student requirements in parallel
-          const updatePromises = studentsWithReqIds.map((student) =>
-            updateStudentRequirement(
-              student.studentRequirementId!,
-              "incomplete",
-              student.schoolId,
-              user?.id,
-              reqId
-            )
-          );
-
-          const results = await Promise.allSettled(updatePromises);
-
-          hideLoading();
-
-          const successCount = results.filter(
-            (r) => r.status === "fulfilled" && r.value !== null
-          ).length;
-          const failedCount = results.length - successCount;
-
-          // Update allStudentRequirements state for successfully updated students
-          const successfulReqIds = studentsWithReqIds
-            .filter((_, index) => results[index].status === "fulfilled")
-            .map((s) => s.studentRequirementId);
-
-          setAllStudentRequirements((prev) =>
-            prev.map((req) =>
-              successfulReqIds.includes(req._id || req.id)
-                ? { ...req, status: "incomplete" }
-                : req
-            )
-          );
-          console.log(
-            "✅ Updated requirements in state with status: incomplete"
-          );
-
-          // Update local state for all selected students
-          setStudents((prev) =>
-            prev.map((student) =>
-              selectedIds.includes(student.id)
-                ? {
-                    ...student,
-                    status: "Incomplete",
-                    studentRequirementId: student.studentRequirementId,
-                  }
-                : student
-            )
-          );
-
-          if (failedCount > 0) {
-            message.warning(
-              `Updated ${successCount} signature(s). ${failedCount} failed.`
-            );
-          } else {
-            message.success(`Successfully undone ${successCount} signature(s)`);
-          }
-        } else {
-          // No requirement IDs found, just update local state
-          setStudents((prev) =>
-            prev.map((student) =>
-              selectedIds.includes(student.id)
-                ? { ...student, status: "Incomplete" }
-                : student
-            )
-          );
-          message.success("Status updated locally");
-        }
-
-        setSelectedIds([]);
+        // UNDOING SIGNATURES - Show confirmation dialog
+        setUnsignTarget({ type: "bulk" });
+        setShowUnsignDialog(true);
       }
     } catch (error) {
       console.error(
@@ -1147,6 +1202,61 @@ export const SaoOfficer = () => {
           )}
         </CardContent>
       </Card>
+      <div className="flex justify-end">
+        <Link to={"/clearing-officer/sao/requirements"}>
+          <Button variant="outline" className="w-fit">
+            Back reuirements
+            <ArrowBigRight className="mr-2 h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
+
+      {/* Unsign Warning Dialog */}
+      <Dialog open={showUnsignDialog} onOpenChange={setShowUnsignDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <DialogTitle className="text-xl">Confirm Unsign</DialogTitle>
+            </div>
+            <DialogDescription className="pt-3 text-base">
+              {unsignTarget?.type === "single" ? (
+                <>
+                  Are you sure you want to remove the signature for this
+                  student? This action will mark their requirement as incomplete
+                  and cannot be undone.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to remove signatures for{" "}
+                  <span className="font-semibold text-foreground">
+                    {selectedIds.length} selected student(s)
+                  </span>
+                  ? This action will mark their requirements as incomplete and
+                  cannot be undone.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowUnsignDialog(false);
+                setUnsignTarget(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmUnsign}>
+              <Undo2 className="mr-2 h-4 w-4" />
+              Yes, Unsign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
