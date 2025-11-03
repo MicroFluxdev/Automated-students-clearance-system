@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes";
 import { ToastContainer } from "react-toastify";
+import { Toaster } from "sonner";
 import { useRedirectService } from "./authentication/useRedirectService";
 import { useAuth } from "./authentication/useAuth";
 import LogoutLoadingOverlay from "./components/LogoutLoadingOverlay";
@@ -27,6 +28,7 @@ const AppWithRedirectService: React.FC = () => {
         theme="light"
         style={{ zIndex: 9999 }}
       />
+      <Toaster position="top-right" richColors />
       {logoutLoading && <LogoutLoadingOverlay />}
     </>
   );

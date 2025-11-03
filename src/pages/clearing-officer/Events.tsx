@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MapPin, Plus } from "lucide-react";
+import { Calendar, MapPin, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,84 +13,166 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/authentication/useAuth";
-
-interface Event {
-  id: number;
-  title: string;
-  venue: string;
-  description: string;
-  dateStart: string;
-}
+import { useToast } from "@/hooks/use-toast";
+import {
+  type Event,
+  listEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+} from "@/services/eventService";
 
 const Events = () => {
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: 1,
-      title: "Freshmen Orientation",
-      venue: "University Grand Theater",
-      description:
-        "A university-wide event to welcome all incoming first-year students. Get to know your campus, meet fellow students, and learn about the resources available to you.",
-      dateStart: "2024-08-15",
-    },
-    {
-      id: 2,
-      title: "Tech Summit 2024",
-      venue: "College of Engineering Auditorium",
-      description:
-        "An annual conference featuring talks from industry leaders on the latest trends in technology, including AI, cybersecurity, and software development.",
-      dateStart: "2024-09-20",
-    },
-    {
-      id: 3,
-      title: "University Founders' Day",
-      venue: "Campus Grounds",
-      description:
-        "A week-long celebration of the university's founding anniversary, with various activities, competitions, and a grand closing ceremony.",
-      dateStart: "2024-10-10",
-    },
-    {
-      id: 4,
-      title: "Annual Job Fair",
-      venue: "Student Union Building",
-      description:
-        "Connect with top companies and explore internship and job opportunities in your field. Open to all graduating students and alumni.",
-      dateStart: "2024-11-05",
-    },
-  ]);
+  const { role } = useAuth();
+  const { toast } = useToast();
 
+  const toastRef = useRef(toast);
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
+
+  // State for events list
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // State for create/edit dialog
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const [newEventTitle, setNewEventTitle] = useState<string>("");
-  const [newEventVenue, setNewEventVenue] = useState<string>("");
-  const [newEventDescription, setNewEventDescription] = useState<string>("");
-  const [newEventDateStart, setNewEventDateStart] = useState<string>("");
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    location: "",
+    description: "",
+    eventDate: "",
+  });
+
+  // State for delete confirmation
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [eventToDelete, setEventToDelete] = useState<number | null>(null);
+
+  const fetchEvents = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await listEvents();
+      setEvents(data);
+    } catch (error) {
+      toastRef.current({
+        title: "Error",
+        description: "Failed to load events. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error fetching events:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const resetForm = () => {
-    setNewEventTitle("");
-    setNewEventVenue("");
-    setNewEventDescription("");
-    setNewEventDateStart("");
+    setFormData({
+      title: "",
+      location: "",
+      description: "",
+      eventDate: "",
+    });
+    setEditingEvent(null);
   };
 
-  const { role } = useAuth();
-
-  const handleCreateEvent = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!newEventTitle.trim() || !newEventDateStart.trim()) return;
-    const nextId =
-      events.length > 0 ? Math.max(...events.map((ev) => ev.id)) + 1 : 1;
-    const newEvent: Event = {
-      id: nextId,
-      title: newEventTitle.trim(),
-      venue: newEventVenue.trim() || "TBA",
-      description: newEventDescription.trim(),
-      dateStart: newEventDateStart,
-    };
-    setEvents((prev) => [...prev, newEvent]);
-    setIsDialogOpen(false);
+  const handleOpenCreateDialog = () => {
     resetForm();
+    setIsDialogOpen(true);
+  };
+
+  const handleOpenEditDialog = (event: Event) => {
+    setEditingEvent(event);
+    setFormData({
+      title: event.title,
+      location: event.location,
+      description: event.description,
+      eventDate: event.eventDate.split("T")[0], // Format date for input
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!formData.title.trim() || !formData.eventDate.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      if (editingEvent) {
+        // Update existing event
+        await updateEvent(editingEvent.id, formData);
+        toast({
+          title: "Success",
+          description: "Event updated successfully!",
+        });
+      } else {
+        // Create new event
+        await createEvent(formData);
+        toast({
+          title: "Success",
+          description: "Event created successfully!",
+        });
+      }
+      setIsDialogOpen(false);
+      resetForm();
+      fetchEvents(); // Refresh the list
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to ${
+          editingEvent ? "update" : "create"
+        } event. Please try again.`,
+        variant: "destructive",
+      });
+      console.error("Error saving event:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!eventToDelete) return;
+
+    try {
+      await deleteEvent(eventToDelete);
+      toast({
+        title: "Success",
+        description: "Event deleted successfully!",
+      });
+      setDeleteDialogOpen(false);
+      setEventToDelete(null);
+      fetchEvents(); // Refresh the list
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete event. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error deleting event:", error);
+    }
+  };
+
+  const handleDeleteClick = (eventId: number) => {
+    setEventToDelete(eventId);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -107,147 +189,226 @@ const Events = () => {
             </p>
           </div>
 
-          <Dialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (open) resetForm();
-            }}
-          >
-            {role !== "clearingOfficer" && (
-              <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Event
-                </Button>
-              </DialogTrigger>
-            )}
-
-            <DialogContent className="sm:max-w-[525px] w-[95%] rounded-xl">
-              <DialogHeader>
-                <DialogTitle>Add new event</DialogTitle>
-              </DialogHeader>
-              <DialogDescription>
-                Manage students for Automated Student Clearance System
-              </DialogDescription>
-              <form onSubmit={handleCreateEvent} className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="event-title">Title</Label>
-                  <Input
-                    id="event-title"
-                    value={newEventTitle}
-                    onChange={(e) => setNewEventTitle(e.target.value)}
-                    placeholder="e.g., Orientation Day"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="event-venue">Venue</Label>
-                  <Input
-                    id="event-venue"
-                    value={newEventVenue}
-                    onChange={(e) => setNewEventVenue(e.target.value)}
-                    placeholder="e.g., Main Auditorium"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="event-date">Date</Label>
-                  <Input
-                    id="event-date"
-                    type="date"
-                    value={newEventDateStart}
-                    onChange={(e) => setNewEventDateStart(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="event-description">Description</Label>
-                  <Textarea
-                    id="event-description"
-                    value={newEventDescription}
-                    onChange={(e) => setNewEventDescription(e.target.value)}
-                    placeholder="Add short details about the event"
-                    rows={4}
-                  />
-                </div>
-                <DialogFooter className="flex justify-between sm:justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                    className="w-full sm:w-auto"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto"
-                  >
-                    Create
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          {role === "sao" && (
+            <Button
+              onClick={handleOpenCreateDialog}
+              className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Event
+            </Button>
+          )}
         </header>
 
-        {/* EVENT LIST */}
-        <div className="space-y-6">
-          {events.map((event) => (
-            <Card
-              key={event.id}
-              className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 border-blue-500"
-            >
-              <CardContent className="p-0 flex flex-col sm:flex-row">
-                {/* Date */}
-                <div className="w-full sm:w-24 bg-blue-50 flex flex-row sm:flex-col items-center justify-center p-4 text-center gap-2 sm:gap-0">
-                  <p className="text-sm font-semibold text-blue-700 uppercase">
-                    {format(new Date(event.dateStart), "MMM")}
-                  </p>
-                  <p className="text-2xl sm:text-3xl font-bold text-blue-800">
-                    {format(new Date(event.dateStart), "dd")}
-                  </p>
-                </div>
+        {/* LOADING STATE */}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          </div>
+        ) : events.length === 0 ? (
+          /* EMPTY STATE */
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+            <Calendar className="h-16 w-16 mb-4 text-gray-400" />
+            <p className="text-lg font-semibold">No events found</p>
+            <p className="text-sm">Create your first event to get started!</p>
+          </div>
+        ) : (
+          /* EVENT LIST */
+          <div className="space-y-6">
+            {events.map((event) => (
+              <Card
+                key={event.id}
+                className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 border-blue-500"
+              >
+                <CardContent className="p-0 flex flex-col sm:flex-row">
+                  {/* Date */}
+                  <div className="w-full sm:w-24 bg-blue-50 flex flex-row sm:flex-col items-center justify-center p-4 text-center gap-2 sm:gap-0">
+                    <p className="text-sm font-semibold text-blue-700 uppercase">
+                      {format(new Date(event.eventDate), "MMM")}
+                    </p>
+                    <p className="text-2xl sm:text-3xl font-bold text-blue-800">
+                      {format(new Date(event.eventDate), "dd")}
+                    </p>
+                  </div>
 
-                {/* Content */}
-                <div className="flex-1 p-4 sm:p-6">
-                  <CardHeader className="p-0 mb-3 sm:mb-4">
-                    <CardTitle className="text-lg sm:text-xl font-semibold text-gray-800">
-                      {event.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base line-clamp-3">
-                    {event.description}
-                  </p>
+                  {/* Content */}
+                  <div className="flex-1 p-4 sm:p-6">
+                    <CardHeader className="p-0 mb-3 sm:mb-4">
+                      <CardTitle className="text-lg sm:text-xl font-semibold text-gray-800">
+                        {event.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base line-clamp-3">
+                      {event.description}
+                    </p>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 sm:space-x-6 space-y-2 sm:space-y-0">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-blue-600" />
-                      <span>
-                        {format(
-                          new Date(event.dateStart),
-                          "EEEE, MMMM d, yyyy"
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-blue-600" />
-                      <span>{event.venue}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 sm:space-x-6 space-y-2 sm:space-y-0">
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 text-blue-600" />
+                        <span>
+                          {format(
+                            new Date(event.eventDate),
+                            "EEEE, MMMM d, yyyy"
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-2 text-blue-600" />
+                        <span>{event.location}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Action Button */}
-                <div className="p-4 sm:p-6 flex items-center justify-end">
-                  <Button size="sm" className="w-full sm:w-auto space-x-2">
-                    <Calendar />
-                    Add to Calendar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  {/* Action Buttons */}
+                  {role === "sao" && (
+                    <div className="p-4 sm:p-6 flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenEditDialog(event)}
+                        className="flex items-center gap-2"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteClick(event.id)}
+                        className="flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* CREATE/EDIT DIALOG */}
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}
+        >
+          <DialogContent className="sm:max-w-[525px] w-[95%] rounded-xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingEvent ? "Edit Event" : "Add New Event"}
+              </DialogTitle>
+              <DialogDescription>
+                {editingEvent
+                  ? "Update the event details below"
+                  : "Create a new event for the clearance system"}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="event-title">Title</Label>
+                <Input
+                  id="event-title"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  placeholder="e.g., Orientation Day"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="event-location">Location</Label>
+                <Input
+                  id="event-location"
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
+                  }
+                  placeholder="e.g., Main Auditorium"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="event-date">Date</Label>
+                <Input
+                  id="event-date"
+                  type="date"
+                  value={formData.eventDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, eventDate: e.target.value })
+                  }
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="event-description">Description</Label>
+                <Textarea
+                  id="event-description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Add short details about the event"
+                  rows={4}
+                  disabled={isSubmitting}
+                />
+              </div>
+              <DialogFooter className="flex justify-between sm:justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="w-full sm:w-auto"
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {editingEvent ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    <>{editingEvent ? "Update" : "Create"}</>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* DELETE CONFIRMATION DIALOG */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the
+                event from the system.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

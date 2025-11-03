@@ -10,9 +10,16 @@ import { Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
+/**
+ * Header component with blurred background when scrolled.
+ * - On scroll past 10px, adds a blur and background effect using Tailwind.
+ * - Keeps all accessibility and mobile nav features.
+ */
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // Prevent background scroll when menu open (mobile UX best-practice)
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Prevent background scroll when menu is open (mobile UX best-practice)
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -23,6 +30,15 @@ const Header = () => {
       document.body.style.overflow = "";
     };
   }, [isMenuOpen]);
+
+  // Listen for scroll to toggle blur/background
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
     { name: "Home", href: "#home" },
@@ -40,7 +56,10 @@ const Header = () => {
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="fixed top-0 left-0 right-0 z-50"
     >
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-border/50 shadow-soft transition-all duration-300 lg:px-30">
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 shadow-soft transition-all duration-300 lg:px-30
+          ${isScrolled ? "backdrop-blur-md bg-black/60 " : "bg-transparent"}`}
+      >
         <div className="container mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo - Responsive sizing */}
@@ -52,7 +71,7 @@ const Header = () => {
                   alt="App logo"
                 />
               </div>
-              <span className="text-xl sm:text-2xl font-bold text-foreground select-none">
+              <span className="text-xl sm:text-2xl font-bold  select-none text-white">
                 ASCS
               </span>
             </div>
@@ -62,8 +81,8 @@ const Header = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  className="relative text-muted-foreground hover:text-primary transition-colors font-medium px-1 py-1 
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 
+                  className="relative font-light hover:text-primary transition-colors  px-1 py-1 
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 text-white
                     group"
                   tabIndex={0}
                   aria-label={link.name}
@@ -79,7 +98,7 @@ const Header = () => {
             {/* Desktop/Tablet CTA */}
             <div className="hidden md:flex items-center gap-2 sm:gap-4">
               <Link to="/login" tabIndex={0} aria-label="Login portal">
-                <Button className="font-medium shadow-soft hover:shadow-glow transition focus-visible:ring-2 focus-visible:ring-blue-400">
+                <Button className="rounded-full font-medium shadow-soft hover:shadow-glow transition focus-visible:ring-2 focus-visible:ring-blue-400">
                   Login Portal
                 </Button>
               </Link>
@@ -93,7 +112,7 @@ const Header = () => {
                   className="md:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
                   aria-label="Open menu"
                 >
-                  <Menu className="h-7 w-7" />
+                  <Menu className="h-7 w-7 text-white" />
                 </Button>
               </SheetTrigger>
               <SheetContent
@@ -132,7 +151,7 @@ const Header = () => {
                   {/* Mobile CTA */}
                   <div className="flex flex-col gap-3 pt-4 border-t border-border w-full">
                     <Link to="/login" tabIndex={0} aria-label="Login portal">
-                      <Button className="font-medium shadow-soft hover:shadow-glow w-full transition focus-visible:ring-2 focus-visible:ring-blue-400">
+                      <Button className="rounded-full font-medium shadow-soft hover:shadow-glow w-full transition focus-visible:ring-2 focus-visible:ring-blue-400">
                         Login Portal
                       </Button>
                     </Link>

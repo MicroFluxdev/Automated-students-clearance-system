@@ -212,7 +212,9 @@ const AccountSettings = () => {
           <div className="flex items-center gap-6 mb-8">
             <div className="relative group">
               <Avatar className="w-24 h-24 border-2 border-primary">
-                <AvatarImage src={avatar || "https://github.com/shadcn.png"} />
+                <AvatarImage
+                  src={avatar || "https://github.com/evilrabbit.png"}
+                />
                 {/* || user?.avatar  */}
                 <AvatarFallback>
                   <User className="w-10 h-10" />

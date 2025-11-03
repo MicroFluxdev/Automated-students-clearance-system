@@ -1,6 +1,6 @@
-import { ArrowRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Hero = () => {
   return (
@@ -74,7 +74,7 @@ const Hero = () => {
           }}
         >
           <motion.h1
-            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            className="text-6xl md:text-7xl font-light mb-6 leading-tight"
             variants={{
               hidden: { opacity: 0, y: 50 },
               visible: {
@@ -102,7 +102,7 @@ const Hero = () => {
           </motion.h1>
 
           <motion.p
-            className="text-xl md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto leading-relaxed"
+            className=" md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto leading-relaxed font-light"
             variants={{
               hidden: { opacity: 0, y: 30 },
               visible: {
@@ -131,7 +131,7 @@ const Hero = () => {
             {/* Get Started Today Button */}
             <Link to="/login">
               <motion.button
-                className="flex items-center justify-center px-8 py-3 text-lg border border-white text-white hover:bg-white hover:text-black transition duration-200 rounded-lg"
+                className="flex items-center justify-center px-6 py-2 bg-white text-black hover:bg-white hover:text-black transition duration-200 rounded-full"
                 whileHover={{
                   scale: 1.05,
                   boxShadow: "0 10px 25px rgba(255,255,255,0.3)",
@@ -140,33 +140,6 @@ const Hero = () => {
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 Login Portal
-                <motion.div
-                  whileHover={{ x: 5 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                >
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </motion.div>
-              </motion.button>
-            </Link>
-
-            {/* Watch Demo Button */}
-            <Link to="/register">
-              <motion.button
-                className="flex items-center justify-center px-8 py-3 text-lg bg-blue-700 text-white hover:bg-blue-800 transition duration-200 rounded-lg"
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow: "0 10px 25px rgba(59, 130, 246, 0.5)",
-                }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                >
-                  <Play className="mr-2 h-5 w-5" />
-                </motion.div>
-                Watch Demo
               </motion.button>
             </Link>
           </motion.div>
@@ -185,44 +158,43 @@ const Hero = () => {
               },
             }}
           >
-            {[
-              { text: "99% Uptime", delay: 0 },
-              { text: "500+ Institutions", delay: 0.1 },
-              { text: "24/7 Support", delay: 0.2 },
-            ].map((metric, index) => (
-              <motion.div
-                key={index}
-                className="flex items-center gap-2"
-                variants={{
-                  hidden: { opacity: 0, scale: 0.8 },
-                  visible: {
-                    opacity: 1,
-                    scale: 1,
-                    transition: {
-                      duration: 0.5,
-                      ease: "easeOut",
-                      delay: metric.delay,
-                    },
-                  },
-                }}
-                whileHover={{ scale: 1.1, color: "white" }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                <motion.div
-                  className="w-2 h-2 bg-white rounded-full"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.7, 1, 0.7],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: metric.delay,
-                  }}
-                ></motion.div>
-                <span>{metric.text}</span>
-              </motion.div>
-            ))}
+            <div className="flex flex-col items-center ">
+              {/* Large Avatars */}
+              <div className="*:data-[slot=avatar]:ring-background flex -space-x-4 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale mb-3">
+                <Avatar className="w-12 h-12">
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback className="text-xl">CN</AvatarFallback>
+                </Avatar>
+                <Avatar className="w-12 h-12">
+                  <AvatarImage
+                    src="https://github.com/maxleiter.png"
+                    alt="@maxleiter"
+                  />
+                  <AvatarFallback className="text-xl">LR</AvatarFallback>
+                </Avatar>
+                <Avatar className="w-12 h-12">
+                  <AvatarImage
+                    src="https://github.com/evilrabbit.png"
+                    alt="@evilrabbit"
+                  />
+                  <AvatarFallback className="text-xl">ER</AvatarFallback>
+                </Avatar>
+                <Avatar className="w-12 h-12">
+                  <AvatarImage
+                    src="https://github.com/evilrabbit.png"
+                    alt="@evilrabbit"
+                  />
+                  <AvatarFallback className="text-xl">ER</AvatarFallback>
+                </Avatar>
+              </div>
+              {/* "Teams" label below the avatars */}
+              <span className=" tracking-wide text-white drop-shadow-md">
+                Teams
+              </span>
+            </div>
           </motion.div>
         </motion.div>
       </div>
