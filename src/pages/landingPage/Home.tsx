@@ -101,8 +101,8 @@ const Hero = () => {
             </motion.span>
           </motion.h1>
 
-          <motion.p
-            className=" md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto leading-relaxed font-light"
+          <motion.div
+            className=" md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto font-light"
             variants={{
               hidden: { opacity: 0, y: 30 },
               visible: {
@@ -112,9 +112,11 @@ const Hero = () => {
               },
             }}
           >
-            Streamline student clearance, document processing, and
-            administrative workflows with our intelligent automation platform.
-          </motion.p>
+            <p className="text-lg font-light">
+              Streamline student clearance, document processing, and
+              administrative workflows with our intelligent automation platform.
+            </p>
+          </motion.div>
 
           {/* Call to actions */}
           <motion.div
@@ -160,12 +162,9 @@ const Hero = () => {
           >
             <div className="flex flex-col items-center ">
               {/* Large Avatars */}
-              <div className="*:data-[slot=avatar]:ring-background flex -space-x-4 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale mb-3">
+              <div className="*:data-[slot=avatar]:ring-background flex -space-x-3 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale mb-3">
                 <Avatar className="w-12 h-12">
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@shadcn"
-                  />
+                  <AvatarImage src="/1.jpg" alt="@shadcn" />
                   <AvatarFallback className="text-xl">CN</AvatarFallback>
                 </Avatar>
                 <Avatar className="w-12 h-12">

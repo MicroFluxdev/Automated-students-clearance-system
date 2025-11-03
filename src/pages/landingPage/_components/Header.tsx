@@ -64,13 +64,12 @@ const Header = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo - Responsive sizing */}
             <div className="flex items-center gap-2 min-w-fit">
-              <div className="p-2 bg-blue-500 rounded-lg shadow-soft flex items-center justify-center">
-                <img
-                  className="h-8 w-8 sm:h-8 sm:w-8 md:h-8 md:w-8 rounded-md object-cover"
-                  src="/MICRO FLUX LOGO.png"
-                  alt="App logo"
-                />
-              </div>
+              <img
+                className="h-10 w-10 sm:h-10 sm:w-10 md:h-10 md:w-10 rounded-md object-cover"
+                src="/MICRO FLUX LOGO.png"
+                alt="App logo"
+              />
+
               <span className="text-xl sm:text-2xl font-bold  select-none text-white">
                 ASCS
               </span>
@@ -98,7 +97,7 @@ const Header = () => {
             {/* Desktop/Tablet CTA */}
             <div className="hidden md:flex items-center gap-2 sm:gap-4">
               <Link to="/login" tabIndex={0} aria-label="Login portal">
-                <Button className="rounded-full font-medium shadow-soft hover:shadow-glow transition focus-visible:ring-2 focus-visible:ring-blue-400">
+                <Button className="rounded-full font-medium px-6 py-5 shadow-soft hover:shadow-glow transition focus-visible:ring-2 focus-visible:ring-blue-400">
                   Login Portal
                 </Button>
               </Link>
