@@ -89,7 +89,6 @@ const Clearance = () => {
 
   // Fetch requirements from backend
   useEffect(() => {
-    // Wait for auth initialization before making requests
     if (!isInitialized) {
       console.log("⏳ Waiting for auth initialization...");
       return;
