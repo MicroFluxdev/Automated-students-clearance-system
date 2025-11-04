@@ -33,6 +33,7 @@ import StudentEnrollment from "@/pages/enrollmentSide/StudentEnrollment";
 import EnrollmentRecords from "@/pages/enrollmentSide/EnrollmentRecords";
 import EnrollmentLayout from "@/layouts/EnrollmentLayout";
 import EnrollmentLogin from "@/pages/enrollmentSide/EnrollmentLogin";
+import { TermsPolicy } from "@/pages/landingPage/_components/TermsPolicy";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -81,6 +82,7 @@ const AppRoutes: React.FC = () => {
       <Route path="permit" element={<ViewQrCodePermit />} />
       <Route path="sampleQrCode" element={<SampleQrCode />} />
       <Route path="viewPermit" element={<ViewPermit />} />
+      <Route path="TermsPolicy"  element={<TermsPolicy />} />
 
       <Route path="enrollmentLogin" element={<EnrollmentLogin />} />
       <Route

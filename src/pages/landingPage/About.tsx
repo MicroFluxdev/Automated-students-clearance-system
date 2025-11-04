@@ -150,7 +150,7 @@ const About = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                Learn More About Our Solution
+                Learn More
                 <motion.div
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}

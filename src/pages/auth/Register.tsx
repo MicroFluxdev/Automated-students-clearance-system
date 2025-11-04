@@ -204,8 +204,8 @@ export default function Register() {
               register={register}
               errors={errors}
               label="I have read and agree to the"
-              linkText="Non-Disclosure Agreement"
-              linkUrl="https://ncmcmaranding.com/contact-us"
+              linkText="Terms and Policy"
+              linkUrl="/TermsPolicy"
             />
 
             <AuthButton isLoading={isLoading} label="Create" type="submit" />
