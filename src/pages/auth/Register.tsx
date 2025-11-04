@@ -55,7 +55,7 @@ export default function Register() {
         if (status === 400) {
           setError(
             axiosError.response.data?.error ||
-              "Registration failed. Please try again later."
+            "Registration failed. Please try again later."
           );
         } else {
           setError("Registration failed. Please try again later.");
@@ -75,11 +75,13 @@ export default function Register() {
   return (
     <div className="min-h-screen flex">
       {/* Left side: Image */}
-      <div className="hidden lg:flex flex-1 max-h-screen items-center justify-center bg-white">
+      <div className="hidden lg:flex flex-1 items-center justify-center relative bg-gradient-to-br from-indigo-100 via-white to-indigo-50 p-12 overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-indigo-300 opacity-30 blur-3xl rounded-full animate-pulse-slow"></div>
+        <div className="absolute -bottom-32 -right-24 w-[300px] h-[300px] bg-pink-200 opacity-20 blur-2xl rounded-full animate-pulse-slow"></div>
         <img
-          src="/sign/signup.jpg"
-          alt="Register illustration"
-          className="object-cover w-full h-full max-h-screen"
+          src="/sign/test1.png"
+          alt="Login illustration"
+          className="relative rounded-3xl shadow-2xl object-contain max-w-[85%] max-h-[85%] transition-transform duration-500 hover:scale-105 hover:rotate-1"
           loading="lazy"
         />
       </div>
