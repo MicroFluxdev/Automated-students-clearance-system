@@ -19,7 +19,6 @@ import {
   Building,
   Calendar,
   Loader2,
-  ArrowBigRight,
   AlertTriangle,
 } from "lucide-react";
 import axiosInstance, { API_URL } from "@/api/axios";
@@ -68,6 +67,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import TooltipDemo from "@/components/HoverToolip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // API response interface matching the backend data structure
 interface ApiStudent {
@@ -1202,13 +1207,25 @@ export const SaoOfficer = () => {
           )}
         </CardContent>
       </Card>
-      <div className="flex justify-end">
-        <Link to={"/clearing-officer/sao/requirements"}>
-          <Button variant="outline" className="w-fit">
-            Back reuirements
-            <ArrowBigRight className="mr-2 h-4 w-4" />
-          </Button>
-        </Link>
+      <div className="fixed bottom-6 right-6 z-50">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link to={"/clearing-officer/sao/requirements"}>
+                <Button
+                  size="icon"
+                  className="h-12 w-12 rounded-full shadow-lg bg-blue-600"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                  <span className="sr-only">Back to requirements</span>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="left" align="center">
+              Back to requirements
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Unsign Warning Dialog */}

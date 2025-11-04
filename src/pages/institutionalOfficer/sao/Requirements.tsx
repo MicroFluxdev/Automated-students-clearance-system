@@ -547,8 +547,16 @@ const Requirements = () => {
             icon={<PlusOutlined />}
             onClick={() => setIsModalOpen(true)}
             className="bg-blue-600 hover:bg-blue-700"
+            disabled={requirements.length > 0}
+            title={
+              requirements.length > 0
+                ? "You have already set a requirement"
+                : "Set a new requirement"
+            }
           >
-            Set Requirement
+            {requirements.length > 0
+              ? "You have already set a requirement"
+              : "Set a new requirement"}
           </Button>
         </div>
       </div>
