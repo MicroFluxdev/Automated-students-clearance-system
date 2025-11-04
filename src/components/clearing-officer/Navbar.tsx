@@ -134,6 +134,8 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                             ? "Clearing Officer"
                             : user?.role === "sao"
                             ? "SAO"
+                            : user?.role === "registrar"
+                            ? "Registrar"
                             : "Who are you?"}
                         </p>
                       </div>

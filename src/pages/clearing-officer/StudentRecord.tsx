@@ -420,9 +420,15 @@ const StudentRecord: React.FC = () => {
         updateResults.forEach((promiseResult) => {
           if (promiseResult.status === "fulfilled") {
             const { student, existingReqId } = promiseResult.value;
-            studentReqIdMap.set(student.id_no, existingReqId);
-            successfulUpdateIds.push(existingReqId);
-            console.log(`✅ Updated ${student.id_no} -> ${existingReqId}`);
+            if (existingReqId) {
+              studentReqIdMap.set(student.id_no, existingReqId);
+              successfulUpdateIds.push(existingReqId);
+              console.log(`✅ Updated ${student.id_no} -> ${existingReqId}`);
+            } else {
+              console.error(`❌ No requirement ID for ${student.id_no}`);
+            }
+          } else {
+            console.error(`❌ Failed to update:`, promiseResult.reason);
           }
         });
 
@@ -456,17 +462,40 @@ const StudentRecord: React.FC = () => {
         createResults = await createBulkStudentRequirements(bulkRequirements);
 
         if (createResults && createResults.length > 0) {
-          console.log("📦 Bulk create results:", createResults);
+          console.log("📦 Bulk create results (full response):", createResults);
+          console.log("📦 First result structure:", createResults[0]);
 
           createResults.forEach((result, index) => {
             const studentIdNo = bulkRequirements[index].studentId;
-            const storedId = result._id || result.id || "";
-            console.log(`✅ Created ${studentIdNo} -> ${storedId}`);
-            studentReqIdMap.set(studentIdNo, storedId);
+
+            // Try multiple ways to extract the ID
+            let storedId = result._id || result.id;
+
+            // If no ID found, check if the result might be nested
+            if (!storedId && typeof result === 'object' && result !== null) {
+              const resultObj = result as unknown as Record<string, unknown>;
+              storedId = (resultObj['_id'] || resultObj['id']) as string | undefined;
+            }
+
+            console.log(`🔍 Checking result for ${studentIdNo}:`, {
+              _id: result._id,
+              id: result.id,
+              fullResult: result,
+              extractedId: storedId
+            });
+
+            if (storedId) {
+              console.log(`✅ Created ${studentIdNo} -> ${storedId}`);
+              studentReqIdMap.set(studentIdNo, storedId);
+            } else {
+              console.error(`❌ No ID returned for ${studentIdNo}. Full result:`, JSON.stringify(result));
+            }
           });
 
           // Add new requirements to state
           setAllStudentRequirements((prev) => [...prev, ...createResults]);
+        } else {
+          console.error("❌ Bulk create returned empty or null results");
         }
       }
 
@@ -475,18 +504,31 @@ const StudentRecord: React.FC = () => {
       const totalProcessed = studentsToUpdate.length + createResults.length;
 
       if (totalProcessed > 0) {
+        // Log the requirement IDs before updating state
+        console.log("📋 Student Requirement ID Map:", Array.from(studentReqIdMap.entries()));
+
         // Update local state to reflect the signed status and store student requirement IDs
         setStudentList((prev) =>
-          prev.map((student) =>
-            selectedStudents.includes(student.id)
-              ? {
-                  ...student,
-                  status: "Signed",
-                  studentRequirementId: studentReqIdMap.get(student.id_no),
-                }
-              : student
-          )
+          prev.map((student) => {
+            if (selectedStudents.includes(student.id)) {
+              const reqId = studentReqIdMap.get(student.id_no);
+              console.log(`🔗 Mapping ${student.name} (${student.id_no}) -> Req ID: ${reqId}`);
+
+              // If no requirement ID found, log a warning
+              if (!reqId) {
+                console.warn(`⚠️ No requirement ID found for ${student.name} (${student.id_no})`);
+              }
+
+              return {
+                ...student,
+                status: "Signed",
+                studentRequirementId: reqId,
+              };
+            }
+            return student;
+          })
         );
+
         setSelectedStudents([]);
         console.log(
           "✅ Stored student requirement IDs:",
@@ -513,10 +555,39 @@ const StudentRecord: React.FC = () => {
             selectedStudents.includes(student.id)
           );
 
-          // Filter students that have requirement IDs
-          const studentsWithReqIds = selectedStudentsData.filter(
-            (s) => s.studentRequirementId
-          );
+          console.log("🔍 Preparing to undo signatures for selected students...");
+          console.log("   - Total selected:", selectedStudentsData.length);
+
+          // Try to find requirement IDs for students that don't have them
+          const studentsWithReqIds = selectedStudentsData.map((student) => {
+            if (student.studentRequirementId) {
+              console.log(`✓ ${student.name} has requirement ID: ${student.studentRequirementId}`);
+              return student;
+            }
+
+            // Try to find the requirement ID from allStudentRequirements
+            console.log(`⚠️ ${student.name} missing requirement ID, searching...`);
+            const matchingReq = findExistingStudentRequirement(
+              allStudentRequirements,
+              student.id_no,
+              user?.id || "",
+              reqId || ""
+            );
+
+            if (matchingReq) {
+              const foundId = matchingReq._id || matchingReq.id;
+              console.log(`✓ Found requirement ID for ${student.name}: ${foundId}`);
+              return {
+                ...student,
+                studentRequirementId: foundId,
+              };
+            }
+
+            console.warn(`❌ Could not find requirement ID for ${student.name}`);
+            return student;
+          }).filter((s) => s.studentRequirementId); // Only keep students with requirement IDs
+
+          console.log(`📊 Found ${studentsWithReqIds.length} students with requirement IDs`);
 
           if (studentsWithReqIds.length > 0) {
             const hideLoading = message.loading(
@@ -560,18 +631,23 @@ const StudentRecord: React.FC = () => {
               "✅ Updated requirements in state with status: incomplete"
             );
 
-            // Update local state for all selected students
+            // Update local state for all selected students (including those with found IDs)
             setStudentList((prev) =>
-              prev.map((student) =>
-                selectedStudents.includes(student.id)
-                  ? {
-                      ...student,
-                      status: "Incomplete",
-                      // Keep the studentRequirementId so we can re-sign later
-                      studentRequirementId: student.studentRequirementId,
-                    }
-                  : student
-              )
+              prev.map((student) => {
+                if (selectedStudents.includes(student.id)) {
+                  // Find if this student had their ID found
+                  const studentWithId = studentsWithReqIds.find(
+                    (s) => s.id === student.id
+                  );
+                  return {
+                    ...student,
+                    status: "Incomplete",
+                    // Keep or update the studentRequirementId
+                    studentRequirementId: studentWithId?.studentRequirementId || student.studentRequirementId,
+                  };
+                }
+                return student;
+              })
             );
 
             if (failedCount > 0) {
@@ -585,6 +661,7 @@ const StudentRecord: React.FC = () => {
             }
           } else {
             // No requirement IDs found, just update local state
+            console.warn("⚠️ No requirement IDs found for any selected students");
             setStudentList((prev) =>
               prev.map((student) =>
                 selectedStudents.includes(student.id)
@@ -592,7 +669,7 @@ const StudentRecord: React.FC = () => {
                   : student
               )
             );
-            message.success("Status updated locally");
+            message.warning("No database records found. Updated locally only.");
           }
 
           setSelectedStudents([]);

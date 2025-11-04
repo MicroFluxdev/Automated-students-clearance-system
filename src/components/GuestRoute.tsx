@@ -19,7 +19,7 @@ const GuestRoute: React.FC<Props> = ({ children }) => {
     if (role === "admin") {
       return <Navigate to="/admin-side" replace />;
     }
-    if (role === "clearingOfficer") {
+    if (role === "clearingOfficer" || role === "sao" || role === "registrar") {
       return <Navigate to="/clearing-officer" replace />;
     }
     // For other roles (e.g., student), allow staying on the page so the Login screen

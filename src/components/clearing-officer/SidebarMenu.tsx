@@ -121,15 +121,16 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
 
         <nav className="space-y-1">
           {navbar.map((item, index) => {
-            // Hide `/clearing-officer/clearance` and `/clearing-officer/viewCourses` if user role is "sao"
+            // Hide `/clearing-officer/clearance` and `/clearing-officer/viewCourses` if user role is "sao" or "registrar"
             const shouldHideForSao =
-              user?.role === "sao" &&
+              (user?.role === "sao" || user?.role === "registrar") &&
               (item.to === "/clearing-officer/clearance" ||
                 item.to === "/clearing-officer/viewCourses");
 
-            // Show `/clearing-officer/sao` and `/clearing-officer/sao/post-requirements` only for "sao" role
+            // Show `/clearing-officer/sao` and `/clearing-officer/sao/post-requirements` only for "sao" or "registrar" role
             const shouldHideForNonSao =
               user?.role !== "sao" &&
+              user?.role !== "registrar" &&
               (item.to === "/clearing-officer/sao/students" ||
                 item.to === "/clearing-officer/sao/requirements");
 
@@ -193,6 +194,8 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
                     ? "Clearing Officer"
                     : user?.role === "sao"
                     ? "SAO"
+                    : user?.role === "registrar"
+                    ? "Registrar"
                     : "Who are you?"}
                 </p>
               </div>

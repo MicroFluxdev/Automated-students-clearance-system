@@ -58,7 +58,9 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/clearing-officer"
         element={
-          <ProtectedRoute allowedRoles={["clearingOfficer", "sao"]}>
+          <ProtectedRoute
+            allowedRoles={["clearingOfficer", "sao", "registrar"]}
+          >
             <ClearingOfficerLayout />
           </ProtectedRoute>
         }
@@ -96,7 +98,7 @@ const AppRoutes: React.FC = () => {
         <Route
           path="sao/requirements"
           element={
-            <ProtectedRoute allowedRoles={["sao"]}>
+            <ProtectedRoute allowedRoles={["sao", "registrar"]}>
               <Requirements />
             </ProtectedRoute>
           }
@@ -104,7 +106,7 @@ const AppRoutes: React.FC = () => {
         <Route
           path="sao/students/:reqId"
           element={
-            <ProtectedRoute allowedRoles={["sao"]}>
+            <ProtectedRoute allowedRoles={["sao", "registrar"]}>
               <SaoOfficer />
             </ProtectedRoute>
           }

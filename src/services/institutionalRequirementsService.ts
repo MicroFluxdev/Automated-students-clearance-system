@@ -8,6 +8,7 @@ export interface InstitutionalRequirement {
   description: string;
   semester: string;
   deadline: string; // ISO date string
+  postedBy?: string; // User ID of the clearing officer who posted this
 }
 
 export interface CreateInstitutionalRequirementPayload {
@@ -17,6 +18,7 @@ export interface CreateInstitutionalRequirementPayload {
   description: string;
   semester: string;
   deadline: string;
+  postedBy: string; // User ID of the clearing officer who posted this
 }
 
 /**
@@ -52,6 +54,20 @@ export const getAllInstitutionalRequirements = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching institutional requirements:", error);
+    throw error;
+  }
+};
+
+export const getInstitutionalRequirementById = async (id: string) => {
+  try {
+    console.log("Fetching requirement with ID:", id);
+    const response = await axiosInstance.get(
+      `/institutional/getRequiremntById/${id}`
+    );
+    console.log("Get by ID response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching institutional requirement by ID:", error);
     throw error;
   }
 };

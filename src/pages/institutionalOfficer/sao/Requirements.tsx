@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -15,7 +15,6 @@ import {
   Popover,
   Dropdown,
   Typography,
-  Menu,
 } from "antd";
 import {
   PlusOutlined,
@@ -36,6 +35,7 @@ import {
   updateInstitutionalRequirement,
   deleteInstitutionalRequirement,
 } from "@/services/institutionalRequirementsService";
+import { useAuth } from "@/authentication/useAuth";
 
 interface Requirement {
   _id?: string;
@@ -46,6 +46,7 @@ interface Requirement {
   deadline: Date | string;
   department: string;
   semester: string;
+  postedBy: string;
 }
 
 const departments = [
@@ -66,6 +67,7 @@ const ellipsize = (text: string, limit = 120) =>
 
 const Requirements = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -113,12 +115,7 @@ const Requirements = () => {
     .map((n) => (n || "").trim())
     .filter((n) => n.length > 0);
 
-  // Fetch requirements on component mount
-  useEffect(() => {
-    fetchRequirements();
-  }, []);
-
-  const fetchRequirements = async () => {
+  const fetchRequirements = useCallback(async () => {
     setLoading(true);
     try {
       const response = await getAllInstitutionalRequirements();
@@ -150,20 +147,40 @@ const Requirements = () => {
           deadline: req.deadline as string,
           department: req.department as string,
           semester: req.semester as string,
+          postedBy: req.postedBy as string,
         })
       );
 
+      // Filter requirements to only show those posted by the current user
+      const filteredRequirements = mappedRequirements.filter(
+        (req: Requirement) => req.postedBy === user?.id
+      );
+
       console.log("Mapped requirements:", mappedRequirements);
-      setRequirements(mappedRequirements);
+      console.log(
+        "Filtered requirements (posted by current user):",
+        filteredRequirements
+      );
+      setRequirements(filteredRequirements);
     } catch (error) {
       console.error("Error fetching requirements:", error);
       message.error("Failed to load requirements.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  // Fetch requirements on component mount
+  useEffect(() => {
+    fetchRequirements();
+  }, [fetchRequirements]);
 
   const handleAddRequirement = async () => {
+    if (!user) {
+      message.error("User not authenticated. Please log in again.");
+      return;
+    }
+
     const hasRequiredFields =
       newRequirement.deadline &&
       newRequirement.department &&
@@ -186,6 +203,7 @@ const Requirements = () => {
         description: newRequirement.description || "",
         semester: newRequirement.semester,
         deadline: newRequirement.deadline!.toISOString(),
+        postedBy: user.id,
       };
 
       await createInstitutionalRequirement(payload);
@@ -464,29 +482,26 @@ const Requirements = () => {
       key: "actions",
       render: (_: unknown, record: Requirement) => {
         // Dropdown menu items for actions
-        const actionMenu = (
-          <Menu>
-            <Menu.Item
-              key="view-students"
-              icon={<TeamOutlined />}
-              onClick={() =>
-                navigate(`/clearing-officer/sao/students/${record.id}`)
-              }
-            >
-              View Students
-            </Menu.Item>
-            <Menu.Item
-              key="view-details"
-              icon={<EyeOutlined />}
-              onClick={() => openViewModal(record)}
-            >
-              View Details
-            </Menu.Item>
-          </Menu>
-        );
+        const actionMenu = {
+          items: [
+            {
+              key: "view-students",
+              icon: <TeamOutlined />,
+              label: "View Students",
+              onClick: () =>
+                navigate(`/clearing-officer/sao/students/${record.id}`),
+            },
+            {
+              key: "view-details",
+              icon: <EyeOutlined />,
+              label: "View Details",
+              onClick: () => openViewModal(record),
+            },
+          ],
+        };
         return (
           <Space>
-            <Dropdown overlay={actionMenu} trigger={["click"]}>
+            <Dropdown menu={actionMenu} trigger={["click"]}>
               <Button>
                 Actions <DownOutlined />
               </Button>

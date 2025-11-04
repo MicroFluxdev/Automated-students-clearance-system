@@ -170,6 +170,8 @@ export default function Login() {
             navigate("/clearing-officer", { replace: true });
           } else if (role === "sao") {
             navigate("/clearing-officer", { replace: true });
+          } else if (role === "registrar") {
+            navigate("/clearing-officer", { replace: true });
           } else if (role === "student") {
             navigate("/", { replace: true });
           }
