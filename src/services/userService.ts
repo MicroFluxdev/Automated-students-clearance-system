@@ -71,22 +71,27 @@ export const updateUserPassword = async (
 
 /**
  * Update user avatar/profile image
- * @param data - The avatar file or base64 string
- * @returns The updated user data with new avatar URL
+ * @param userId - The user ID
+ * @param file - The profile image file
+ * @returns The updated user data with new profile image URL
  */
-export const updateAvatar = async (file: File) => {
+export const updateAvatar = async (userId: string, file: File) => {
   try {
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append("profileImage", file);
 
-    const response = await axiosInstance.put("/user/avatar", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await axiosInstance.put(
+      `/updateUser/updateUserProfile/${userId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
     return response.data;
   } catch (error) {
-    console.error("Error updating avatar:", error);
+    console.error("Error updating profile image:", error);
     throw error;
   }
 };

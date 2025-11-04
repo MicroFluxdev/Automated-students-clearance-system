@@ -29,7 +29,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/authentication/useAuth";
-import { updateUserProfile, updateUserPassword } from "@/services/userService";
+import {
+  updateUserProfile,
+  updateUserPassword,
+  updateAvatar,
+} from "@/services/userService";
 import { toast } from "react-toastify";
 
 const AccountSettings = () => {
@@ -37,7 +41,10 @@ const AccountSettings = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
+
+  console.log("👤 Current User in AccountSettings:", user);
 
   // Profile form state - initialized from user data
   const [profileForm, setProfileForm] = useState({
@@ -50,14 +57,22 @@ const AccountSettings = () => {
   // Sync form state when user data changes (e.g., after login or refresh)
   React.useEffect(() => {
     if (user) {
+      console.log("🔄 useEffect triggered - Syncing user data");
+      console.log("👤 User profileImage:", user.profileImage);
+
       setProfileForm({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         email: user.email || "",
         phoneNumber: user.phoneNumber || "",
       });
+      // Sync avatar with user's profile image from server only if different
+      if (user.profileImage && user.profileImage !== avatar) {
+        console.log("✅ Updating avatar state to:", user.profileImage);
+        setAvatar(user.profileImage);
+      }
     }
-  }, [user]);
+  }, [user, avatar]);
 
   // Password form state
   const [passwordForm, setPasswordForm] = useState({
@@ -180,16 +195,89 @@ const AccountSettings = () => {
     toast.info("Delete account functionality will be implemented soon.");
   };
 
-  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select a valid image file.");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error("Image size must be less than 5MB.");
+        return;
+      }
+
+      if (!user?.id) {
+        toast.error("User not found. Please log in again.");
+        return;
+      }
+
+      // Show preview immediately
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatar(reader.result as string);
       };
       reader.readAsDataURL(file);
-      // TODO: Implement avatar upload functionality when endpoint is ready
-      toast.info("Avatar upload functionality will be implemented soon.");
+
+      // Upload the file
+      setAvatarLoading(true);
+      try {
+        const response = await updateAvatar(user.id, file);
+
+        console.log("📸 Upload Response:", response);
+
+        // Extract the uploaded image URL from various possible response structures
+        const uploadedImageUrl =
+          response.updatedOfficer?.profileImage ||
+          response.updatedOfficer?.profileImageUrl ||
+          response.profileImageUrl ||
+          response.profileImage ||
+          response.data?.profileImageUrl ||
+          response.data?.profileImage ||
+          response.user?.profileImage ||
+          response.user?.profileImageUrl;
+
+        console.log("📸 Uploaded Image URL:", uploadedImageUrl);
+
+        if (!uploadedImageUrl) {
+          console.error("❌ No image URL in response:", response);
+          throw new Error("Server did not return an image URL");
+        }
+
+        // Update the user context with new profile image
+        const updatedUser = {
+          ...user,
+          profileImage: uploadedImageUrl,
+        };
+
+        console.log("👤 Updated User:", updatedUser);
+
+        updateUser(updatedUser);
+
+        // Update avatar state with the server URL for immediate display
+        setAvatar(uploadedImageUrl);
+
+        toast.success("Profile image updated successfully!");
+      } catch (error: unknown) {
+        // Type guard for Axios error shape
+        const err = error as { response?: { data?: { message?: string } } };
+        console.error("Avatar upload error:", error);
+
+        // Reset preview on error
+        setAvatar(null);
+
+        toast.error(
+          err?.response?.data?.message ||
+            "Failed to upload profile image. Please try again."
+        );
+      } finally {
+        setAvatarLoading(false);
+      }
     }
   };
 
@@ -213,24 +301,37 @@ const AccountSettings = () => {
             <div className="relative group">
               <Avatar className="w-24 h-24 border-2 border-primary">
                 <AvatarImage
-                  src={avatar || "https://github.com/evilrabbit.png"}
+                  src={
+                    avatar ||
+                    user?.profileImage ||
+                    // "https://github.com/evilrabbit.png"
+                    "https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                  }
                 />
-                {/* || user?.avatar  */}
                 <AvatarFallback>
                   <User className="w-10 h-10" />
                 </AvatarFallback>
               </Avatar>
               <label
                 htmlFor="avatar-upload"
-                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                className={`absolute inset-0 flex items-center justify-center bg-black/50 rounded-full transition-opacity ${
+                  avatarLoading
+                    ? "opacity-100 cursor-wait"
+                    : "opacity-0 group-hover:opacity-100 cursor-pointer"
+                }`}
               >
-                <Upload className="text-white w-8 h-8" />
+                {avatarLoading ? (
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+                ) : (
+                  <Upload className="text-white w-8 h-8" />
+                )}
                 <input
                   id="avatar-upload"
                   type="file"
                   className="hidden"
                   accept="image/*"
                   onChange={handleAvatarChange}
+                  disabled={avatarLoading}
                 />
               </label>
             </div>

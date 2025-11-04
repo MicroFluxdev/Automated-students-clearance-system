@@ -6,6 +6,8 @@ export interface User {
   lastName: string;
   email: string;
   phoneNumber?: string;
+  profileImage?: string;
+  profile?: string;
   role: string;
   createdAt?: string;
   updatedAt?: string;
