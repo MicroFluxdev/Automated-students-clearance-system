@@ -4,10 +4,11 @@ import {
   ChevronLeft,
   LayoutDashboard,
   Settings,
-  UserCog,
+  UsersRound,
+  UserRoundCog,
+  CalendarCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { UsergroupAddOutlined } from "@ant-design/icons";
 import { useAuth } from "@/authentication/useAuth";
 
 const navbar = [
@@ -18,13 +19,18 @@ const navbar = [
   },
   {
     to: "/admin-side/addStudents",
-    icon: UsergroupAddOutlined,
+    icon: UsersRound,
     label: "Student",
   },
   {
     to: "/admin-side/addClearingOfficer",
-    icon: UserCog,
+    icon: UserRoundCog,
     label: "Clearing Officer",
+  },
+  {
+    to: "/admin-side/adminClearance",
+    icon: CalendarCog,
+    label: "Setup Clearance",
   },
   {
     to: "/admin-side/adminSettings",
@@ -146,10 +152,12 @@ export function AdminSideMenu({ closeSidebar }: CloseSidebarProps) {
               <div className="flex items-center gap-3">
                 <img
                   alt=""
-                  src="https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
-                  className="size-10 rounded-full object-cover"
+                  src={
+                    user?.profileImage ||
+                    "https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                  }
+                  className="size-10 rounded-full object-cover border-2 border-blue-500"
                 />
-
                 <div>
                   <p className="font-medium text-xs text-blue-600">
                     {userName}

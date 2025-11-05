@@ -28,6 +28,7 @@ import EnrollmentLogin from "@/pages/enrollmentSide/EnrollmentLogin";
 import ViewCourses from "@/pages/clearing-officer/ViewCourses";
 import { SaoOfficer } from "@/pages/institutionalOfficer/sao/studentsList";
 import Requirements from "@/pages/institutionalOfficer/sao/Requirements";
+import { ClearanceStart } from "@/pages/admin-side/ClearanceStart";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -51,6 +52,7 @@ const AppRoutes: React.FC = () => {
         <Route path="addStudents" element={<AddStudents />} />
         <Route path="addClearingOfficer" element={<AddClearingOfficer />} />
         <Route path="adminSettings" element={<AdminSettings />} />
+        <Route path="adminClearance" element={<ClearanceStart />} />
 
         <Route path="*" element={<Unauthorized />} />
       </Route>
