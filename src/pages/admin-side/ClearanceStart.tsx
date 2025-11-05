@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { message } from "antd";
+import { useState, useEffect, useCallback } from "react";
+import { message, Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { format } from "date-fns";
 import {
   PlayCircle,
@@ -13,6 +14,7 @@ import {
   AlertCircle,
   Settings,
   GraduationCap,
+  Trash2,
 } from "lucide-react";
 import {
   Card,
@@ -49,8 +51,10 @@ import {
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { AxiosError } from "axios";
+import axiosInstance from "@/api/axios";
 
 interface ClearanceStatus {
+  id?: string;
   isActive: boolean;
   startDate: Date | null;
   deadline: Date | null;
@@ -58,78 +62,110 @@ interface ClearanceStatus {
   semester?: string;
   academicYear?: string;
   semesterType?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Dummy Data for Clearance
-const dummyClearanceData: ClearanceStatus[] = [
-  {
-    isActive: false,
-    startDate: null,
-    deadline: null,
-    extendedDeadline: null,
-    semester: "1st Semester",
-    academicYear: "2024-2025",
-    semesterType: "1st Semester",
-  },
-  {
-    isActive: true,
-    startDate: new Date("2024-08-15"),
-    deadline: new Date("2024-12-15"),
-    extendedDeadline: null,
-    semester: "1st Sem 2024-2025",
-    academicYear: "2024-2025",
-    semesterType: "1st Semester",
-  },
-  {
-    isActive: true,
-    startDate: new Date("2025-01-15"),
-    deadline: new Date("2025-05-15"),
-    extendedDeadline: new Date("2025-06-15"),
-    semester: "2nd Sem 2024-2025",
-    academicYear: "2024-2025",
-    semesterType: "2nd Semester",
-  },
-];
+// API Response interface
+interface ClearanceApiResponse {
+  id: string;
+  isActive: boolean;
+  startDate: string | null;
+  deadline: string;
+  extendedDeadline: string | null;
+  semester?: string;
+  academicYear: string;
+  semesterType: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export const ClearanceStart = () => {
-  // Dummy data state - using first entry as default
-  const [dummyDataIndex] = useState(0);
-  const [status, setStatus] = useState<ClearanceStatus>(
-    dummyClearanceData[dummyDataIndex]
-  );
+  // State management
+  const [status, setStatus] = useState<ClearanceStatus | null>(null);
+  const [allClearances, setAllClearances] = useState<ClearanceStatus[]>([]);
   const [loading, setLoading] = useState(false);
   const [extendLoading, setExtendLoading] = useState(false);
   const [newDeadline, setNewDeadline] = useState<Date | undefined>(undefined);
   const [isExtendDialogOpen, setIsExtendDialogOpen] = useState(false);
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
   const [setupLoading, setSetupLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Form state for setup
   const [semesterType, setSemesterType] = useState<string>("");
   const [academicYear, setAcademicYear] = useState<string>("");
   const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(undefined);
 
-  // Fetch current clearance status (using dummy data)
-  const fetchClearanceStatus = async () => {
+  console.log(status);
+
+  // Helper function to transform API response to component state
+  const transformApiResponse = useCallback(
+    (apiData: ClearanceApiResponse): ClearanceStatus => {
+      return {
+        id: apiData.id,
+        isActive: apiData.isActive,
+        startDate: apiData.startDate ? new Date(apiData.startDate) : null,
+        deadline: apiData.deadline ? new Date(apiData.deadline) : null,
+        extendedDeadline: apiData.extendedDeadline
+          ? new Date(apiData.extendedDeadline)
+          : null,
+        semester: apiData.semester,
+        academicYear: apiData.academicYear,
+        semesterType: apiData.semesterType,
+        createdAt: apiData.createdAt,
+        updatedAt: apiData.updatedAt,
+      };
+    },
+    []
+  );
+
+  // Fetch current clearance status from database
+  const fetchClearanceStatus = useCallback(async () => {
     try {
       setLoading(true);
-      // Using dummy data - simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const dummyStatus = dummyClearanceData[dummyDataIndex];
-      setStatus(dummyStatus);
+      const response = await axiosInstance.get<ClearanceApiResponse[]>(
+        "/clearance/getAllClearance"
+      );
+
+      // Get the most recent clearance (assuming the API returns array)
+      if (response.data && response.data.length > 0) {
+        // Sort by createdAt to get the most recent one
+        const sortedData = response.data.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        // Transform all clearances for the table
+        const allTransformed = sortedData.map(transformApiResponse);
+        setAllClearances(allTransformed);
+
+        // Set the most recent as current status
+        const latestClearance = allTransformed[0];
+        setStatus(latestClearance);
+      } else {
+        // No clearance found - set to null to show setup prompt
+        setStatus(null);
+        setAllClearances([]);
+      }
     } catch (error) {
       console.error("Error fetching clearance status:", error);
-      // Use default dummy data
-      setStatus(dummyClearanceData[0]);
+      const axiosError = error as AxiosError<{ message?: string }>;
+      message.error(
+        axiosError?.response?.data?.message ||
+          "Failed to fetch clearance status"
+      );
+      setStatus(null);
+      setAllClearances([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [transformApiResponse]);
 
   useEffect(() => {
     fetchClearanceStatus();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchClearanceStatus]);
 
   const handleSetupClearance = async () => {
     if (!semesterType || !academicYear || !deadlineDate) {
@@ -139,28 +175,36 @@ export const ClearanceStart = () => {
 
     try {
       setSetupLoading(true);
-      // Simulate API call with dummy data
-      await new Promise((resolve) => setTimeout(resolve, 800));
 
-      const newStatus: ClearanceStatus = {
-        isActive: false,
-        startDate: null,
-        deadline: deadlineDate,
-        extendedDeadline: null,
-        semester: `${semesterType} ${academicYear}`,
-        academicYear: academicYear,
-        semesterType: semesterType,
-      };
+      // Format the deadline date as YYYY-MM-DD for the API
+      const formattedDeadline = format(deadlineDate, "yyyy-MM-dd");
 
-      setStatus(newStatus);
+      // Log the data being sent to debug semester type issue
+      console.log("Setup Clearance Data:", {
+        semesterType,
+        academicYear,
+        deadline: formattedDeadline,
+      });
+
+      // POST request to setup clearance
+      await axiosInstance.post<ClearanceApiResponse>("/clearance/setup", {
+        semesterType,
+        academicYear,
+        deadline: formattedDeadline,
+      });
+
       message.success(
         "Clearance setup completed! You can now start clearance."
       );
       setIsSetupDialogOpen(false);
+
       // Reset form
       setSemesterType("");
       setAcademicYear("");
       setDeadlineDate(undefined);
+
+      // Refetch clearance status to ensure we have complete data with ID
+      await fetchClearanceStatus();
     } catch (error) {
       console.error("Error setting up clearance:", error);
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -172,8 +216,10 @@ export const ClearanceStart = () => {
     }
   };
 
-  const handleStartClearance = async () => {
-    if (!status.deadline) {
+  const handleStartClearance = async (clearanceRecord?: ClearanceStatus) => {
+    const targetClearance = clearanceRecord || status;
+
+    if (!targetClearance || !targetClearance.deadline) {
       message.warning(
         "Please setup clearance first (semester, year, and deadline)"
       );
@@ -181,16 +227,35 @@ export const ClearanceStart = () => {
       return;
     }
 
+    if (!targetClearance.id) {
+      message.error("Clearance ID not found. Please refresh the page.");
+      return;
+    }
+
+    console.log(targetClearance.id);
+
     try {
       setLoading(true);
-      // Using dummy data - simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setStatus((prev) => ({
-        ...prev,
-        isActive: true,
-        startDate: new Date(),
-      }));
+
+      // PUT request to start clearance
+      const response = await axiosInstance.put<ClearanceApiResponse>(
+        `/clearance/start/${targetClearance.id}`
+      );
+
+      // Transform and update state
+      const updatedStatus = transformApiResponse(response.data);
+      setStatus(updatedStatus);
+
+      // Update the allClearances array to reflect changes in table
+      setAllClearances((prevClearances) =>
+        prevClearances.map((clearance) =>
+          clearance.id === updatedStatus.id ? updatedStatus : clearance
+        )
+      );
+
       message.success("Clearance started successfully!");
+      // Ensure UI reflects the latest server state immediately
+      await fetchClearanceStatus();
     } catch (error) {
       console.error("Error starting clearance:", error);
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -202,16 +267,36 @@ export const ClearanceStart = () => {
     }
   };
 
-  const handleStopClearance = async () => {
+  const handleStopClearance = async (clearanceRecord?: ClearanceStatus) => {
+    const targetClearance = clearanceRecord || status;
+
+    if (!targetClearance || !targetClearance.id) {
+      message.error("Clearance ID not found. Please refresh the page.");
+      return;
+    }
+
     try {
       setLoading(true);
-      // Using dummy data - simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setStatus((prev) => ({
-        ...prev,
-        isActive: false,
-      }));
+
+      // PUT request to stop clearance
+      const response = await axiosInstance.put<ClearanceApiResponse>(
+        `/clearance/stop/${targetClearance.id}`
+      );
+
+      // Transform and update state
+      const updatedStatus = transformApiResponse(response.data);
+      setStatus(updatedStatus);
+
+      // Update the allClearances array to reflect changes in table
+      setAllClearances((prevClearances) =>
+        prevClearances.map((clearance) =>
+          clearance.id === updatedStatus.id ? updatedStatus : clearance
+        )
+      );
+
       message.success("Clearance stopped successfully!");
+      // Ensure UI reflects the latest server state immediately
+      await fetchClearanceStatus();
     } catch (error) {
       console.error("Error stopping clearance:", error);
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -229,6 +314,11 @@ export const ClearanceStart = () => {
       return;
     }
 
+    if (!status || !status.id) {
+      message.error("Clearance ID not found. Please refresh the page.");
+      return;
+    }
+
     const currentDeadline = status.extendedDeadline || status.deadline;
     if (currentDeadline && newDeadline <= currentDeadline) {
       message.error("New deadline must be after the current deadline");
@@ -237,15 +327,34 @@ export const ClearanceStart = () => {
 
     try {
       setExtendLoading(true);
-      // Using dummy data - simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setStatus((prev) => ({
-        ...prev,
-        extendedDeadline: newDeadline,
-      }));
+
+      // Format the new deadline date as YYYY-MM-DD for the API
+      const formattedNewDeadline = format(newDeadline, "yyyy-MM-dd");
+
+      // PUT request to extend deadline
+      const response = await axiosInstance.put<ClearanceApiResponse>(
+        `/clearance/extend/${status.id}`,
+        {
+          newDeadline: formattedNewDeadline,
+        }
+      );
+
+      // Transform and update state
+      const updatedStatus = transformApiResponse(response.data);
+      setStatus(updatedStatus);
+
+      // Update the allClearances array to reflect changes in table
+      setAllClearances((prevClearances) =>
+        prevClearances.map((clearance) =>
+          clearance.id === updatedStatus.id ? updatedStatus : clearance
+        )
+      );
+
       message.success(`Deadline extended to ${format(newDeadline, "PPP")}`);
       setIsExtendDialogOpen(false);
       setNewDeadline(undefined);
+      // Ensure UI reflects the latest server state immediately
+      await fetchClearanceStatus();
     } catch (error) {
       console.error("Error extending deadline:", error);
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -257,13 +366,152 @@ export const ClearanceStart = () => {
     }
   };
 
-  const currentDeadline = status.extendedDeadline || status.deadline;
+  const handleDeleteClearance = async () => {
+    if (!status || !status.id) {
+      message.error("Clearance ID not found. Please refresh the page.");
+      return;
+    }
+
+    const deletedId = status.id;
+
+    try {
+      setDeleteLoading(true);
+
+      // DELETE request to delete clearance
+      await axiosInstance.delete(`/clearance/deleteClearance/${deletedId}`);
+
+      message.success("Clearance deleted successfully!");
+      setIsDeleteDialogOpen(false);
+
+      // Remove from allClearances array
+      const updatedClearances = allClearances.filter(
+        (clearance) => clearance.id !== deletedId
+      );
+      setAllClearances(updatedClearances);
+
+      // If deleted clearance was the current status, set new status to most recent
+      if (updatedClearances.length > 0) {
+        setStatus(updatedClearances[0]);
+      } else {
+        setStatus(null);
+      }
+    } catch (error) {
+      console.error("Error deleting clearance:", error);
+      const axiosError = error as AxiosError<{ message?: string }>;
+      message.error(
+        axiosError?.response?.data?.message || "Failed to delete clearance"
+      );
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const currentDeadline = status?.extendedDeadline || status?.deadline;
   const daysRemaining = currentDeadline
     ? Math.ceil(
         (currentDeadline.getTime() - new Date().getTime()) /
           (1000 * 60 * 60 * 24)
       )
     : null;
+
+  // Table columns for clearance history
+  const columns: ColumnsType<ClearanceStatus> = [
+    {
+      title: "Academic Year",
+      dataIndex: "academicYear",
+      key: "academicYear",
+      width: 150,
+    },
+    {
+      title: "Semester",
+      dataIndex: "semesterType",
+      key: "semesterType",
+      width: 150,
+    },
+    {
+      title: "Status",
+      dataIndex: "isActive",
+      key: "isActive",
+      width: 120,
+      render: (isActive: boolean) => (
+        <Badge
+          variant={isActive ? "default" : "secondary"}
+          className={cn(
+            "text-xs",
+            isActive ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700"
+          )}
+        >
+          {isActive ? "Active" : "Inactive"}
+        </Badge>
+      ),
+    },
+    {
+      title: "Start Date",
+      dataIndex: "startDate",
+      key: "startDate",
+      width: 150,
+      render: (date: Date | null) =>
+        date ? format(date, "MMM dd, yyyy") : "Not started",
+    },
+    {
+      title: "Deadline",
+      dataIndex: "deadline",
+      key: "deadline",
+      width: 150,
+      render: (date: Date | null) =>
+        date ? format(date, "MMM dd, yyyy") : "N/A",
+    },
+    {
+      title: "Extended Deadline",
+      dataIndex: "extendedDeadline",
+      key: "extendedDeadline",
+      width: 170,
+      render: (date: Date | null) =>
+        date ? format(date, "MMM dd, yyyy") : "-",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 250,
+      render: (_: unknown, record: ClearanceStatus) => (
+        <div className="flex gap-2">
+          {record.isActive ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleStopClearance(record)}
+              className="text-xs"
+            >
+              <PauseCircle className="h-3 w-3 mr-1" />
+              Stop
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleStartClearance(record)}
+              className="text-xs"
+            >
+              <PlayCircle className="h-3 w-3 mr-1" />
+              Start
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setStatus(record);
+              setIsDeleteDialogOpen(true);
+            }}
+            className="text-xs text-red-600 border-red-300 hover:bg-red-50"
+          >
+            <Trash2 className="h-3 w-3 mr-1" />
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -291,15 +539,15 @@ export const ClearanceStart = () => {
                 </CardDescription>
               </div>
               <Badge
-                variant={status.isActive ? "default" : "secondary"}
+                variant={status?.isActive ? "default" : "secondary"}
                 className={cn(
                   "text-sm px-4 py-1.5",
-                  status.isActive
+                  status?.isActive
                     ? "bg-green-500 hover:bg-green-600 text-white"
                     : "bg-gray-200 text-gray-700"
                 )}
               >
-                {status.isActive ? (
+                {status?.isActive ? (
                   <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="h-4 w-4" />
                     Active
@@ -322,7 +570,7 @@ export const ClearanceStart = () => {
                   <span className="text-sm font-medium">Start Date</span>
                 </div>
                 <p className="text-lg font-semibold text-blue-900">
-                  {status.startDate
+                  {status?.startDate
                     ? format(status.startDate, "PPP")
                     : "Not started"}
                 </p>
@@ -336,7 +584,7 @@ export const ClearanceStart = () => {
                 <p className="text-lg font-semibold text-purple-900">
                   {currentDeadline ? format(currentDeadline, "PPP") : "Not set"}
                 </p>
-                {status.extendedDeadline && (
+                {status?.extendedDeadline && (
                   <Badge variant="outline" className="mt-2 text-xs">
                     Extended
                   </Badge>
@@ -345,7 +593,7 @@ export const ClearanceStart = () => {
             </div>
 
             {/* Semester & Year Info */}
-            {(status.semester || status.academicYear) && (
+            {(status?.semesterType || status?.academicYear) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 text-green-700 mb-2">
@@ -353,7 +601,7 @@ export const ClearanceStart = () => {
                     <span className="text-sm font-medium">Semester</span>
                   </div>
                   <p className="text-lg font-semibold text-green-900">
-                    {status.semester || "Not set"}
+                    {status?.semesterType || "Not set"}
                   </p>
                 </div>
 
@@ -363,7 +611,7 @@ export const ClearanceStart = () => {
                     <span className="text-sm font-medium">Academic Year</span>
                   </div>
                   <p className="text-lg font-semibold text-orange-900">
-                    {status.academicYear || "Not set"}
+                    {status?.academicYear || "Not set"}
                   </p>
                 </div>
               </div>
@@ -521,9 +769,9 @@ export const ClearanceStart = () => {
                 </DialogContent>
               </Dialog>
 
-              {status.isActive ? (
+              {status?.isActive ? (
                 <Button
-                  onClick={handleStopClearance}
+                  onClick={() => handleStopClearance()}
                   disabled={loading}
                   variant="destructive"
                   size="lg"
@@ -534,8 +782,8 @@ export const ClearanceStart = () => {
                 </Button>
               ) : (
                 <Button
-                  onClick={handleStartClearance}
-                  disabled={loading || !status.deadline}
+                  onClick={() => handleStartClearance()}
+                  disabled={loading || !status?.deadline}
                   size="lg"
                   className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700"
                 >
@@ -553,7 +801,7 @@ export const ClearanceStart = () => {
                     variant="outline"
                     size="lg"
                     className="flex-1 sm:flex-none"
-                    disabled={!status.isActive || !currentDeadline}
+                    disabled={!status?.isActive || !currentDeadline}
                   >
                     <CalendarDays className="h-5 w-5 mr-2" />
                     Extend Deadline
@@ -633,6 +881,65 @@ export const ClearanceStart = () => {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+
+              {/* Delete Clearance Button */}
+              {status && (
+                <Dialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="flex-1 sm:flex-none border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      <Trash2 className="h-5 w-5 mr-2" />
+                      Delete Setup
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle className="text-red-600">
+                        Delete Clearance Setup
+                      </DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to delete this clearance setup?
+                        This action cannot be undone.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                        <p className="text-sm text-red-800 font-medium mb-2">
+                          Warning: This will permanently delete:
+                        </p>
+                        <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
+                          <li>
+                            Clearance configuration for {status?.academicYear}
+                          </li>
+                          <li>{status?.semesterType}</li>
+                          <li>All associated deadlines and settings</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsDeleteDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDeleteClearance}
+                        disabled={deleteLoading}
+                      >
+                        {deleteLoading ? "Deleting..." : "Delete Clearance"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -686,10 +993,48 @@ export const ClearanceStart = () => {
                   original date. Useful when students need more time.
                 </p>
               </div>
+
+              <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                <p className="text-sm font-medium text-red-700 mb-1">
+                  Delete Setup
+                </p>
+                <p className="text-xs text-red-600">
+                  Permanently removes the clearance setup. Use this to reset and
+                  create a new clearance configuration. This action cannot be
+                  undone.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Clearance History Table */}
+      {allClearances.length > 0 && (
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle className="text-2xl">All Clearance Setups</CardTitle>
+            <CardDescription>
+              View and manage all clearance configurations
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table
+              columns={columns}
+              dataSource={allClearances}
+              rowKey="id"
+              loading={loading}
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: (total) => `Total ${total} clearance setups`,
+              }}
+              scroll={{ x: 1200 }}
+              className="border rounded-lg"
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
