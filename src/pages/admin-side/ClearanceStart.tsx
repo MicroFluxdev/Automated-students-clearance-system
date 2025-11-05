@@ -271,7 +271,7 @@ export const ClearanceStart = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            Clearance Management
+            Set Clearance
           </h1>
           <p className="text-gray-500 mt-1">
             Start, stop, and manage clearance deadlines

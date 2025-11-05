@@ -726,23 +726,27 @@ const AddClearingOfficer = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[140px]">School ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Email
-                    </TableHead>
-                    <TableHead className="hidden lg:table-cell">
-                      Phone
-                    </TableHead>
-                    <TableHead className="hidden xl:table-cell">Role</TableHead>
-                    <TableHead className="w-[200px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>{tableRows}</TableBody>
-              </Table>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[140px]">School ID</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Email
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Phone
+                      </TableHead>
+                      <TableHead className="hidden xl:table-cell">
+                        Role
+                      </TableHead>
+                      <TableHead className="w-[200px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>{tableRows}</TableBody>
+                </Table>
+              </div>
             </div>
           )}
 
@@ -786,7 +790,8 @@ const AddClearingOfficer = () => {
                     .map((page, index, array) => {
                       // Add ellipsis
                       const prevPage = array[index - 1];
-                      const showEllipsisBefore = prevPage && page - prevPage > 1;
+                      const showEllipsisBefore =
+                        prevPage && page - prevPage > 1;
 
                       return (
                         <div key={page} className="flex items-center gap-1">
@@ -794,7 +799,9 @@ const AddClearingOfficer = () => {
                             <span className="px-2 text-slate-400">...</span>
                           )}
                           <Button
-                            variant={currentPage === page ? "default" : "outline"}
+                            variant={
+                              currentPage === page ? "default" : "outline"
+                            }
                             size="sm"
                             onClick={() => handlePageChange(page)}
                             className="min-w-[2.5rem]"
