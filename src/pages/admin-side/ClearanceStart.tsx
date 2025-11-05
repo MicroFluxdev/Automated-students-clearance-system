@@ -141,9 +141,11 @@ export const ClearanceStart = () => {
         const allTransformed = sortedData.map(transformApiResponse);
         setAllClearances(allTransformed);
 
-        // Set the most recent as current status
-        const latestClearance = allTransformed[0];
-        setStatus(latestClearance);
+        // Prioritize active clearance for display in the status card
+        // If there's an active clearance, show it; otherwise show the most recent
+        const activeClearance = allTransformed.find((c) => c.isActive);
+        const displayClearance = activeClearance || allTransformed[0];
+        setStatus(displayClearance);
       } else {
         // No clearance found - set to null to show setup prompt
         setStatus(null);
@@ -414,6 +416,12 @@ export const ClearanceStart = () => {
       )
     : null;
 
+  // Filter out current/active clearance from history table - only show old/inactive clearances
+  // The current status (displayed in the main card) should not appear in history
+  const historyClearances = allClearances.filter(
+    (clearance) => clearance.id !== status?.id && !clearance.isActive
+  );
+
   // Table columns for clearance history
   const columns: ColumnsType<ClearanceStatus> = [
     {
@@ -433,15 +441,12 @@ export const ClearanceStart = () => {
       dataIndex: "isActive",
       key: "isActive",
       width: 120,
-      render: (isActive: boolean) => (
+      render: () => (
         <Badge
-          variant={isActive ? "default" : "secondary"}
-          className={cn(
-            "text-xs",
-            isActive ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700"
-          )}
+          variant="secondary"
+          className="text-xs bg-blue-200 text-blue-700"
         >
-          {isActive ? "Active" : "Inactive"}
+          Done
         </Badge>
       ),
     },
@@ -475,27 +480,6 @@ export const ClearanceStart = () => {
       width: 250,
       render: (_: unknown, record: ClearanceStatus) => (
         <div className="flex gap-2">
-          {record.isActive ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleStopClearance(record)}
-              className="text-xs"
-            >
-              <PauseCircle className="h-3 w-3 mr-1" />
-              Stop
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleStartClearance(record)}
-              className="text-xs"
-            >
-              <PlayCircle className="h-3 w-3 mr-1" />
-              Start
-            </Button>
-          )}
           <Button
             size="sm"
             variant="outline"
@@ -662,6 +646,7 @@ export const ClearanceStart = () => {
                     variant="outline"
                     size="lg"
                     className="flex-1 sm:flex-none"
+                    disabled={status?.isActive}
                   >
                     <Settings className="h-5 w-5 mr-2" />
                     Setup Clearance
@@ -1010,24 +995,25 @@ export const ClearanceStart = () => {
       </div>
 
       {/* Clearance History Table */}
-      {allClearances.length > 0 && (
+      {historyClearances.length > 0 && (
         <Card className="border-2">
           <CardHeader>
-            <CardTitle className="text-2xl">All Clearance Setups</CardTitle>
+            <CardTitle className="text-2xl">Clearance History</CardTitle>
             <CardDescription>
-              View and manage all clearance configurations
+              View past clearance configurations
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table
               columns={columns}
-              dataSource={allClearances}
+              dataSource={historyClearances}
               rowKey="id"
               loading={loading}
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,
-                showTotal: (total) => `Total ${total} clearance setups`,
+                showTotal: (total) =>
+                  `Total ${total} completed clearance setups`,
               }}
               scroll={{ x: 1200 }}
               className="border rounded-lg"
