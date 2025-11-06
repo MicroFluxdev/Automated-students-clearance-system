@@ -36,6 +36,10 @@ import {
   deleteInstitutionalRequirement,
 } from "@/services/institutionalRequirementsService";
 import { useAuth } from "@/authentication/useAuth";
+import {
+  getCurrentClearance,
+  type ClearanceStatus,
+} from "@/services/clearanceService";
 
 interface Requirement {
   _id?: string;
@@ -73,6 +77,9 @@ const Requirements = () => {
   const [loading, setLoading] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [clearanceStatus, setClearanceStatus] =
+    useState<ClearanceStatus | null>(null);
+  const [clearanceLoading, setClearanceLoading] = useState(true);
 
   // Add form state
   const [nameTags, setNameTags] = useState<string[]>([]);
@@ -114,6 +121,26 @@ const Requirements = () => {
   const normalizedNames = nameTags
     .map((n) => (n || "").trim())
     .filter((n) => n.length > 0);
+
+  // Fetch current clearance status
+  useEffect(() => {
+    const fetchClearanceStatus = async () => {
+      setClearanceLoading(true);
+      try {
+        const status = await getCurrentClearance();
+        console.log("✅ Clearance status:", status);
+        setClearanceStatus(status);
+      } catch (error) {
+        console.error("❌ Error fetching clearance status:", error);
+        // Set to null if there's an error, will show "not started" message
+        setClearanceStatus(null);
+      } finally {
+        setClearanceLoading(false);
+      }
+    };
+
+    fetchClearanceStatus();
+  }, []);
 
   const fetchRequirements = useCallback(async () => {
     setLoading(true);
@@ -335,6 +362,39 @@ const Requirements = () => {
   const MAX_VISIBLE_TAGS = 3;
   const DESCRIPTION_LIMIT = 120;
 
+  // Check if clearance is not active or if deadline has passed
+  const isClearanceInactive = !clearanceLoading && (() => {
+    if (!clearanceStatus) return true;
+    if (!clearanceStatus.isActive) return true;
+
+    // Check if current date has passed the effective deadline
+    const effectiveDeadline = clearanceStatus.extendedDeadline || clearanceStatus.deadline;
+    const now = new Date();
+    const deadlineDate = new Date(effectiveDeadline);
+
+    return now > deadlineDate;
+  })();
+
+  // Get effective deadline (use extended deadline if available)
+  const effectiveDeadline =
+    clearanceStatus?.extendedDeadline || clearanceStatus?.deadline;
+
+  // Function to disable dates outside clearance period
+  const disabledDate = (current: Dayjs) => {
+    if (!clearanceStatus || !clearanceStatus.isActive) {
+      // Disable all dates if clearance is not active
+      return true;
+    }
+
+    const startDate = dayjs(clearanceStatus.startDate);
+    const endDate = dayjs(effectiveDeadline);
+
+    // Disable dates before start date or after deadline
+    return (
+      current.isBefore(startDate, "day") || current.isAfter(endDate, "day")
+    );
+  };
+
   const columns = [
     {
       title: <span className="font-semibold">Institutional name</span>,
@@ -531,7 +591,7 @@ const Requirements = () => {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6  mx-auto">
       <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
@@ -547,19 +607,60 @@ const Requirements = () => {
             icon={<PlusOutlined />}
             onClick={() => setIsModalOpen(true)}
             className="bg-blue-600 hover:bg-blue-700"
-            disabled={requirements.length > 0}
+            disabled={requirements.length > 0 || isClearanceInactive}
             title={
-              requirements.length > 0
+              isClearanceInactive
+                ? "Clearance period is not active"
+                : requirements.length > 0
                 ? "You have already set a requirement"
                 : "Set a new requirement"
             }
           >
-            {requirements.length > 0
+            {isClearanceInactive
+              ? "Clearance Period Not Active"
+              : requirements.length > 0
               ? "You have already set a requirement"
               : "Set a new requirement"}
           </Button>
         </div>
       </div>
+
+      {/* Show message when clearance is not active */}
+      {isClearanceInactive && (
+        <Card className="p-8 text-center shadow-lg border-2 border-gray-200 mb-6 bg-yellow-50">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-yellow-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Clearance Period Not Active
+              </h2>
+              <p className="text-gray-600 max-w-md">
+                {!clearanceStatus
+                  ? "No clearance period has been set up yet."
+                  : !clearanceStatus.isActive
+                  ? "The clearance period has been stopped by the administrator."
+                  : "The clearance deadline has passed."}
+                {" "}You cannot create or modify requirements at this time. Please contact the administrator for assistance.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Add Modal */}
       <Modal
@@ -659,7 +760,23 @@ const Requirements = () => {
                   deadline: date?.toDate(),
                 })
               }
+              disabledDate={disabledDate}
+              disabled={isClearanceInactive}
+              placeholder={
+                isClearanceInactive
+                  ? "Clearance period not active"
+                  : "Select deadline"
+              }
             />
+            {clearanceStatus?.isActive && (
+              <div className="mt-2 text-xs text-gray-500">
+                Date must be between{" "}
+                {dayjs(clearanceStatus.startDate).format("MMM D, YYYY")} and{" "}
+                {dayjs(
+                  clearanceStatus.extendedDeadline || clearanceStatus.deadline
+                ).format("MMM D, YYYY")}
+              </div>
+            )}
           </div>
         </Space>
       </Modal>
@@ -806,7 +923,23 @@ const Requirements = () => {
                   deadline: date ? date.toDate() : undefined,
                 }))
               }
+              disabledDate={disabledDate}
+              disabled={isClearanceInactive}
+              placeholder={
+                isClearanceInactive
+                  ? "Clearance period not active"
+                  : "Select deadline"
+              }
             />
+            {clearanceStatus?.isActive && (
+              <div className="mt-2 text-xs text-gray-500">
+                Date must be between{" "}
+                {dayjs(clearanceStatus.startDate).format("MMM D, YYYY")} and{" "}
+                {dayjs(
+                  clearanceStatus.extendedDeadline || clearanceStatus.deadline
+                ).format("MMM D, YYYY")}
+              </div>
+            )}
           </div>
         </Space>
       </Modal>

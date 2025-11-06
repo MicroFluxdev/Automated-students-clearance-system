@@ -24,6 +24,7 @@ import { Plus, X } from "lucide-react";
 import { useState, useCallback, useMemo, useRef, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import { DatePicker } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
+import type { ClearanceStatus } from "@/services/clearanceService";
 
 interface Course {
   id: string;
@@ -62,6 +63,8 @@ interface ReqDialogFormProps {
   newRequirement: Requirement;
   setNewRequirement: (requirement: Requirement) => void;
   handleCreateRequirement: () => void;
+  clearanceStatus: ClearanceStatus | null;
+  disabled?: boolean;
 }
 
 const ReqDialogForm = ({
@@ -71,6 +74,8 @@ const ReqDialogForm = ({
   newRequirement,
   setNewRequirement,
   handleCreateRequirement,
+  clearanceStatus,
+  disabled = false,
 }: ReqDialogFormProps) => {
   const [inputValue, setInputValue] = useState("");
 
@@ -201,11 +206,30 @@ const ReqDialogForm = ({
     ));
   }, [newRequirement.requirements, removeRequirement]);
 
+  // Function to disable dates outside clearance period
+  const disabledDate = useCallback((current: Dayjs) => {
+    if (!clearanceStatus || !clearanceStatus.isActive) {
+      // Disable all dates if clearance is not active
+      return true;
+    }
+
+    const startDate = dayjs(clearanceStatus.startDate);
+    const effectiveDeadline = clearanceStatus.extendedDeadline || clearanceStatus.deadline;
+    const endDate = dayjs(effectiveDeadline);
+
+    // Disable dates before start date or after deadline
+    return current.isBefore(startDate, 'day') || current.isAfter(endDate, 'day');
+  }, [clearanceStatus]);
+
   return (
     <div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={disabled}
+            title={disabled ? "Clearance period is not active" : "Create new requirement"}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Create Requirements
           </Button>
@@ -342,10 +366,25 @@ const ReqDialogForm = ({
                   }
                   onChange={handleDateChange}
                   format="YYYY-MM-DD"
-                  placeholder="Select due date"
+                  placeholder={
+                    disabled || !clearanceStatus?.isActive
+                      ? "Clearance period not active"
+                      : "Select due date"
+                  }
                   className="w-full"
                   size="large"
+                  disabledDate={disabledDate}
+                  disabled={disabled || !clearanceStatus?.isActive}
                 />
+                {clearanceStatus?.isActive && (
+                  <p className="text-xs text-gray-500">
+                    Date must be between{" "}
+                    {dayjs(clearanceStatus.startDate).format("MMM D, YYYY")} and{" "}
+                    {dayjs(
+                      clearanceStatus.extendedDeadline || clearanceStatus.deadline
+                    ).format("MMM D, YYYY")}
+                  </p>
+                )}
               </div>
 
               {/* Description */}

@@ -34,6 +34,10 @@ import axios from "axios";
 import axiosInstance from "@/api/axios";
 import { useAuth } from "@/authentication/useAuth";
 import { message } from "antd";
+import {
+  getCurrentClearance,
+  type ClearanceStatus,
+} from "@/services/clearanceService";
 
 // Interface for Course data (used in dialog form)
 interface Course {
@@ -80,12 +84,35 @@ const Clearance = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [requirementsData, setRequirementsData] = useState<Requirement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [clearanceStatus, setClearanceStatus] =
+    useState<ClearanceStatus | null>(null);
+  const [clearanceLoading, setClearanceLoading] = useState(true);
 
   // State for Edit Modal
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingRequirement, setEditingRequirement] =
     useState<EditRequirementData | null>(null);
   const [isEditLoading, setIsEditLoading] = useState(false);
+
+  // Fetch current clearance status
+  useEffect(() => {
+    const fetchClearanceStatus = async () => {
+      setClearanceLoading(true);
+      try {
+        const status = await getCurrentClearance();
+        console.log("✅ Clearance status:", status);
+        setClearanceStatus(status);
+      } catch (error) {
+        console.error("❌ Error fetching clearance status:", error);
+        // Set to null if there's an error, will show "not started" message
+        setClearanceStatus(null);
+      } finally {
+        setClearanceLoading(false);
+      }
+    };
+
+    fetchClearanceStatus();
+  }, []);
 
   // Fetch requirements from backend
   useEffect(() => {
@@ -536,9 +563,22 @@ const Clearance = () => {
   // Show skeleton while loading OR while waiting for auth initialization
   const showSkeleton = loading || !isInitialized;
 
+  // Check if clearance is not active or if deadline has passed
+  const isClearanceInactive = !clearanceLoading && (() => {
+    if (!clearanceStatus) return true;
+    if (!clearanceStatus.isActive) return true;
+
+    // Check if current date has passed the effective deadline
+    const effectiveDeadline = clearanceStatus.extendedDeadline || clearanceStatus.deadline;
+    const now = new Date();
+    const deadlineDate = new Date(effectiveDeadline);
+
+    return now > deadlineDate;
+  })();
+
   return (
     <div className="p-4 sm:p-6 lg:p-6  min-h-screen">
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto">
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 w-full sm:w-auto">
             <div>
@@ -560,9 +600,48 @@ const Clearance = () => {
               newRequirement={newRequirement}
               setNewRequirement={(value) => dispatch(setNewRequirement(value))}
               handleCreateRequirement={handleCreateRequirement}
+              clearanceStatus={clearanceStatus}
+              disabled={isClearanceInactive}
             />
           </div>
         </header>
+
+        {/* Show message when clearance is not active */}
+        {isClearanceInactive && (
+          <Card className="p-8 text-center shadow-lg border-2 border-gray-200 mb-6">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-yellow-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  Clearance Period Not Active
+                </h2>
+                <p className="text-gray-600 max-w-md">
+                  {!clearanceStatus
+                    ? "No clearance period has been set up yet."
+                    : !clearanceStatus.isActive
+                    ? "The clearance period has been stopped by the administrator."
+                    : "The clearance deadline has passed."}
+                  {" "}You cannot create requirements at this time. Please contact the administrator for assistance.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
 
         <Card className="flex flex-col sm:flex-row items-center gap-4 px-5 shadow-gray-100">
           <div className="relative flex-1 w-full sm:w-auto ">

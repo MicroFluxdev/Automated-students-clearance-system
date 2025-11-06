@@ -177,7 +177,7 @@ const Events = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto">
         {/* HEADER */}
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
