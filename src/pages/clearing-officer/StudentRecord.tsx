@@ -472,23 +472,28 @@ const StudentRecord: React.FC = () => {
             let storedId = result._id || result.id;
 
             // If no ID found, check if the result might be nested
-            if (!storedId && typeof result === 'object' && result !== null) {
+            if (!storedId && typeof result === "object" && result !== null) {
               const resultObj = result as unknown as Record<string, unknown>;
-              storedId = (resultObj['_id'] || resultObj['id']) as string | undefined;
+              storedId = (resultObj["_id"] || resultObj["id"]) as
+                | string
+                | undefined;
             }
 
             console.log(`🔍 Checking result for ${studentIdNo}:`, {
               _id: result._id,
               id: result.id,
               fullResult: result,
-              extractedId: storedId
+              extractedId: storedId,
             });
 
             if (storedId) {
               console.log(`✅ Created ${studentIdNo} -> ${storedId}`);
               studentReqIdMap.set(studentIdNo, storedId);
             } else {
-              console.error(`❌ No ID returned for ${studentIdNo}. Full result:`, JSON.stringify(result));
+              console.error(
+                `❌ No ID returned for ${studentIdNo}. Full result:`,
+                JSON.stringify(result)
+              );
             }
           });
 
@@ -505,18 +510,25 @@ const StudentRecord: React.FC = () => {
 
       if (totalProcessed > 0) {
         // Log the requirement IDs before updating state
-        console.log("📋 Student Requirement ID Map:", Array.from(studentReqIdMap.entries()));
+        console.log(
+          "📋 Student Requirement ID Map:",
+          Array.from(studentReqIdMap.entries())
+        );
 
         // Update local state to reflect the signed status and store student requirement IDs
         setStudentList((prev) =>
           prev.map((student) => {
             if (selectedStudents.includes(student.id)) {
               const reqId = studentReqIdMap.get(student.id_no);
-              console.log(`🔗 Mapping ${student.name} (${student.id_no}) -> Req ID: ${reqId}`);
+              console.log(
+                `🔗 Mapping ${student.name} (${student.id_no}) -> Req ID: ${reqId}`
+              );
 
               // If no requirement ID found, log a warning
               if (!reqId) {
-                console.warn(`⚠️ No requirement ID found for ${student.name} (${student.id_no})`);
+                console.warn(
+                  `⚠️ No requirement ID found for ${student.name} (${student.id_no})`
+                );
               }
 
               return {
@@ -555,39 +567,53 @@ const StudentRecord: React.FC = () => {
             selectedStudents.includes(student.id)
           );
 
-          console.log("🔍 Preparing to undo signatures for selected students...");
+          console.log(
+            "🔍 Preparing to undo signatures for selected students..."
+          );
           console.log("   - Total selected:", selectedStudentsData.length);
 
           // Try to find requirement IDs for students that don't have them
-          const studentsWithReqIds = selectedStudentsData.map((student) => {
-            if (student.studentRequirementId) {
-              console.log(`✓ ${student.name} has requirement ID: ${student.studentRequirementId}`);
+          const studentsWithReqIds = selectedStudentsData
+            .map((student) => {
+              if (student.studentRequirementId) {
+                console.log(
+                  `✓ ${student.name} has requirement ID: ${student.studentRequirementId}`
+                );
+                return student;
+              }
+
+              // Try to find the requirement ID from allStudentRequirements
+              console.log(
+                `⚠️ ${student.name} missing requirement ID, searching...`
+              );
+              const matchingReq = findExistingStudentRequirement(
+                allStudentRequirements,
+                student.id_no,
+                user?.id || "",
+                reqId || ""
+              );
+
+              if (matchingReq) {
+                const foundId = matchingReq._id || matchingReq.id;
+                console.log(
+                  `✓ Found requirement ID for ${student.name}: ${foundId}`
+                );
+                return {
+                  ...student,
+                  studentRequirementId: foundId,
+                };
+              }
+
+              console.warn(
+                `❌ Could not find requirement ID for ${student.name}`
+              );
               return student;
-            }
+            })
+            .filter((s) => s.studentRequirementId); // Only keep students with requirement IDs
 
-            // Try to find the requirement ID from allStudentRequirements
-            console.log(`⚠️ ${student.name} missing requirement ID, searching...`);
-            const matchingReq = findExistingStudentRequirement(
-              allStudentRequirements,
-              student.id_no,
-              user?.id || "",
-              reqId || ""
-            );
-
-            if (matchingReq) {
-              const foundId = matchingReq._id || matchingReq.id;
-              console.log(`✓ Found requirement ID for ${student.name}: ${foundId}`);
-              return {
-                ...student,
-                studentRequirementId: foundId,
-              };
-            }
-
-            console.warn(`❌ Could not find requirement ID for ${student.name}`);
-            return student;
-          }).filter((s) => s.studentRequirementId); // Only keep students with requirement IDs
-
-          console.log(`📊 Found ${studentsWithReqIds.length} students with requirement IDs`);
+          console.log(
+            `📊 Found ${studentsWithReqIds.length} students with requirement IDs`
+          );
 
           if (studentsWithReqIds.length > 0) {
             const hideLoading = message.loading(
@@ -643,7 +669,9 @@ const StudentRecord: React.FC = () => {
                     ...student,
                     status: "Incomplete",
                     // Keep or update the studentRequirementId
-                    studentRequirementId: studentWithId?.studentRequirementId || student.studentRequirementId,
+                    studentRequirementId:
+                      studentWithId?.studentRequirementId ||
+                      student.studentRequirementId,
                   };
                 }
                 return student;
@@ -661,7 +689,9 @@ const StudentRecord: React.FC = () => {
             }
           } else {
             // No requirement IDs found, just update local state
-            console.warn("⚠️ No requirement IDs found for any selected students");
+            console.warn(
+              "⚠️ No requirement IDs found for any selected students"
+            );
             setStudentList((prev) =>
               prev.map((student) =>
                 selectedStudents.includes(student.id)

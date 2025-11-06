@@ -364,17 +364,20 @@ const Requirements = () => {
   const DESCRIPTION_LIMIT = 120;
 
   // Check if clearance is not active or if deadline has passed
-  const isClearanceInactive = !clearanceLoading && (() => {
-    if (!clearanceStatus) return true;
-    if (!clearanceStatus.isActive) return true;
+  const isClearanceInactive =
+    !clearanceLoading &&
+    (() => {
+      if (!clearanceStatus) return true;
+      if (!clearanceStatus.isActive) return true;
 
-    // Check if current date has passed the effective deadline
-    const effectiveDeadline = clearanceStatus.extendedDeadline || clearanceStatus.deadline;
-    const now = new Date();
-    const deadlineDate = new Date(effectiveDeadline);
+      // Check if current date has passed the effective deadline
+      const effectiveDeadline =
+        clearanceStatus.extendedDeadline || clearanceStatus.deadline;
+      const now = new Date();
+      const deadlineDate = new Date(effectiveDeadline);
 
-    return now > deadlineDate;
-  })();
+      return now > deadlineDate;
+    })();
 
   // Get effective deadline (use extended deadline if available)
   const effectiveDeadline =
@@ -567,7 +570,11 @@ const Requirements = () => {
                 Actions <DownOutlined />
               </Button>
             </Dropdown>
-            <Tooltip title={isClearanceInactive ? "Clearance period is not active" : "Edit"}>
+            <Tooltip
+              title={
+                isClearanceInactive ? "Clearance period is not active" : "Edit"
+              }
+            >
               <Button
                 key="edit"
                 icon={<EditOutlined />}
@@ -577,7 +584,13 @@ const Requirements = () => {
                 Edit
               </Button>
             </Tooltip>
-            <Tooltip title={isClearanceInactive ? "Clearance period is not active" : "Delete"}>
+            <Tooltip
+              title={
+                isClearanceInactive
+                  ? "Clearance period is not active"
+                  : "Delete"
+              }
+            >
               <Button
                 key="delete"
                 icon={<DeleteOutlined />}
@@ -661,8 +674,9 @@ const Requirements = () => {
                   ? "No clearance period has been set up yet."
                   : !clearanceStatus.isActive
                   ? "The clearance period has been stopped by the administrator."
-                  : "The clearance deadline has passed."}
-                {" "}You cannot create or modify requirements at this time. Please contact the administrator for assistance.
+                  : "The clearance deadline has passed."}{" "}
+                You cannot create or modify requirements at this time. Please
+                contact the administrator for assistance.
               </p>
             </div>
           </div>

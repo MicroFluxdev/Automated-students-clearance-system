@@ -117,8 +117,13 @@ export const createBulkStudentRequirements = async (
       if (result.status === "fulfilled") {
         // Check if response has nested data property (same as single create)
         const requirementData = result.value.data.data || result.value.data;
-        console.log(`✅ Bulk create - Student ${requirements[index].studentId}:`, requirementData);
-        console.log(`   - Extracted ID: ${requirementData._id || requirementData.id}`);
+        console.log(
+          `✅ Bulk create - Student ${requirements[index].studentId}:`,
+          requirementData
+        );
+        console.log(
+          `   - Extracted ID: ${requirementData._id || requirementData.id}`
+        );
         successfulRequirements.push(requirementData);
       } else {
         failedCount++;
