@@ -3,7 +3,6 @@ import {
   Search,
   ChevronLeft,
   LayoutDashboard,
-  GraduationCap,
   Calendar,
   Settings2,
   Book,
@@ -35,7 +34,7 @@ const navbar = [
   },
   {
     to: "/clearing-officer/clearance",
-    icon: GraduationCap,
+    icon: FileText,
     label: "Requirements",
   },
   {

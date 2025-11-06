@@ -15,6 +15,7 @@ import {
   Popover,
   Dropdown,
   Typography,
+  Tooltip,
 } from "antd";
 import {
   PlusOutlined,
@@ -562,28 +563,34 @@ const Requirements = () => {
         return (
           <Space>
             <Dropdown menu={actionMenu} trigger={["click"]}>
-              <Button>
+              <Button disabled={isClearanceInactive}>
                 Actions <DownOutlined />
               </Button>
             </Dropdown>
-            <Button
-              key="edit"
-              icon={<EditOutlined />}
-              onClick={() => openEditModal(record)}
-            >
-              Edit
-            </Button>
-            <Button
-              key="delete"
-              icon={<DeleteOutlined />}
-              danger
-              onClick={() =>
-                record.id &&
-                handleDeleteRequirement(record.id, record.institutionalName)
-              }
-            >
-              Delete
-            </Button>
+            <Tooltip title={isClearanceInactive ? "Clearance period is not active" : "Edit"}>
+              <Button
+                key="edit"
+                icon={<EditOutlined />}
+                onClick={() => openEditModal(record)}
+                disabled={isClearanceInactive}
+              >
+                Edit
+              </Button>
+            </Tooltip>
+            <Tooltip title={isClearanceInactive ? "Clearance period is not active" : "Delete"}>
+              <Button
+                key="delete"
+                icon={<DeleteOutlined />}
+                danger
+                onClick={() =>
+                  record.id &&
+                  handleDeleteRequirement(record.id, record.institutionalName)
+                }
+                disabled={isClearanceInactive}
+              >
+                Delete
+              </Button>
+            </Tooltip>
           </Space>
         );
       },

@@ -33,6 +33,7 @@ interface RequirementsTableProps {
   onEdit?: (record: RequirementData) => void;
   onDelete?: (record: RequirementData) => void;
   onView?: (record: RequirementData) => void;
+  disabled?: boolean;
 }
 
 export interface RequirementData {
@@ -59,6 +60,7 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
   onEdit,
   onDelete,
   onView,
+  disabled = false,
 }) => {
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedRequirement, setSelectedRequirement] =
@@ -276,26 +278,28 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
         return (
           <Space size="small" wrap>
             <Dropdown menu={{ items: viewMenuItems }} trigger={["click"]}>
-              <Button icon={<EyeOutlined />} size="small">
+              <Button icon={<EyeOutlined />} size="small" disabled={disabled}>
                 View <DownOutlined />
               </Button>
             </Dropdown>
-            <Tooltip title="Edit">
+            <Tooltip title={disabled ? "Clearance period is not active" : "Edit"}>
               <Button
                 icon={<EditOutlined />}
                 size="small"
                 onClick={() => onEdit?.(record)}
+                disabled={disabled}
               />
             </Tooltip>
-            <Tooltip title="Delete">
+            <Tooltip title={disabled ? "Clearance period is not active" : "Delete"}>
               <Popconfirm
                 title="Delete this requirement?"
                 onConfirm={() => onDelete?.(record)}
                 okText="Yes"
                 cancelText="Cancel"
                 okButtonProps={{ danger: true }}
+                disabled={disabled}
               >
-                <Button danger icon={<DeleteOutlined />} size="small" />
+                <Button danger icon={<DeleteOutlined />} size="small" disabled={disabled} />
               </Popconfirm>
             </Tooltip>
           </Space>

@@ -564,17 +564,20 @@ const Clearance = () => {
   const showSkeleton = loading || !isInitialized;
 
   // Check if clearance is not active or if deadline has passed
-  const isClearanceInactive = !clearanceLoading && (() => {
-    if (!clearanceStatus) return true;
-    if (!clearanceStatus.isActive) return true;
+  const isClearanceInactive =
+    !clearanceLoading &&
+    (() => {
+      if (!clearanceStatus) return true;
+      if (!clearanceStatus.isActive) return true;
 
-    // Check if current date has passed the effective deadline
-    const effectiveDeadline = clearanceStatus.extendedDeadline || clearanceStatus.deadline;
-    const now = new Date();
-    const deadlineDate = new Date(effectiveDeadline);
+      // Check if current date has passed the effective deadline
+      const effectiveDeadline =
+        clearanceStatus.extendedDeadline || clearanceStatus.deadline;
+      const now = new Date();
+      const deadlineDate = new Date(effectiveDeadline);
 
-    return now > deadlineDate;
-  })();
+      return now > deadlineDate;
+    })();
 
   return (
     <div className="p-4 sm:p-6 lg:p-6  min-h-screen">
@@ -635,8 +638,9 @@ const Clearance = () => {
                     ? "No clearance period has been set up yet."
                     : !clearanceStatus.isActive
                     ? "The clearance period has been stopped by the administrator."
-                    : "The clearance deadline has passed."}
-                  {" "}You cannot create requirements at this time. Please contact the administrator for assistance.
+                    : "The clearance deadline has passed."}{" "}
+                  You cannot create requirements at this time. Please contact
+                  the administrator for assistance.
                 </p>
               </div>
             </div>
@@ -679,6 +683,7 @@ const Clearance = () => {
             onView={(record) => {
               console.log("View requirement:", record);
             }}
+            disabled={isClearanceInactive}
           />
         </div>
 
