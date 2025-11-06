@@ -31,7 +31,7 @@ import {
 } from "@/store/slices/clearingOfficer/clearanceSlice";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import axiosInstance from "@/api/axios";
+import axiosInstance, { API_URL } from "@/api/axios";
 import { useAuth } from "@/authentication/useAuth";
 import { message } from "antd";
 import {
@@ -246,7 +246,7 @@ const Clearance = () => {
         console.log("📡 Fetching courses for dialog form...");
 
         const response = await axiosInstance.get(
-          `http://localhost:4000/intigration/getCoursesBySchoolId/${encodedSchoolId}`
+          `${API_URL}/intigration/getCoursesBySchoolId/${encodedSchoolId}`
         );
 
         const coursesData = response.data?.courses || [];
