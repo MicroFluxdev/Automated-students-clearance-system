@@ -56,13 +56,14 @@ interface Course {
   semester: string;
   yearLevel: string;
   description?: string;
+  dueDate?: string;
 }
 
 // Interface for Requirement data (created requirements)
 interface Requirement {
   _id?: string;
   id?: string;
-  userId?: string; // The clearing officer who created this requirement
+  userId?: string;
   courseCode: string;
   courseName: string;
   yearLevel: string;
