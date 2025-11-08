@@ -21,7 +21,6 @@ import {
   PlusOutlined,
   DeleteOutlined,
   BankOutlined,
-  CalendarOutlined,
   EyeOutlined,
   EditOutlined,
   TeamOutlined,
@@ -524,23 +523,23 @@ const Requirements = () => {
         );
       },
     },
-    {
-      title: <span className="font-semibold">Deadline</span>,
-      dataIndex: "deadline",
-      key: "deadline",
-      render: (deadline: Date | string) => {
-        const date =
-          typeof deadline === "string" ? new Date(deadline) : deadline;
-        return (
-          <div className="flex items-center">
-            <CalendarOutlined className="text-blue-500 mr-2" />
-            <span className="text-gray-700 dark:text-gray-300">
-              {format(date, "MMM dd, yyyy")}
-            </span>
-          </div>
-        );
-      },
-    },
+    // {
+    //   title: <span className="font-semibold">Deadline</span>,
+    //   dataIndex: "deadline",
+    //   key: "deadline",
+    //   render: (deadline: Date | string) => {
+    //     const date =
+    //       typeof deadline === "string" ? new Date(deadline) : deadline;
+    //     return (
+    //       <div className="flex items-center">
+    //         <CalendarOutlined className="text-blue-500 mr-2" />
+    //         <span className="text-gray-700 dark:text-gray-300">
+    //           {format(date, "MMM dd, yyyy")}
+    //         </span>
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       title: <span className="font-semibold">Actions</span>,
       key: "actions",

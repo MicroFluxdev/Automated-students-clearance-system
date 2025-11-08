@@ -720,14 +720,6 @@ const StudentRecord: React.FC = () => {
       return;
     }
 
-    console.log("🎯 handleSignToggle called for:", student.name);
-    console.log("   - Student ID:", studentId);
-    console.log("   - Student ID Number:", student.id_no);
-    console.log("   - Current Status:", student.status);
-    console.log("   - Student Requirement ID:", student.studentRequirementId);
-    console.log("   - Clearing Officer ID:", user?.id);
-    console.log("   - Requirement ID:", reqId);
-
     if (student?.status === "Signed") {
       // If student is already signed, show confirmation to undo
       setConfirmDialog({
@@ -908,12 +900,6 @@ const StudentRecord: React.FC = () => {
           reqId
         );
 
-        console.log("🔍 Checking for existing requirement...");
-        console.log("   - Student ID:", student.id_no);
-        console.log("   - CO ID:", user.id);
-        console.log("   - Requirement ID:", reqId);
-        console.log("   - Existing requirement found:", existingRequirement);
-
         const hideLoading = message.loading("Signing student...", 0);
 
         let result: StudentRequirement | null = null;
@@ -964,11 +950,6 @@ const StudentRecord: React.FC = () => {
 
           result = await createStudentRequirement(requirementData);
           storedId = result?._id || result?.id;
-
-          console.log("📦 Full API response:", result);
-          console.log("🔑 Extracted _id:", result?._id);
-          console.log("🔑 Extracted id:", result?.id);
-          console.log("✅ Will store student requirement ID:", storedId);
 
           // Add new requirement to state
           if (result) {
@@ -1021,12 +1002,10 @@ const StudentRecord: React.FC = () => {
             className="w-6 h-6 text-slate-600 cursor-pointer hover:scale-110 transition-transform duration-200"
             onClick={() => navigation("/clearing-officer/clearance")}
           />
-          <h1 className="text-3xl font-bold text-slate-800">
-            Student Records {courseCode}
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-800">Student Records</h1>
         </div>
-        <div className="flex items-center gap-2 text-md text-muted-foreground">
-          <Book className="w-5 h-5 text-primary" />
+        <div className="flex items-center gap-2 text-2xl text-muted-foreground">
+          <Book className="w-5 h-5 text-primary " />
           <span>{courseCode}</span>
         </div>
       </div>

@@ -13,7 +13,8 @@
  * @returns True if deadline has passed
  */
 export const isDeadlinePassed = (deadline: string | Date): boolean => {
-  const deadlineDate = typeof deadline === "string" ? new Date(deadline) : deadline;
+  const deadlineDate =
+    typeof deadline === "string" ? new Date(deadline) : deadline;
   const now = new Date();
   return now > deadlineDate;
 };
@@ -34,7 +35,8 @@ export const getTimeUntilDeadline = (
   minutes: number;
   totalMilliseconds: number;
 } => {
-  const deadlineDate = typeof deadline === "string" ? new Date(deadline) : deadline;
+  const deadlineDate =
+    typeof deadline === "string" ? new Date(deadline) : deadline;
   const now = new Date();
   const diff = deadlineDate.getTime() - now.getTime();
 
@@ -42,7 +44,9 @@ export const getTimeUntilDeadline = (
   const absDiff = Math.abs(diff);
 
   const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const hours = Math.floor(
+    (absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
   const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
 
   return {

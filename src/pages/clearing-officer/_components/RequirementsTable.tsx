@@ -15,7 +15,6 @@ import {
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  CalendarOutlined,
   TeamOutlined,
   BookOutlined,
   DownOutlined,
@@ -23,13 +22,8 @@ import {
   FileTextOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { format } from "date-fns";
 import ViewRequirementsModal from "./ViewRequirementsModal";
 import { getAllStudentSpecificSubject } from "@/services/intigration.services";
-import {
-  getTimeUntilDeadline,
-  isDeadlinePassed,
-} from "@/services/deadlineStatusService";
 
 interface RequirementsTableProps {
   data: RequirementData[];
@@ -214,75 +208,75 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
         );
       },
     },
-    {
-      title: "Due Date",
-      dataIndex: "dueDate",
-      key: "dueDate",
-      sorter: (a, b) =>
-        new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
-      render: (date: string) => {
-        const formattedDate = format(new Date(date), "MMM dd, yyyy");
-        const timeRemaining = getTimeUntilDeadline(date);
-        const isPassed = isDeadlinePassed(date);
+    // {
+    //   title: "Due Date",
+    //   dataIndex: "dueDate",
+    //   key: "dueDate",
+    //   sorter: (a, b) =>
+    //     new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+    //   render: (date: string) => {
+    //     const formattedDate = format(new Date(date), "MMM dd, yyyy");
+    //     const timeRemaining = getTimeUntilDeadline(date);
+    //     const isPassed = isDeadlinePassed(date);
 
-        // Helper function to get deadline status badge
-        const getDeadlineBadge = () => {
-          if (isPassed) {
-            return (
-              <Tag color="red" className="text-xs font-medium">
-                <span className="flex items-center gap-1">
-                  <span>⚠️</span>
-                  Passed
-                </span>
-              </Tag>
-            );
-          }
+    //     // Helper function to get deadline status badge
+    //     const getDeadlineBadge = () => {
+    //       if (isPassed) {
+    //         return (
+    //           <Tag color="red" className="text-xs font-medium">
+    //             <span className="flex items-center gap-1">
+    //               <span>⚠️</span>
+    //               Passed
+    //             </span>
+    //           </Tag>
+    //         );
+    //       }
 
-          if (timeRemaining.days === 0 && timeRemaining.hours <= 24) {
-            return (
-              <Tag color="orange" className="text-xs font-medium animate-pulse">
-                <span className="flex items-center gap-1">
-                  <span>🔥</span>
-                  {timeRemaining.hours}h left
-                </span>
-              </Tag>
-            );
-          }
+    //       if (timeRemaining.days === 0 && timeRemaining.hours <= 24) {
+    //         return (
+    //           <Tag color="orange" className="text-xs font-medium animate-pulse">
+    //             <span className="flex items-center gap-1">
+    //               <span>🔥</span>
+    //               {timeRemaining.hours}h left
+    //             </span>
+    //           </Tag>
+    //         );
+    //       }
 
-          if (timeRemaining.days <= 3) {
-            return (
-              <Tag color="gold" className="text-xs font-medium">
-                <span className="flex items-center gap-1">
-                  <span>⏰</span>
-                  {timeRemaining.days}d left
-                </span>
-              </Tag>
-            );
-          }
+    //       if (timeRemaining.days <= 3) {
+    //         return (
+    //           <Tag color="gold" className="text-xs font-medium">
+    //             <span className="flex items-center gap-1">
+    //               <span>⏰</span>
+    //               {timeRemaining.days}d left
+    //             </span>
+    //           </Tag>
+    //         );
+    //       }
 
-          return (
-            <Tag color="green" className="text-xs font-medium">
-              <span className="flex items-center gap-1">
-                <span>✓</span>
-                {timeRemaining.days}d left
-              </span>
-            </Tag>
-          );
-        };
+    //       return (
+    //         <Tag color="green" className="text-xs font-medium">
+    //           <span className="flex items-center gap-1">
+    //             <span>✓</span>
+    //             {timeRemaining.days}d left
+    //           </span>
+    //         </Tag>
+    //       );
+    //     };
 
-        return (
-          <Space direction="vertical" size="small">
-            <Space>
-              <CalendarOutlined />
-              <span className={isPassed ? "text-red-600 font-semibold" : ""}>
-                {formattedDate}
-              </span>
-            </Space>
-            {getDeadlineBadge()}
-          </Space>
-        );
-      },
-    },
+    //     return (
+    //       <Space direction="vertical" size="small">
+    //         <Space>
+    //           <CalendarOutlined />
+    //           <span className={isPassed ? "text-red-600 font-semibold" : ""}>
+    //             {formattedDate}
+    //           </span>
+    //         </Space>
+    //         {getDeadlineBadge()}
+    //       </Space>
+    //     );
+    //   },
+    // },
     {
       title: "Students",
       dataIndex: "students",
@@ -336,7 +330,9 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
                 View <DownOutlined />
               </Button>
             </Dropdown>
-            <Tooltip title={disabled ? "Clearance period is not active" : "Edit"}>
+            <Tooltip
+              title={disabled ? "Clearance period is not active" : "Edit"}
+            >
               <Button
                 icon={<EditOutlined />}
                 size="small"
@@ -344,7 +340,9 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
                 disabled={disabled}
               />
             </Tooltip>
-            <Tooltip title={disabled ? "Clearance period is not active" : "Delete"}>
+            <Tooltip
+              title={disabled ? "Clearance period is not active" : "Delete"}
+            >
               <Popconfirm
                 title="Delete this requirement?"
                 onConfirm={() => onDelete?.(record)}
@@ -353,7 +351,12 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
                 okButtonProps={{ danger: true }}
                 disabled={disabled}
               >
-                <Button danger icon={<DeleteOutlined />} size="small" disabled={disabled} />
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  disabled={disabled}
+                />
               </Popconfirm>
             </Tooltip>
           </Space>
