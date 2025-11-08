@@ -28,7 +28,7 @@ const Footer = () => {
   return (
     <motion.footer
       id="contact"
-      className="bg-white border-t border-gray-200 text-gray-700 lg:px-30"
+      className="bg-[#222222]  text-white lg:px-30"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
@@ -46,21 +46,15 @@ const Footer = () => {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
-              <motion.div
-                className="p-2 bg-blue-500 rounded-lg"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <img
-                  className="h-8 w-8 rounded-md object-cover"
-                  src="/MICRO FLUX LOGO.png"
-                  alt="Menu icon"
-                />
-              </motion.div>
-              <span className="text-2xl font-bold text-gray-900">ASCS</span>
+              <img
+                className="h-10 w-10 rounded-md object-cover"
+                src="/MICRO FLUX LOGO.png"
+                alt="Menu icon"
+              />
+              <span className="text-2xl font-bold text-gray-50">ASCS</span>
             </motion.div>
             <motion.p
-              className="text-gray-500 leading-relaxed"
+              className="text-gray-300 leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -81,7 +75,7 @@ const Footer = () => {
               ].map(({ icon: Icon, delay }) => (
                 <motion.button
                   key={delay}
-                  className="p-2 rounded-full hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition"
+                  className="p-2 rounded-full hover:bg-blue-100 text-gray-300 hover:text-blue-600 transition"
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.3, delay }}
@@ -97,7 +91,7 @@ const Footer = () => {
           {/* Product Links */}
           <motion.div className="space-y-4" variants={itemVariants}>
             <motion.h3
-              className="font-semibold text-gray-900"
+              className="font-semibold text-gray-50"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
@@ -114,7 +108,7 @@ const Footer = () => {
                 <motion.a
                   key={item}
                   href="#"
-                  className="block text-gray-500 hover:text-blue-600 transition"
+                  className="block text-gray-300 hover:text-blue-600 transition"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
@@ -129,7 +123,7 @@ const Footer = () => {
           {/* Company Links */}
           <motion.div className="space-y-4" variants={itemVariants}>
             <motion.h3
-              className="font-semibold text-gray-900"
+              className="font-semibold text-gray-50"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
@@ -146,7 +140,7 @@ const Footer = () => {
                 <motion.a
                   key={item}
                   href="#"
-                  className="block text-gray-500 hover:text-blue-600 transition"
+                  className="block text-gray-300 hover:text-blue-600 transition"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
@@ -161,7 +155,7 @@ const Footer = () => {
           {/* Contact Info */}
           <motion.div className="space-y-4" variants={itemVariants}>
             <motion.h3
-              className="font-semibold text-gray-900"
+              className="font-semibold text-gray-50"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
@@ -175,7 +169,7 @@ const Footer = () => {
               ].map(({ icon: Icon, text, delay }) => (
                 <motion.div
                   key={text}
-                  className="flex items-center gap-3 text-gray-500"
+                  className="flex items-center gap-3 text-gray-300"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.4, delay }}
@@ -196,7 +190,7 @@ const Footer = () => {
 
         {/* Separator */}
         <motion.div
-          className="my-8 border-t border-gray-200"
+          className="my-8 border-t border-white/20"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
@@ -210,7 +204,7 @@ const Footer = () => {
           transition={{ duration: 0.6, delay: 0.6 }}
         >
           <motion.div
-            className="text-gray-500"
+            className="text-gray-300"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
@@ -222,7 +216,7 @@ const Footer = () => {
                 <motion.a
                   key={item}
                   href="#"
-                  className="text-gray-500 hover:text-blue-600 transition"
+                  className="text-gray-300 hover:text-blue-600 transition"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}

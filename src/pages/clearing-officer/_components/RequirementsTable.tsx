@@ -26,6 +26,10 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import ViewRequirementsModal from "./ViewRequirementsModal";
 import { getAllStudentSpecificSubject } from "@/services/intigration.services";
+import {
+  getTimeUntilDeadline,
+  isDeadlinePassed,
+} from "@/services/deadlineStatusService";
 
 interface RequirementsTableProps {
   data: RequirementData[];
@@ -218,13 +222,63 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
         new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
       render: (date: string) => {
         const formattedDate = format(new Date(date), "MMM dd, yyyy");
-        const isOverdue = new Date(date) < new Date();
+        const timeRemaining = getTimeUntilDeadline(date);
+        const isPassed = isDeadlinePassed(date);
+
+        // Helper function to get deadline status badge
+        const getDeadlineBadge = () => {
+          if (isPassed) {
+            return (
+              <Tag color="red" className="text-xs font-medium">
+                <span className="flex items-center gap-1">
+                  <span>⚠️</span>
+                  Passed
+                </span>
+              </Tag>
+            );
+          }
+
+          if (timeRemaining.days === 0 && timeRemaining.hours <= 24) {
+            return (
+              <Tag color="orange" className="text-xs font-medium animate-pulse">
+                <span className="flex items-center gap-1">
+                  <span>🔥</span>
+                  {timeRemaining.hours}h left
+                </span>
+              </Tag>
+            );
+          }
+
+          if (timeRemaining.days <= 3) {
+            return (
+              <Tag color="gold" className="text-xs font-medium">
+                <span className="flex items-center gap-1">
+                  <span>⏰</span>
+                  {timeRemaining.days}d left
+                </span>
+              </Tag>
+            );
+          }
+
+          return (
+            <Tag color="green" className="text-xs font-medium">
+              <span className="flex items-center gap-1">
+                <span>✓</span>
+                {timeRemaining.days}d left
+              </span>
+            </Tag>
+          );
+        };
+
         return (
-          <Space>
-            <CalendarOutlined />
-            <span className={isOverdue ? "text-red-600 font-semibold" : ""}>
-              {formattedDate}
-            </span>
+          <Space direction="vertical" size="small">
+            <Space>
+              <CalendarOutlined />
+              <span className={isPassed ? "text-red-600 font-semibold" : ""}>
+                {formattedDate}
+              </span>
+            </Space>
+            {getDeadlineBadge()}
           </Space>
         );
       },
