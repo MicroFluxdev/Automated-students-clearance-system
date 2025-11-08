@@ -5,16 +5,13 @@ import {
   Button,
   Input,
   Select,
-  Table,
   Modal,
   DatePicker,
   Space,
   Tag,
-  Descriptions,
   message,
   Popover,
   Dropdown,
-  Typography,
   Tooltip,
 } from "antd";
 import {
@@ -24,7 +21,6 @@ import {
   EyeOutlined,
   EditOutlined,
   TeamOutlined,
-  DownOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import TextArea from "antd/es/input/TextArea";
@@ -40,6 +36,7 @@ import {
   getCurrentClearance,
   type ClearanceStatus,
 } from "@/services/clearanceService";
+import { Building } from "lucide-react";
 
 interface Requirement {
   _id?: string;
@@ -62,8 +59,6 @@ const departments = [
 ];
 
 const semesters = ["1st Semester", "2nd Semester"];
-
-const { Text } = Typography;
 
 // Utility: truncate with ellipsis
 const ellipsize = (text: string, limit = 120) =>
@@ -398,302 +393,355 @@ const Requirements = () => {
     );
   };
 
-  const columns = [
-    {
-      title: <span className="font-semibold">Institutional name</span>,
-      dataIndex: "institutionalName",
-      key: "institutionalName",
-      render: (institutionalName: string) => (
-        <span className="text-gray-600 dark:text-gray-400">
-          {institutionalName || "No institutional name"}
-        </span>
-      ),
-    },
-    {
-      title: <span className="font-semibold">Requirements</span>,
-      dataIndex: "requirements",
-      key: "requirements",
-      render: (requirements: string[]) => {
-        const visible = requirements.slice(0, MAX_VISIBLE_TAGS);
-        const hidden = requirements.slice(MAX_VISIBLE_TAGS);
-
-        const dropdownMenu = {
-          items: hidden.map((n, idx) => ({
-            key: `${idx}`,
-            label: (
-              <div className="flex items-center">
-                <Tag color="blue" className="mr-2">
-                  {n}
-                </Tag>
-              </div>
-            ),
-          })),
-        };
-
-        return (
-          <div className="flex flex-wrap items-center ">
-            <div className="flex flex-wrap gap-2">
-              {visible.map((name, i) => (
-                <Tag
-                  key={i}
-                  color="blue"
-                  className="text-sm font-medium px-2 py-1 rounded-lg"
-                >
-                  {name}
-                </Tag>
-              ))}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
+      <div className=" mx-auto">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-bold text-slate-800 bg-clip-text  mb-2">
+                Clearance Requirements
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 text-lg">
+                Manage your institutional clearance requirements
+              </p>
             </div>
-            {hidden.length > 0 && (
-              <Dropdown menu={dropdownMenu} trigger={["click"]}>
-                <span className="cursor-pointer text-sm text-blue-500 py-1 rounded-lg">
-                  +{hidden.length} more
-                </span>
-              </Dropdown>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      title: <span className="font-semibold">Department</span>,
-      dataIndex: "department",
-      key: "department",
-      render: (department: string) => (
-        <div className="flex items-center">
-          <BankOutlined className="text-blue-500 mr-2" />
-          <span className="text-gray-700 dark:text-gray-300">{department}</span>
-        </div>
-      ),
-    },
-    {
-      title: <span className="font-semibold">Semester</span>,
-      dataIndex: "semester",
-      key: "semester",
-      render: (semester: string) => (
-        <Tag color="green" className="text-sm font-medium px-3 py-1">
-          {semester}
-        </Tag>
-      ),
-    },
-    {
-      title: <span className="font-semibold">Description</span>,
-      dataIndex: "description",
-      key: "description",
-      width: 400,
-      render: (description: string) => {
-        if (!description) {
-          return (
-            <span className="text-gray-600 dark:text-gray-400">
-              No description
-            </span>
-          );
-        }
-        const isLong = description.length > DESCRIPTION_LIMIT;
-        const short = ellipsize(description, DESCRIPTION_LIMIT);
-
-        return isLong ? (
-          <div className="text-gray-600 dark:text-gray-300">
-            <Text>{short} </Text>
-            <Popover
-              content={
-                <div className="max-w-[420px] whitespace-pre-wrap break-words leading-relaxed text-gray-700">
-                  {description || "No description available."}
-                </div>
-              }
-              title="Full Description"
-              trigger="click"
-            >
-              <Button
-                type="link"
-                size="small"
-                style={{
-                  padding: 0,
-                  whiteSpace: "normal",
-                  wordBreak: "break-word",
-                }}
-              >
-                See more
-              </Button>
-            </Popover>
-          </div>
-        ) : (
-          <span className="text-gray-600 dark:text-gray-400">
-            {description}
-          </span>
-        );
-      },
-    },
-    // {
-    //   title: <span className="font-semibold">Deadline</span>,
-    //   dataIndex: "deadline",
-    //   key: "deadline",
-    //   render: (deadline: Date | string) => {
-    //     const date =
-    //       typeof deadline === "string" ? new Date(deadline) : deadline;
-    //     return (
-    //       <div className="flex items-center">
-    //         <CalendarOutlined className="text-blue-500 mr-2" />
-    //         <span className="text-gray-700 dark:text-gray-300">
-    //           {format(date, "MMM dd, yyyy")}
-    //         </span>
-    //       </div>
-    //     );
-    //   },
-    // },
-    {
-      title: <span className="font-semibold">Actions</span>,
-      key: "actions",
-      render: (_: unknown, record: Requirement) => {
-        // Dropdown menu items for actions
-        const actionMenu = {
-          items: [
-            {
-              key: "view-students",
-              icon: <TeamOutlined />,
-              label: "View Students",
-              onClick: () =>
-                navigate(`/clearing-officer/sao/students/${record.id}`),
-            },
-            {
-              key: "view-details",
-              icon: <EyeOutlined />,
-              label: "View Details",
-              onClick: () => openViewModal(record),
-            },
-          ],
-        };
-        return (
-          <Space>
-            <Dropdown menu={actionMenu} trigger={["click"]}>
-              <Button disabled={isClearanceInactive}>
-                Actions <DownOutlined />
-              </Button>
-            </Dropdown>
-            <Tooltip
-              title={
-                isClearanceInactive ? "Clearance period is not active" : "Edit"
-              }
-            >
-              <Button
-                key="edit"
-                icon={<EditOutlined />}
-                onClick={() => openEditModal(record)}
-                disabled={isClearanceInactive}
-              >
-                Edit
-              </Button>
-            </Tooltip>
-            <Tooltip
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsModalOpen(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-none h-12 px-8 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+              disabled={requirements.length > 0 || isClearanceInactive}
               title={
                 isClearanceInactive
                   ? "Clearance period is not active"
-                  : "Delete"
+                  : requirements.length > 0
+                  ? "You have already set a requirement"
+                  : "Set a new requirement"
               }
             >
-              <Button
-                key="delete"
-                icon={<DeleteOutlined />}
-                danger
-                onClick={() =>
-                  record.id &&
-                  handleDeleteRequirement(record.id, record.institutionalName)
-                }
-                disabled={isClearanceInactive}
-              >
-                Delete
-              </Button>
-            </Tooltip>
-          </Space>
-        );
-      },
-    },
-  ];
-
-  return (
-    <div className="p-6  mx-auto">
-      <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-            Clearance Requirements
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Manage department clearance requirements
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={requirements.length > 0 || isClearanceInactive}
-            title={
-              isClearanceInactive
-                ? "Clearance period is not active"
+              {isClearanceInactive
+                ? "Clearance Period Not Active"
                 : requirements.length > 0
-                ? "You have already set a requirement"
-                : "Set a new requirement"
-            }
-          >
-            {isClearanceInactive
-              ? "Clearance Period Not Active"
-              : requirements.length > 0
-              ? "You have already set a requirement"
-              : "Set a new requirement"}
-          </Button>
+                ? "Requirement Already Set"
+                : "Create New Requirement"}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Show message when clearance is not active */}
-      {isClearanceInactive && (
-        <Card className="p-8 text-center shadow-lg border-2 border-gray-200 mb-6 bg-yellow-50">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-yellow-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
+        {/* Show message when clearance is not active */}
+        {isClearanceInactive && (
+          <Card className="mb-6 border-0 shadow-xl bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20">
+            <div className="p-8 text-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+                    Clearance Period Not Active
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto">
+                    {!clearanceStatus
+                      ? "No clearance period has been set up yet."
+                      : !clearanceStatus.isActive
+                      ? "The clearance period has been stopped by the administrator."
+                      : "The clearance deadline has passed."}{" "}
+                    You cannot create or modify requirements at this time.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Clearance Period Not Active
-              </h2>
-              <p className="text-gray-600 max-w-md">
-                {!clearanceStatus
-                  ? "No clearance period has been set up yet."
-                  : !clearanceStatus.isActive
-                  ? "The clearance period has been stopped by the administrator."
-                  : "The clearance deadline has passed."}{" "}
-                You cannot create or modify requirements at this time. Please
-                contact the administrator for assistance.
+          </Card>
+        )}
+
+        {/* Requirements Card Display */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-300 text-lg">
+                Loading requirements...
               </p>
             </div>
           </div>
-        </Card>
-      )}
+        ) : requirements.length === 0 ? (
+          <Card className="border-0 shadow-xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+            <div className="p-12 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <BankOutlined className="text-5xl text-gray-400 dark:text-gray-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
+                No Requirements Set
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+                You haven't created any clearance requirements yet. Click the
+                button above to create your first requirement.
+              </p>
+            </div>
+          </Card>
+        ) : (
+          <div className="grid gap-6">
+            {requirements.map((requirement) => (
+              <Card
+                key={requirement.id}
+                className="border-0 shadow-md bg-white dark:bg-gray-800 overflow-hidden hover:shadow-3xl transition-all duration-300"
+              >
+                {/* Card Header with Gradient */}
+                <div className="bg-gradient-to-r rounded-md from-blue-600 via-purple-600 to-pink-600 p-6">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
+                        <Building />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-white mb-1">
+                          {requirement.institutionalName}
+                        </h2>
+                        <div className="flex items-center gap-2">
+                          <Tag
+                            color="blue"
+                            className="text-sm font-medium border-0"
+                          >
+                            {requirement.semester}
+                          </Tag>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-2">
+                      <Tooltip title="View Students">
+                        <Button
+                          icon={<TeamOutlined />}
+                          onClick={() =>
+                            navigate(
+                              `/clearing-officer/sao/students/${requirement.id}`
+                            )
+                          }
+                          disabled={isClearanceInactive}
+                          className="bg-white/20 hover:bg-white/30 border-white/40 text-white backdrop-blur-sm h-10"
+                        >
+                          Students
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="View Details">
+                        <Button
+                          icon={<EyeOutlined />}
+                          onClick={() => openViewModal(requirement)}
+                          className="bg-white/20 hover:bg-white/30 border-white/40 text-white backdrop-blur-sm h-10"
+                        >
+                          View
+                        </Button>
+                      </Tooltip>
+                      <Tooltip
+                        title={
+                          isClearanceInactive
+                            ? "Clearance period is not active"
+                            : "Edit"
+                        }
+                      >
+                        <Button
+                          icon={<EditOutlined />}
+                          onClick={() => openEditModal(requirement)}
+                          disabled={isClearanceInactive}
+                          className="bg-white/20 hover:bg-white/30 border-white/40 text-white backdrop-blur-sm h-10"
+                        >
+                          Edit
+                        </Button>
+                      </Tooltip>
+                      <Tooltip
+                        title={
+                          isClearanceInactive
+                            ? "Clearance period is not active"
+                            : "Delete"
+                        }
+                      >
+                        <Button
+                          icon={<DeleteOutlined />}
+                          danger
+                          onClick={() =>
+                            requirement.id &&
+                            handleDeleteRequirement(
+                              requirement.id,
+                              requirement.institutionalName
+                            )
+                          }
+                          disabled={isClearanceInactive}
+                          className="h-10"
+                        >
+                          Delete
+                        </Button>
+                      </Tooltip>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Body */}
+                <div className="p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2 mb-3">
+                          <BankOutlined className="text-blue-500" />
+                          Department
+                        </label>
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                          <span className="text-gray-800 dark:text-gray-200 font-medium">
+                            {requirement.department}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 block">
+                          Requirements List
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {requirement.requirements
+                            .slice(0, MAX_VISIBLE_TAGS)
+                            .map((req, idx) => (
+                              <Tag
+                                key={idx}
+                                color="blue"
+                                className="text-sm font-medium px-3 py-1.5 rounded-lg"
+                              >
+                                {req}
+                              </Tag>
+                            ))}
+                          {requirement.requirements.length >
+                            MAX_VISIBLE_TAGS && (
+                            <Dropdown
+                              menu={{
+                                items: requirement.requirements
+                                  .slice(MAX_VISIBLE_TAGS)
+                                  .map((req, idx) => ({
+                                    key: `${idx}`,
+                                    label: (
+                                      <Tag color="blue" className="mr-2">
+                                        {req}
+                                      </Tag>
+                                    ),
+                                  })),
+                              }}
+                              trigger={["click"]}
+                            >
+                              <Tag
+                                color="blue"
+                                className="cursor-pointer text-sm font-medium px-3 py-1.5"
+                              >
+                                +
+                                {requirement.requirements.length -
+                                  MAX_VISIBLE_TAGS}{" "}
+                                more
+                              </Tag>
+                            </Dropdown>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 block">
+                          Description
+                        </label>
+                        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                          {requirement.description ? (
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                              {requirement.description.length >
+                              DESCRIPTION_LIMIT ? (
+                                <>
+                                  {ellipsize(
+                                    requirement.description,
+                                    DESCRIPTION_LIMIT
+                                  )}{" "}
+                                  <Popover
+                                    content={
+                                      <div className="max-w-[420px] whitespace-pre-wrap break-words leading-relaxed text-gray-700">
+                                        {requirement.description}
+                                      </div>
+                                    }
+                                    title="Full Description"
+                                    trigger="click"
+                                  >
+                                    <Button
+                                      type="link"
+                                      size="small"
+                                      className="p-0"
+                                    >
+                                      See more
+                                    </Button>
+                                  </Popover>
+                                </>
+                              ) : (
+                                requirement.description
+                              )}
+                            </p>
+                          ) : (
+                            <p className="text-gray-400 dark:text-gray-500 italic">
+                              No description provided
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* <div>
+                        <label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 block">
+                          Deadline
+                        </label>
+                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                          <span className="text-gray-800 dark:text-gray-200 font-medium">
+                            {format(
+                              typeof requirement.deadline === "string"
+                                ? new Date(requirement.deadline)
+                                : requirement.deadline,
+                              "MMMM dd, yyyy"
+                            )}
+                          </span>
+                        </div>
+                      </div> */}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Add Modal */}
       <Modal
-        title="Set Requirement"
+        title={
+          <span className="text-xl font-bold">Create New Requirement</span>
+        }
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         onOk={handleAddRequirement}
         okText="Save Requirement"
         confirmLoading={addLoading}
+        width={700}
       >
-        <Space direction="vertical" className="w-full">
+        <Space direction="vertical" className="w-full" size="large">
           <div>
-            <label className="block mb-2">Institutional name</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Institutional name
+            </label>
             <Input
               value={newRequirement.courseCode}
               onChange={(e) =>
@@ -703,11 +751,12 @@ const Requirements = () => {
                 })
               }
               placeholder="Enter Institutional name"
+              size="large"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-medium text-gray-700 dark:text-gray-300">
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
               Requirement Names
             </label>
             <Select
@@ -722,15 +771,18 @@ const Requirements = () => {
               placeholder="Type a name and press Enter…"
               className="w-full"
               open={false}
+              size="large"
             />
             <div className="mt-2 text-xs text-gray-500">
               Tip: Press Enter, space or type a comma to create a tag. Click the
-              “x” to remove.
+              "x" to remove.
             </div>
           </div>
 
           <div>
-            <label className="block mb-2">Department</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Department
+            </label>
             <Select
               className="w-full"
               value={newRequirement.department}
@@ -739,11 +791,14 @@ const Requirements = () => {
               }
               placeholder="Select department"
               options={departments.map((d) => ({ label: d, value: d }))}
+              size="large"
             />
           </div>
 
           <div>
-            <label className="block mb-2">Semester</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Semester
+            </label>
             <Select
               className="w-full"
               value={newRequirement.semester}
@@ -752,11 +807,14 @@ const Requirements = () => {
               }
               placeholder="Select semester"
               options={semesters.map((s) => ({ label: s, value: s }))}
+              size="large"
             />
           </div>
 
           <div>
-            <label className="block mb-2">Description</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Description
+            </label>
             <TextArea
               rows={4}
               value={newRequirement.description}
@@ -771,7 +829,9 @@ const Requirements = () => {
           </div>
 
           <div>
-            <label className="block mb-2">Deadline</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Deadline
+            </label>
             <DatePicker
               className="w-full"
               onChange={(date) =>
@@ -787,6 +847,7 @@ const Requirements = () => {
                   ? "Clearance period not active"
                   : "Select deadline"
               }
+              size="large"
             />
             {clearanceStatus?.isActive && (
               <div className="mt-2 text-xs text-gray-500">
@@ -803,53 +864,119 @@ const Requirements = () => {
 
       {/* View Modal */}
       <Modal
-        title="View Requirement"
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <EyeOutlined className="text-white text-xl" />
+            </div>
+            <span className="text-xl font-bold">Requirement Details</span>
+          </div>
+        }
         open={!!viewItem}
         onCancel={() => setViewItem(null)}
         footer={[
-          <Button key="close" onClick={() => setViewItem(null)}>
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setViewItem(null)}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 border-none"
+          >
             Close
           </Button>,
         ]}
+        width={700}
       >
         {viewItem && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="Institutional name">
-              {viewItem.institutionalName}
-            </Descriptions.Item>
-            <Descriptions.Item label="Department">
-              {viewItem.department}
-            </Descriptions.Item>
-            <Descriptions.Item label="Semester">
-              <Tag color="green">{viewItem.semester}</Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Requirements">
-              <Space size={[4, 8]} wrap>
+          <div className="space-y-4">
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
+                Institutional Name
+              </label>
+              <p className="text-xl font-bold text-gray-800 dark:text-white">
+                {viewItem.institutionalName}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
+                  Department
+                </label>
+                <div className="flex items-center gap-2">
+                  <BankOutlined className="text-blue-500" />
+                  <p className="text-base font-medium text-gray-800 dark:text-white">
+                    {viewItem.department}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
+                  Semester
+                </label>
+                <Tag color="green" className="text-sm font-medium px-3 py-1">
+                  {viewItem.semester}
+                </Tag>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-3">
+                Requirements List
+              </label>
+              <Space size={[8, 8]} wrap>
                 {viewItem.requirements.map((n, i) => (
-                  <Tag key={i} color="blue">
+                  <Tag
+                    key={i}
+                    color="blue"
+                    className="text-sm font-medium px-3 py-1.5"
+                  >
                     {n}
                   </Tag>
                 ))}
               </Space>
-            </Descriptions.Item>
-            <Descriptions.Item label="Description">
-              {viewItem.description || "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Deadline">
-              {format(
-                typeof viewItem.deadline === "string"
-                  ? new Date(viewItem.deadline)
-                  : viewItem.deadline,
-                "MMM dd, yyyy"
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+            </div>
+
+            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
+                Description
+              </label>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                {viewItem.description || (
+                  <span className="italic text-gray-400">
+                    No description provided
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
+                Deadline
+              </label>
+              <p className="text-base font-semibold text-gray-800 dark:text-white">
+                {format(
+                  typeof viewItem.deadline === "string"
+                    ? new Date(viewItem.deadline)
+                    : viewItem.deadline,
+                  "MMMM dd, yyyy"
+                )}
+              </p>
+            </div>
+          </div>
         )}
       </Modal>
 
       {/* Edit Modal */}
       <Modal
-        title="Edit Requirement"
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              <EditOutlined className="text-white text-xl" />
+            </div>
+            <span className="text-xl font-bold">Edit Requirement</span>
+          </div>
+        }
         open={isEditModalOpen}
         onCancel={() => {
           setIsEditModalOpen(false);
@@ -858,21 +985,27 @@ const Requirements = () => {
         onOk={handleSaveEdit}
         okText="Save Changes"
         confirmLoading={updateLoading}
+        width={700}
       >
-        <Space direction="vertical" className="w-full">
+        <Space direction="vertical" className="w-full" size="large">
           <div>
-            <label className="block mb-2">Institutional name</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Institutional name
+            </label>
             <Input
               value={editForm.courseCode}
               onChange={(e) =>
                 setEditForm((prev) => ({ ...prev, courseCode: e.target.value }))
               }
               placeholder="Enter Institutional name"
+              size="large"
             />
           </div>
 
           <div>
-            <label className="block mb-2">Requirement Names</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Requirement Names
+            </label>
             <Select
               mode="tags"
               value={editForm.names}
@@ -888,11 +1021,14 @@ const Requirements = () => {
               placeholder="Type a name and press Enter…"
               className="w-full"
               open={false}
+              size="large"
             />
           </div>
 
           <div>
-            <label className="block mb-2">Department</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Department
+            </label>
             <Select
               className="w-full"
               value={editForm.department}
@@ -901,11 +1037,14 @@ const Requirements = () => {
               }
               placeholder="Select department"
               options={departments.map((d) => ({ label: d, value: d }))}
+              size="large"
             />
           </div>
 
           <div>
-            <label className="block mb-2">Semester</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Semester
+            </label>
             <Select
               className="w-full"
               value={editForm.semester}
@@ -914,11 +1053,14 @@ const Requirements = () => {
               }
               placeholder="Select semester"
               options={semesters.map((s) => ({ label: s, value: s }))}
+              size="large"
             />
           </div>
 
           <div>
-            <label className="block mb-2">Description</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Description
+            </label>
             <TextArea
               rows={4}
               value={editForm.description}
@@ -933,7 +1075,9 @@ const Requirements = () => {
           </div>
 
           <div>
-            <label className="block mb-2">Deadline</label>
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Deadline
+            </label>
             <DatePicker
               className="w-full"
               value={editForm.deadline ? dayjs(editForm.deadline) : undefined}
@@ -950,6 +1094,7 @@ const Requirements = () => {
                   ? "Clearance period not active"
                   : "Select deadline"
               }
+              size="large"
             />
             {clearanceStatus?.isActive && (
               <div className="mt-2 text-xs text-gray-500">
@@ -963,20 +1108,6 @@ const Requirements = () => {
           </div>
         </Space>
       </Modal>
-
-      <Card className="shadow-lg border border-gray-200 dark:border-gray-700">
-        <Table
-          columns={columns}
-          dataSource={requirements}
-          rowKey="id"
-          loading={loading}
-          className="rounded-lg overflow-hidden"
-          rowClassName="hover:bg-gray-50 dark:hover:bg-gray-800/50"
-          scroll={{ x: "max-content" }}
-          bordered
-          pagination={false}
-        />
-      </Card>
     </div>
   );
 };

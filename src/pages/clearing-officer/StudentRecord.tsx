@@ -104,7 +104,7 @@ const StudentRecord: React.FC = () => {
   }>();
   const { user } = useAuth();
 
-  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
   const [studentList, setStudentList] = useState<Student[]>([]);
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
