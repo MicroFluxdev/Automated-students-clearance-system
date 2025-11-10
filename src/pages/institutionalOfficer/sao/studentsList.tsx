@@ -23,14 +23,7 @@ import {
 } from "lucide-react";
 import axiosInstance, { API_URL } from "@/api/axios";
 import { useAuth } from "@/authentication/useAuth";
-import {
-  createStudentRequirement,
-  createBulkStudentRequirements,
-  updateStudentRequirement,
-  getAllStudentRequirements,
-  findExistingStudentRequirement,
-  type StudentRequirement,
-} from "@/services/studentRequirementService";
+import { type StudentRequirement } from "@/services/studentReqInstitutionalService";
 import { message } from "antd";
 import {
   Table,
@@ -73,6 +66,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  createBulkStudentRequirementsIns,
+  createStudentRequirementIns,
+  findExistingStudentRequirementIns,
+  getAllStudentRequirementsIns,
+  updateStudentRequirementIns,
+} from "@/services/studentReqInstitutionalService";
 
 // API response interface matching the backend data structure
 interface ApiStudent {
@@ -170,7 +170,7 @@ export const SaoOfficer = () => {
           console.log(
             "🔍 Fetching student requirements to check for signed students..."
           );
-          const allRequirements = await getAllStudentRequirements();
+          const allRequirements = await getAllStudentRequirementsIns();
           console.log(
             `✅ Fetched ${allRequirements.length} student requirements`
           );
@@ -317,7 +317,7 @@ export const SaoOfficer = () => {
         );
 
         // Update the student requirement status to "incomplete"
-        const result = await updateStudentRequirement(
+        const result = await updateStudentRequirementIns(
           student.studentRequirementId,
           "incomplete",
           student.schoolId,
@@ -424,7 +424,7 @@ export const SaoOfficer = () => {
         }
 
         // Check if student requirement already exists
-        const existingRequirement = findExistingStudentRequirement(
+        const existingRequirement = findExistingStudentRequirementIns(
           allStudentRequirements,
           student.schoolId,
           user.id,
@@ -450,7 +450,7 @@ export const SaoOfficer = () => {
             existingId
           );
 
-          result = await updateStudentRequirement(
+          result = await updateStudentRequirementIns(
             existingId!,
             "signed",
             student.schoolId,
@@ -485,7 +485,7 @@ export const SaoOfficer = () => {
 
           console.log("📦 Prepared requirement data:", requirementData);
 
-          result = await createStudentRequirement(requirementData);
+          result = await createStudentRequirementIns(requirementData);
           storedId = result?._id || result?.id;
 
           console.log("📦 Full API response:", result);
@@ -566,7 +566,7 @@ export const SaoOfficer = () => {
 
       // Update all student requirements in parallel
       const updatePromises = studentsWithReqIds.map((student) =>
-        updateStudentRequirement(
+        updateStudentRequirementIns(
           student.studentRequirementId!,
           "incomplete",
           student.schoolId,
@@ -684,7 +684,7 @@ export const SaoOfficer = () => {
         const studentsToCreate: typeof selectedStudentsData = [];
 
         selectedStudentsData.forEach((student) => {
-          const existingRequirement = findExistingStudentRequirement(
+          const existingRequirement = findExistingStudentRequirementIns(
             allStudentRequirements,
             student.schoolId,
             user.id,
@@ -715,7 +715,7 @@ export const SaoOfficer = () => {
           console.log("🔄 Updating existing requirements...");
           const updatePromises = studentsToUpdate.map(
             ({ student, existingReqId }) =>
-              updateStudentRequirement(
+              updateStudentRequirementIns(
                 existingReqId,
                 "signed",
                 student.schoolId,
@@ -763,7 +763,9 @@ export const SaoOfficer = () => {
             status: "signed" as const,
           }));
 
-          createResults = await createBulkStudentRequirements(bulkRequirements);
+          createResults = await createBulkStudentRequirementsIns(
+            bulkRequirements
+          );
 
           if (createResults && createResults.length > 0) {
             console.log("📦 Bulk create results:", createResults);

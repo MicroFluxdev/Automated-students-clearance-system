@@ -8,7 +8,7 @@ import type { StudentRequirement } from "./studentRequirementService";
 export interface ClearingOfficerDashboardStats {
   totalCourses: number;
   totalDepartments: number;
-  totalYearLevels: number;
+  totalStudents: number;
   activeClearance: ClearanceStatus | null;
   myRequirementStats: {
     signed: number;
@@ -97,22 +97,23 @@ export const fetchClearingOfficerDashboardStats = async (
     );
     const totalDepartments = uniqueDepartments.size;
 
-    // Calculate total unique year levels
-    const uniqueYearLevels = new Set(
+    // Calculate total unique students
+    const uniqueStudents = new Set(
       myRequirements
-        .filter((req: StudentRequirement) => req.requirement?.yearLevel)
-        .map((req: StudentRequirement) => req.requirement!.yearLevel)
+        .filter((req: StudentRequirement) => req.studentId)
+        .map((req: StudentRequirement) => req.studentId)
     );
-    const totalYearLevels = uniqueYearLevels.size;
+    const totalStudents = uniqueStudents.size;
 
     // Calculate requirements by semester
     const myRequirementsBySemester: { [semester: string]: number } = {};
     myRequirements.forEach((req: StudentRequirement) => {
-      // Normalize missing/empty semester values to a friendly label
+      // Only include requirements that have a valid semester value
       const rawSemester = (req.requirement?.semester || "").toString().trim();
-      const semester = rawSemester.length > 0 ? rawSemester : "Unspecified";
-      myRequirementsBySemester[semester] =
-        (myRequirementsBySemester[semester] || 0) + 1;
+      if (rawSemester.length > 0) {
+        myRequirementsBySemester[rawSemester] =
+          (myRequirementsBySemester[rawSemester] || 0) + 1;
+      }
     });
 
     // Calculate requirement statistics for my students
@@ -148,7 +149,7 @@ export const fetchClearingOfficerDashboardStats = async (
     return {
       totalCourses,
       totalDepartments,
-      totalYearLevels,
+      totalStudents,
       activeClearance: clearance || null,
       myRequirementStats,
       myRequirementsBySemester,

@@ -13,25 +13,32 @@ import {
   MailOutlined,
   SafetyOutlined,
   LogoutOutlined,
-  BookOutlined,
   TeamOutlined,
+  CheckCircleOutlined,
   CalendarOutlined,
-  TrophyOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/authentication/useAuth";
 import {
   fetchClearingOfficerDashboardStats,
+  getDaysUntilDeadline,
   type ClearingOfficerDashboardStats,
 } from "@/services/clearingOfficerDashboardService";
-import RequirementsBySemesterChart from "@/components/dashboard/clearing-officer/RequirementsBySemesterChart";
 import MyRequirementsStatusChart from "@/components/dashboard/clearing-officer/MyRequirementsStatusChart";
 import RecentSubmissionsTable from "@/components/dashboard/clearing-officer/RecentSubmissionsTable";
+import StudentsByYearChart from "@/components/dashboard/StudentsByYearChart";
+import {
+  fetchDashboardStats,
+  type DashboardStats,
+} from "@/services/dashboardService";
 
 const { Title, Text } = Typography;
 
 const ClearingOfficerDashboard = () => {
   const { user, logout } = useAuth();
   const [stats, setStats] = useState<ClearingOfficerDashboardStats | null>(
+    null
+  );
+  const [yearLevelStats, setYearLevelStats] = useState<DashboardStats | null>(
     null
   );
   const [loading, setLoading] = useState(true);
@@ -45,6 +52,23 @@ const ClearingOfficerDashboard = () => {
         setError(null);
         const data = await fetchClearingOfficerDashboardStats();
         setStats(data);
+
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load dashboard data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    const yearLevelStudent = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchDashboardStats();
+        setYearLevelStats(data);
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
         setError(
@@ -55,19 +79,15 @@ const ClearingOfficerDashboard = () => {
       }
     };
 
+    yearLevelStudent();
+
     loadDashboardData();
   }, []);
 
-  // Derived metrics (none for deadline; hidden per request)
-  const clearanceDeadlineDate = stats?.activeClearance
-    ? new Date(
-        (stats.activeClearance.extendedDeadline ||
-          stats.activeClearance.deadline) as unknown as string
-      )
-    : null;
-  const clearanceDeadlineLabel = clearanceDeadlineDate
-    ? clearanceDeadlineDate.toLocaleDateString()
-    : "No deadline";
+  // Calculate derived metrics
+  const daysUntilDeadline = stats
+    ? getDaysUntilDeadline(stats.activeClearance)
+    : 0;
 
   const handleLogout = async () => {
     try {
@@ -80,16 +100,13 @@ const ClearingOfficerDashboard = () => {
   // Loading state
   if (loading) {
     return (
-      <div
-        style={{
-          padding: "24px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "400px",
-        }}
-      >
-        <Spin size="large" tip="Loading dashboard data..." />
+      <div className="flex flex-col justify-center items-center min-h-[500px] pt-12 w-full ">
+        <Spin size="large">
+          <div className="w-full h-30" />
+        </Spin>
+        <span className="text-lg text-blue-500  tracking-wide">
+          Loading dashboard data...
+        </span>
       </div>
     );
   }
@@ -134,64 +151,58 @@ const ClearingOfficerDashboard = () => {
 
       {/* Statistics Cards */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} md={12} lg={6}>
+        {/* Total Students */}
+        <Col xs={24} md={8} lg={8}>
           <Card>
             <Statistic
-              title="Total Courses"
-              value={stats.totalCourses}
-              prefix={<BookOutlined style={{ color: "#1890ff" }} />}
-              valueStyle={{ color: "#1890ff" }}
-            />
-            <div
-              style={{ color: "#8c8c8c", fontSize: "14px", marginTop: "8px" }}
-            >
-              Courses I manage
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} md={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Total Departments"
-              value={stats.totalDepartments}
-              prefix={<TeamOutlined style={{ color: "#722ed1" }} />}
-              valueStyle={{ color: "#722ed1" }}
-            />
-            <div
-              style={{ color: "#8c8c8c", fontSize: "14px", marginTop: "8px" }}
-            >
-              Unique departments
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} md={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Total Year Levels"
-              value={stats.totalYearLevels}
-              prefix={<TrophyOutlined style={{ color: "#52c41a" }} />}
+              title="Total Students"
+              value={stats.totalStudents}
+              prefix={<TeamOutlined style={{ color: "#52c41a" }} />}
               valueStyle={{ color: "#52c41a" }}
             />
             <div
               style={{ color: "#8c8c8c", fontSize: "14px", marginTop: "8px" }}
             >
-              Year levels covered
+              Students I manage
+            </div>
+          </Card>
+        </Col>
+
+        {/* Total Signed */}
+        <Col xs={24} md={8} lg={8}>
+          <Card>
+            <Statistic
+              title="Total Signed"
+              value={stats.myRequirementStats.signed}
+              prefix={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
+              valueStyle={{ color: "#52c41a" }}
+            />
+            <div
+              style={{ color: "#8c8c8c", fontSize: "14px", marginTop: "8px" }}
+            >
+              Requirements approved
             </div>
           </Card>
         </Col>
 
         {/* Clearance Deadline */}
-        <Col xs={24} md={12} lg={6}>
+        <Col xs={24} md={8} lg={8}>
           <Card>
             <Statistic
-              title="Clearance Deadline"
-              value={clearanceDeadlineLabel}
+              title="Days Until Deadline"
+              value={daysUntilDeadline}
+              suffix="days"
               prefix={<CalendarOutlined style={{ color: "#fa8c16" }} />}
+              valueStyle={{
+                color: daysUntilDeadline > 7 ? "#3f8600" : "#cf1322",
+              }}
             />
             <div
-              style={{ color: "#8c8c8c", fontSize: "14px", marginTop: "8px" }}
+              style={{
+                color: daysUntilDeadline > 7 ? "#8c8c8c" : "#cf1322",
+                fontSize: "14px",
+                marginTop: "8px",
+              }}
             >
               {stats.activeClearance
                 ? `${stats.activeClearance.semesterType} ${stats.activeClearance.academicYear}`
@@ -204,7 +215,16 @@ const ClearingOfficerDashboard = () => {
       {/* Charts Section */}
       <Row gutter={[16, 16]} style={{ marginTop: "24px" }}>
         <Col xs={24} lg={12}>
-          <RequirementsBySemesterChart data={stats.myRequirementsBySemester} />
+          <StudentsByYearChart
+            data={
+              yearLevelStats?.studentsByYearLevel ?? {
+                "1st Year": 0,
+                "2nd Year": 0,
+                "3rd Year": 0,
+                "4th Year": 0,
+              }
+            }
+          />
         </Col>
 
         <Col xs={24} lg={12}>

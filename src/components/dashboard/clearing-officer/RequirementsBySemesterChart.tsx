@@ -10,12 +10,11 @@ interface RequirementsBySemesterChartProps {
 const COLORS = ["#1890ff", "#52c41a", "#faad14", "#f5222d", "#722ed1", "#13c2c2"];
 
 const RequirementsBySemesterChart = ({ data }: RequirementsBySemesterChartProps) => {
-  // Transform data for recharts
+  // Transform and sort data for recharts
   const chartData = Object.entries(data)
-    .map(([semester, count], index) => ({
+    .map(([semester, count]) => ({
       semester,
       requirements: count,
-      fill: COLORS[index % COLORS.length],
     }))
     .sort((a, b) => {
       // Sort by semester order (1st, 2nd, Summer, etc.)
@@ -27,7 +26,11 @@ const RequirementsBySemesterChart = ({ data }: RequirementsBySemesterChartProps)
         return aIndex - bIndex;
       }
       return a.semester.localeCompare(b.semester);
-    });
+    })
+    .map((item, index) => ({
+      ...item,
+      fill: COLORS[index % COLORS.length],
+    }));
 
   return (
     <Card title="Requirements by Semester" style={{ height: "100%" }}>

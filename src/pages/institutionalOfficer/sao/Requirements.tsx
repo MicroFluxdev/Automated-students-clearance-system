@@ -37,6 +37,8 @@ import {
   type ClearanceStatus,
 } from "@/services/clearanceService";
 import { Building } from "lucide-react";
+import axiosInstance, { API_URL } from "@/api/axios";
+import { createBulkStudentRequirementsIns } from "@/services/studentReqInstitutionalService";
 
 interface Requirement {
   _id?: string;
@@ -228,9 +230,105 @@ const Requirements = () => {
         postedBy: user.id,
       };
 
-      await createInstitutionalRequirement(payload);
+      const response = await createInstitutionalRequirement(payload);
 
-      message.success("Requirement created successfully!");
+      // Extract the requirement ID from the response (handle various response structures)
+      const requirementId =
+        response?.data?.id ||
+        response?.data?._id ||
+        response?.id ||
+        response?._id ||
+        (typeof response === "object" && response !== null && "id" in response
+          ? (response as { id: string }).id
+          : null) ||
+        (typeof response === "object" && response !== null && "_id" in response
+          ? (response as { _id: string })._id
+          : null);
+
+      if (!requirementId) {
+        console.error("Failed to get requirement ID from response:", response);
+        message.error("Requirement created but failed to get requirement ID.");
+        await fetchRequirements();
+        return;
+      }
+
+      console.log(
+        "✅ Institutional requirement created with ID:",
+        requirementId
+      );
+
+      // Fetch all enrolled students
+      message.loading(
+        "Creating student requirements for all enrolled students...",
+        0
+      );
+
+      try {
+        const studentsResponse = await axiosInstance.get(
+          `${API_URL}/intigration/getAllStudentComparedByIds`
+        );
+
+        // Handle different response structures
+        let studentsData: Array<{ id: string; schoolId: string }> = [];
+
+        if (Array.isArray(studentsResponse.data)) {
+          studentsData = studentsResponse.data;
+        } else if (
+          studentsResponse.data &&
+          Array.isArray(studentsResponse.data.data)
+        ) {
+          studentsData = studentsResponse.data.data;
+        } else if (
+          studentsResponse.data &&
+          Array.isArray(studentsResponse.data.students)
+        ) {
+          studentsData = studentsResponse.data.students;
+        }
+
+        console.log(`📚 Found ${studentsData.length} enrolled students`);
+
+        if (studentsData.length > 0) {
+          // Create student requirements for all students
+          const studentRequirements = studentsData.map((student) => ({
+            studentId: student.schoolId,
+            coId: user.id,
+            requirementId: requirementId,
+            signedBy: user.role || "sao",
+            status: "incomplete" as const,
+          }));
+
+          console.log(
+            `📝 Creating ${studentRequirements.length} student requirements...`
+          );
+
+          const createdRequirements = await createBulkStudentRequirementsIns(
+            studentRequirements
+          );
+
+          message.destroy();
+
+          if (createdRequirements.length > 0) {
+            message.success(
+              `Requirement created successfully! Student requirements created for ${createdRequirements.length} students.`
+            );
+          } else {
+            message.warning(
+              "Requirement created, but failed to create student requirements."
+            );
+          }
+        } else {
+          message.destroy();
+          message.success(
+            "Requirement created successfully! No enrolled students found."
+          );
+        }
+      } catch (studentReqError) {
+        message.destroy();
+        console.error("Error creating student requirements:", studentReqError);
+        message.warning(
+          "Requirement created successfully, but failed to create student requirements for all students."
+        );
+      }
 
       // Refresh the requirements list
       await fetchRequirements();
@@ -250,6 +348,7 @@ const Requirements = () => {
       message.error("Failed to create requirement. Please try again.");
     } finally {
       setAddLoading(false);
+      message.destroy();
     }
   };
 
@@ -506,7 +605,7 @@ const Requirements = () => {
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
-                        <Building />
+                        <Building className="text-white" />
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold text-white mb-1">

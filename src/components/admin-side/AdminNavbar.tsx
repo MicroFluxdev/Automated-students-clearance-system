@@ -130,7 +130,7 @@ const AdminNavbar = ({ toggleSidebar }: NavbarProps) => {
                           {user?.firstName} {user?.lastName}
                         </p>
                         <p className="text-xs leading-none text-muted-foreground mt-1.5">
-                          {user?.role}
+                          {user?.schoolId}
                         </p>
                       </div>
                     </div>

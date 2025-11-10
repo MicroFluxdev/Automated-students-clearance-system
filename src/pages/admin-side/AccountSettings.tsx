@@ -339,6 +339,9 @@ const AccountSettings = () => {
               <h2 className="text-2xl font-semibold">
                 {user?.firstName} {user?.lastName}
               </h2>
+              <span className="text-muted-foreground text-sm">
+                {user?.schoolId}
+              </span>
               <p className="text-muted-foreground">{user?.email}</p>
             </div>
           </div>
