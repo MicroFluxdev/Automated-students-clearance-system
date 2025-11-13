@@ -17,7 +17,6 @@ export interface CreateInstitutionalRequirementPayload {
   department: string;
   description: string;
   semester: string;
-  deadline: string;
   postedBy: string; // User ID of the clearing officer who posted this
 }
 

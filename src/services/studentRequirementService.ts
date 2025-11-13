@@ -305,3 +305,70 @@ export const updateStudentRequirement = async (
     return null;
   }
 };
+
+/**
+ * Bulk update student requirements to "missing" status when deadline passes
+ * This function handles automatic status updates for incomplete requirements
+ * @param requirements - Array of student requirements to update
+ * @returns Updated count statistics
+ */
+export const bulkUpdateToMissingStatus = async (
+  requirements: StudentRequirement[]
+): Promise<{ updated: number; failed: number }> => {
+  try {
+    console.log(
+      `🔄 Starting bulk update to missing status for ${requirements.length} requirements`
+    );
+
+    // Filter only incomplete or signed requirements (not already missing)
+    const requirementsToUpdate = requirements.filter(
+      (req) => req.status !== "missing"
+    );
+
+    if (requirementsToUpdate.length === 0) {
+      console.log("✅ No requirements need to be updated to missing status");
+      return { updated: 0, failed: 0 };
+    }
+
+    console.log(
+      `📊 ${requirementsToUpdate.length} requirements will be updated to missing`
+    );
+
+    // Update all requirements in parallel with Promise.allSettled for better error handling
+    const updatePromises = requirementsToUpdate.map((req) =>
+      updateStudentRequirement(
+        req._id || req.id || "",
+        "missing",
+        req.studentId,
+        req.coId,
+        req.requirementId
+      )
+    );
+
+    const results = await Promise.allSettled(updatePromises);
+
+    // Count successes and failures
+    const updated = results.filter(
+      (r) => r.status === "fulfilled" && r.value !== null
+    ).length;
+    const failed = results.length - updated;
+
+    console.log(`✅ Bulk update complete: ${updated} updated, ${failed} failed`);
+
+    if (updated > 0) {
+      message.info(
+        `Automatically marked ${updated} incomplete requirement(s) as missing due to passed deadline`,
+        6
+      );
+    }
+
+    if (failed > 0) {
+      console.warn(`⚠️ ${failed} requirements failed to update`);
+    }
+
+    return { updated, failed };
+  } catch (error: unknown) {
+    console.error("❌ Error in bulk update to missing status:", error);
+    return { updated: 0, failed: requirements.length };
+  }
+};

@@ -34,21 +34,45 @@ import {
   deleteEvent,
 } from "@/services/eventService";
 
+// Convert datetime-local (local time) → ISO (UTC)
+const convertToPHTimeISO = (datetimeLocal: string): string => {
+  const date = new Date(datetimeLocal);
+  return date.toISOString();
+};
+
+// Convert ISO (UTC) → datetime-local format
+const convertFromPHTimeToLocal = (isoString: string): string => {
+  const date = new Date(isoString);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};
+
+// Format ISO → readable PH date/time
+const formatPHDateTime = (isoString: string): string => {
+  return new Date(isoString).toLocaleString("en-PH", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Manila",
+  });
+};
+
 const Events = () => {
   const { role } = useAuth();
   const { toast } = useToast();
-
   const toastRef = useRef(toast);
+
   useEffect(() => {
     toastRef.current = toast;
   }, [toast]);
 
-  // State for events list
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-  // State for create/edit dialog
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState({
@@ -58,7 +82,6 @@ const Events = () => {
     eventDate: "",
   });
 
-  // State for delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
   const [eventToDelete, setEventToDelete] = useState<number | null>(null);
 
@@ -79,7 +102,6 @@ const Events = () => {
     }
   }, []);
 
-  // Fetch events on component mount
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
@@ -101,11 +123,12 @@ const Events = () => {
 
   const handleOpenEditDialog = (event: Event) => {
     setEditingEvent(event);
+    const dateTimeValue = convertFromPHTimeToLocal(event.eventDate);
     setFormData({
       title: event.title,
       location: event.location,
       description: event.description,
-      eventDate: event.eventDate.split("T")[0], // Format date for input
+      eventDate: dateTimeValue,
     });
     setIsDialogOpen(true);
   };
@@ -116,16 +139,19 @@ const Events = () => {
 
     setIsSubmitting(true);
     try {
+      const submitData = {
+        ...formData,
+        eventDate: convertToPHTimeISO(formData.eventDate),
+      };
+
       if (editingEvent) {
-        // Update existing event
-        await updateEvent(editingEvent.id, formData);
+        await updateEvent(editingEvent.id, submitData);
         toast({
           title: "Success",
           description: "Event updated successfully!",
         });
       } else {
-        // Create new event
-        await createEvent(formData);
+        await createEvent(submitData);
         toast({
           title: "Success",
           description: "Event created successfully!",
@@ -133,7 +159,7 @@ const Events = () => {
       }
       setIsDialogOpen(false);
       resetForm();
-      fetchEvents(); // Refresh the list
+      fetchEvents();
     } catch (error) {
       toast({
         title: "Error",
@@ -159,7 +185,7 @@ const Events = () => {
       });
       setDeleteDialogOpen(false);
       setEventToDelete(null);
-      fetchEvents(); // Refresh the list
+      fetchEvents();
     } catch (error) {
       toast({
         title: "Error",
@@ -206,14 +232,12 @@ const Events = () => {
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
           </div>
         ) : events.length === 0 ? (
-          /* EMPTY STATE */
           <div className="flex flex-col items-center justify-center h-64 text-gray-500">
             <Calendar className="h-16 w-16 mb-4 text-gray-400" />
             <p className="text-lg font-semibold">No events found</p>
             <p className="text-sm">Create your first event to get started!</p>
           </div>
         ) : (
-          /* EVENT LIST */
           <div className="space-y-6">
             {events.map((event) => (
               <Card
@@ -221,7 +245,6 @@ const Events = () => {
                 className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 border-blue-500"
               >
                 <CardContent className="p-0 flex flex-col sm:flex-row">
-                  {/* Date */}
                   <div className="w-full sm:w-24 bg-blue-50 flex flex-row sm:flex-col items-center justify-center p-4 text-center gap-2 sm:gap-0">
                     <p className="text-sm font-semibold text-blue-700 uppercase">
                       {format(new Date(event.eventDate), "MMM")}
@@ -231,7 +254,6 @@ const Events = () => {
                     </p>
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 p-4 sm:p-6">
                     <CardHeader className="p-0 mb-3 sm:mb-4">
                       <CardTitle className="text-lg sm:text-xl font-semibold text-gray-800">
@@ -245,12 +267,7 @@ const Events = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 sm:space-x-6 space-y-2 sm:space-y-0">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-2 text-blue-600" />
-                        <span>
-                          {format(
-                            new Date(event.eventDate),
-                            "EEEE, MMMM d, yyyy"
-                          )}
-                        </span>
+                        <span>{formatPHDateTime(event.eventDate)}</span>
                       </div>
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 mr-2 text-blue-600" />
@@ -259,7 +276,6 @@ const Events = () => {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
                   {role === "sao" && (
                     <div className="p-4 sm:p-6 flex items-center gap-2">
                       <Button
@@ -334,10 +350,10 @@ const Events = () => {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="event-date">Date</Label>
+                <Label htmlFor="event-date">Date & Time</Label>
                 <Input
                   id="event-date"
-                  type="date"
+                  type="datetime-local"
                   value={formData.eventDate}
                   onChange={(e) =>
                     setFormData({ ...formData, eventDate: e.target.value })
@@ -388,7 +404,7 @@ const Events = () => {
           </DialogContent>
         </Dialog>
 
-        {/* DELETE CONFIRMATION DIALOG */}
+        {/* DELETE CONFIRMATION */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>

@@ -72,7 +72,17 @@ import {
   findExistingStudentRequirementIns,
   getAllStudentRequirementsIns,
   updateStudentRequirementIns,
+  bulkUpdateToMissingStatusIns,
 } from "@/services/studentReqInstitutionalService";
+import {
+  getCurrentClearance,
+  type ClearanceStatus,
+} from "@/services/clearanceService";
+import {
+  shouldAutoUpdateToMissing,
+  logDeadlineStatus,
+  notifyDeadlineStatus,
+} from "@/services/deadlineService";
 
 // API response interface matching the backend data structure
 interface ApiStudent {
@@ -122,6 +132,131 @@ export const SaoOfficer = () => {
     type: "single" | "bulk";
     studentId?: string;
   } | null>(null);
+
+  // State for clearance status and deadline checking
+  const [clearanceStatus, setClearanceStatus] =
+    useState<ClearanceStatus | null>(null);
+  const [clearanceLoading, setClearanceLoading] = useState(true);
+
+  // Fetch current clearance status
+  useEffect(() => {
+    const fetchClearanceStatus = async () => {
+      setClearanceLoading(true);
+      try {
+        const status = await getCurrentClearance();
+        console.log("✅ [Institutional] Clearance status:", status);
+        setClearanceStatus(status);
+
+        // Log and display deadline status information
+        logDeadlineStatus(status);
+        notifyDeadlineStatus(status);
+      } catch (error) {
+        console.error("❌ [Institutional] Error fetching clearance status:", error);
+        setClearanceStatus(null);
+      } finally {
+        setClearanceLoading(false);
+      }
+    };
+
+    fetchClearanceStatus();
+  }, []);
+
+  // Automatic deadline check and missing status update for institutional requirements
+  // This effect runs when clearance status and student requirements are loaded
+  useEffect(() => {
+    const handleAutomaticMissingStatusUpdate = async () => {
+      // Early exit if data is still loading
+      if (isLoading || clearanceLoading) {
+        return;
+      }
+
+      // Check if we should proceed with automatic update
+      if (!shouldAutoUpdateToMissing(clearanceStatus)) {
+        console.log("⏭️ [Institutional] Skipping automatic missing status update");
+        return;
+      }
+
+      console.log(
+        "🔄 [Institutional] Deadline has passed - initiating automatic missing status update"
+      );
+
+      try {
+        // Use the already-loaded allStudentRequirements state
+        if (allStudentRequirements.length === 0) {
+          console.log("ℹ️ [Institutional] No student requirements found to update");
+          return;
+        }
+
+        // Filter to only requirements for the current reqId if provided
+        const relevantStudentReqs = reqId
+          ? allStudentRequirements.filter((req) => req.requirementId === reqId)
+          : allStudentRequirements;
+
+        if (relevantStudentReqs.length === 0) {
+          console.log(
+            "ℹ️ [Institutional] No student requirements match the current requirement"
+          );
+          return;
+        }
+
+        console.log(
+          `📊 [Institutional] Found ${relevantStudentReqs.length} student requirement(s) to check for automatic missing status`
+        );
+
+        // Perform bulk update to missing status
+        const result = await bulkUpdateToMissingStatusIns(relevantStudentReqs);
+
+        if (result.updated > 0) {
+          console.log(
+            `✅ [Institutional] Successfully updated ${result.updated} student requirements to missing status`
+          );
+
+          // Update local state to reflect the changes
+          setStudents((prev) =>
+            prev.map((student) => {
+              // Check if this student's requirement was updated
+              const wasUpdated = relevantStudentReqs.some(
+                (req) =>
+                  req.studentId === student.schoolId && req.status !== "missing"
+              );
+              if (wasUpdated) {
+                return { ...student, status: "Missing" };
+              }
+              return student;
+            })
+          );
+
+          // Also update the allStudentRequirements state
+          setAllStudentRequirements((prev) =>
+            prev.map((req) => {
+              const wasUpdated = relevantStudentReqs.some(
+                (r) =>
+                  (r._id === req._id || r.id === req.id) && r.status !== "missing"
+              );
+              if (wasUpdated) {
+                return { ...req, status: "missing" };
+              }
+              return req;
+            })
+          );
+        }
+      } catch (error) {
+        console.error(
+          "❌ [Institutional] Error during automatic missing status update:",
+          error
+        );
+        // Fail silently - don't interrupt user experience
+      }
+    };
+
+    handleAutomaticMissingStatusUpdate();
+  }, [
+    clearanceStatus,
+    allStudentRequirements,
+    isLoading,
+    clearanceLoading,
+    reqId,
+  ]);
 
   // Fetch students data from API
   useEffect(() => {

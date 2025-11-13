@@ -89,6 +89,19 @@ const ClearingOfficerDashboard = () => {
     ? getDaysUntilDeadline(stats.activeClearance)
     : 0;
 
+  // Get and format deadline date
+  const deadlineDate = stats?.activeClearance
+    ? stats.activeClearance.extendedDeadline || stats.activeClearance.deadline
+    : null;
+
+  const formattedDeadlineDate = deadlineDate
+    ? new Date(deadlineDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -187,7 +200,12 @@ const ClearingOfficerDashboard = () => {
 
         {/* Clearance Deadline */}
         <Col xs={24} md={8} lg={8}>
-          <Card>
+          <Card style={{ position: "relative" }}>
+            {formattedDeadlineDate && (
+              <div className="absolute top-4 right-4 text-gray-500 text-sm font-medium text-right">
+                {formattedDeadlineDate}
+              </div>
+            )}
             <Statistic
               title="Days Until Deadline"
               value={daysUntilDeadline}

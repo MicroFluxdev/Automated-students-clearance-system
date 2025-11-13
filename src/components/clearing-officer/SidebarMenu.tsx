@@ -1,4 +1,5 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { useState, useCallback } from "react";
 import {
   Search,
   ChevronLeft,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/authentication/useAuth";
+import { StudentSearchModal } from "./StudentSearchModal";
 
 const navbar = [
   {
@@ -62,6 +64,9 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
 
   const userName = `${user?.firstName} ${user?.lastName}`;
 
+  // Search modal state
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+
   const isActive = (path: string) => {
     if (path === "/clearing-officer" && currentPath === "/clearing-officer")
       return true;
@@ -69,6 +74,16 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
       return true;
     return false;
   };
+
+  // Handle search input click/focus - open modal
+  const handleSearchClick = useCallback(() => {
+    setIsSearchModalOpen(true);
+  }, []);
+
+  // Handle modal close
+  const handleModalClose = useCallback((open: boolean) => {
+    setIsSearchModalOpen(open);
+  }, []);
 
   return (
     <aside
@@ -100,17 +115,25 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
       </div>
 
       {/* Search */}
-
       <div className="px-3 mt-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search..."
-            className="w-full rounded-lg bg-gray-50 pl-10 pr-4 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            placeholder="Search students..."
+            readOnly
+            onClick={handleSearchClick}
+            onFocus={handleSearchClick}
+            className="w-full rounded-lg bg-gray-50 pl-10 pr-4 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
           />
         </div>
       </div>
+
+      {/* Student Search Modal */}
+      <StudentSearchModal
+        open={isSearchModalOpen}
+        onOpenChange={handleModalClose}
+      />
 
       {/* Navigation */}
       <div className="mt-6 px-2 flex-1 overflow-y-auto">

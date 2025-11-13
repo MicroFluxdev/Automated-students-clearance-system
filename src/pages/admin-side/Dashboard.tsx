@@ -16,7 +16,7 @@ import {
   UserOutlined,
   TeamOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/authentication/useAuth";
 import {
@@ -63,6 +63,18 @@ const AdminDashboard = () => {
   const daysUntilDeadline = stats
     ? getDaysUntilDeadline(stats.activeClearance)
     : 0;
+
+  const deadlineDate = stats?.activeClearance
+    ? stats.activeClearance.extendedDeadline || stats.activeClearance.deadline
+    : null;
+
+  const formattedDeadlineDate = deadlineDate
+    ? new Date(deadlineDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
 
   const handleLogout = async () => {
     try {
@@ -181,13 +193,18 @@ const AdminDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} md={12} lg={6}>
-          <Card>
+        <Col xs={24} md={8} lg={6}>
+          <Card style={{ position: "relative" }}>
+            {formattedDeadlineDate && (
+              <div className="absolute top-4 right-4 text-gray-500 text-sm font-medium text-right">
+                {formattedDeadlineDate}
+              </div>
+            )}
             <Statistic
               title="Days Until Deadline"
               value={daysUntilDeadline}
               suffix="days"
-              prefix={<ClockCircleOutlined style={{ color: "#fa8c16" }} />}
+              prefix={<CalendarOutlined style={{ color: "#fa8c16" }} />}
               valueStyle={{
                 color: daysUntilDeadline > 7 ? "#3f8600" : "#cf1322",
               }}

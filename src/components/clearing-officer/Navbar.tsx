@@ -13,12 +13,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
 import NotificationDrawer from "../NotificationDrawer";
 import { useAuth } from "../../authentication/useAuth";
+import { QRScannerModal } from "./QRScannerModal";
 
 interface NavbarProps {
   toggleSidebar: () => void;
 }
 const Navbar = ({ toggleSidebar }: NavbarProps) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const { logout, user } = useAuth();
 
   const notificationCount = 3;
@@ -54,6 +56,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                   variant="ghost"
                   size="sm"
                   className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  onClick={() => setIsQRScannerOpen(true)}
                 >
                   <QrCode className="h-5 w-5 text-gray-500" />
                   <span className="text-sm text-gray-600">QR Scanner</span>
@@ -85,6 +88,17 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
             <NotificationDrawer
               open={isNotificationOpen}
               onClose={() => setIsNotificationOpen(false)}
+            />
+
+            {/* QR Scanner Modal */}
+            <QRScannerModal
+              open={isQRScannerOpen}
+              onOpenChange={setIsQRScannerOpen}
+              onScanSuccess={(decodedText) => {
+                console.log("QR Code scanned:", decodedText);
+                // You can add navigation or other logic here
+                // For example: navigate to student page if decodedText is a student ID
+              }}
             />
 
             {/* User Menu */}

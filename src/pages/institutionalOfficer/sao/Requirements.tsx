@@ -6,7 +6,6 @@ import {
   Input,
   Select,
   Modal,
-  DatePicker,
   Space,
   Tag,
   message,
@@ -22,9 +21,7 @@ import {
   EditOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
-import { format } from "date-fns";
 import TextArea from "antd/es/input/TextArea";
-import dayjs, { Dayjs } from "dayjs";
 import {
   createInstitutionalRequirement,
   getAllInstitutionalRequirements,
@@ -39,6 +36,10 @@ import {
 import { Building } from "lucide-react";
 import axiosInstance, { API_URL } from "@/api/axios";
 import { createBulkStudentRequirementsIns } from "@/services/studentReqInstitutionalService";
+import {
+  fetchClearingOfficerDashboardStats,
+  type ClearingOfficerDashboardStats,
+} from "@/services/clearingOfficerDashboardService";
 
 interface Requirement {
   _id?: string;
@@ -114,10 +115,46 @@ const Requirements = () => {
     description: "",
     deadline: undefined,
   });
+  const [stats, setStats] = useState<ClearingOfficerDashboardStats | null>(
+    null
+  );
 
   const normalizedNames = nameTags
     .map((n) => (n || "").trim())
     .filter((n) => n.length > 0);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const data = await fetchClearingOfficerDashboardStats();
+        setStats(data);
+
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
+
+  // Calculate derived metrics
+  // const daysUntilDeadline = stats
+  //   ? getDaysUntilDeadline(stats.activeClearance)
+  //   : 0;
+
+  // Get and format deadline date
+  const deadlineDate = stats?.activeClearance
+    ? stats.activeClearance.extendedDeadline || stats.activeClearance.deadline
+    : null;
+
+  const formattedDeadlineDate = deadlineDate
+    ? new Date(deadlineDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
 
   // Fetch current clearance status
   useEffect(() => {
@@ -206,7 +243,6 @@ const Requirements = () => {
     }
 
     const hasRequiredFields =
-      newRequirement.deadline &&
       newRequirement.department &&
       newRequirement.semester &&
       normalizedNames.length > 0 &&
@@ -226,7 +262,6 @@ const Requirements = () => {
         department: newRequirement.department,
         description: newRequirement.description || "",
         semester: newRequirement.semester,
-        deadline: newRequirement.deadline!.toISOString(),
         postedBy: user.id,
       };
 
@@ -392,10 +427,6 @@ const Requirements = () => {
       semester: record.semester,
       names: [...record.requirements],
       description: record.description,
-      deadline:
-        typeof record.deadline === "string"
-          ? new Date(record.deadline)
-          : record.deadline,
     });
     setIsEditModalOpen(true);
   };
@@ -405,7 +436,6 @@ const Requirements = () => {
       !editForm.courseCode.trim() ||
       !editForm.department ||
       !editForm.semester ||
-      !editForm.deadline ||
       (editForm.names || []).filter((n) => n.trim()).length === 0
     ) {
       message.warning("Please complete all required fields in the edit form.");
@@ -425,10 +455,6 @@ const Requirements = () => {
         department: editForm.department,
         semester: editForm.semester,
         description: editForm.description,
-        deadline:
-          typeof editForm.deadline === "string"
-            ? editForm.deadline
-            : editForm.deadline.toISOString(),
       };
 
       console.log("Updating requirement with payload:", payload);
@@ -473,24 +499,24 @@ const Requirements = () => {
     })();
 
   // Get effective deadline (use extended deadline if available)
-  const effectiveDeadline =
-    clearanceStatus?.extendedDeadline || clearanceStatus?.deadline;
+  // const effectiveDeadline =
+  //   clearanceStatus?.extendedDeadline || clearanceStatus?.deadline;
 
-  // Function to disable dates outside clearance period
-  const disabledDate = (current: Dayjs) => {
-    if (!clearanceStatus || !clearanceStatus.isActive) {
-      // Disable all dates if clearance is not active
-      return true;
-    }
+  // // Function to disable dates outside clearance period
+  // const disabledDate = (current: Dayjs) => {
+  //   if (!clearanceStatus || !clearanceStatus.isActive) {
+  //     // Disable all dates if clearance is not active
+  //     return true;
+  //   }
 
-    const startDate = dayjs(clearanceStatus.startDate);
-    const endDate = dayjs(effectiveDeadline);
+  //   const startDate = dayjs(clearanceStatus.startDate);
+  //   const endDate = dayjs(effectiveDeadline);
 
-    // Disable dates before start date or after deadline
-    return (
-      current.isBefore(startDate, "day") || current.isAfter(endDate, "day")
-    );
-  };
+  //   // Disable dates before start date or after deadline
+  //   return (
+  //     current.isBefore(startDate, "day") || current.isAfter(endDate, "day")
+  //   );
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
@@ -800,21 +826,16 @@ const Requirements = () => {
                         </div>
                       </div>
 
-                      {/* <div>
+                      <div>
                         <label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 block">
                           Deadline
                         </label>
                         <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                           <span className="text-gray-800 dark:text-gray-200 font-medium">
-                            {format(
-                              typeof requirement.deadline === "string"
-                                ? new Date(requirement.deadline)
-                                : requirement.deadline,
-                              "MMMM dd, yyyy"
-                            )}
+                            {formattedDeadlineDate}
                           </span>
                         </div>
-                      </div> */}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -927,7 +948,7 @@ const Requirements = () => {
             />
           </div>
 
-          <div>
+          {/* <div>
             <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
               Deadline
             </label>
@@ -957,7 +978,7 @@ const Requirements = () => {
                 ).format("MMM D, YYYY")}
               </div>
             )}
-          </div>
+          </div> */}
         </Space>
       </Modal>
 
@@ -1049,7 +1070,7 @@ const Requirements = () => {
               </p>
             </div>
 
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            {/* <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
               <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
                 Deadline
               </label>
@@ -1061,7 +1082,7 @@ const Requirements = () => {
                   "MMMM dd, yyyy"
                 )}
               </p>
-            </div>
+            </div> */}
           </div>
         )}
       </Modal>
@@ -1173,7 +1194,7 @@ const Requirements = () => {
             />
           </div>
 
-          <div>
+          {/* <div>
             <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
               Deadline
             </label>
@@ -1204,7 +1225,7 @@ const Requirements = () => {
                 ).format("MMM D, YYYY")}
               </div>
             )}
-          </div>
+          </div> */}
         </Space>
       </Modal>
     </div>

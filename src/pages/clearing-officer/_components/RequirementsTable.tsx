@@ -24,6 +24,10 @@ import {
 import { Link } from "react-router-dom";
 import ViewRequirementsModal from "./ViewRequirementsModal";
 import { getAllStudentSpecificSubject } from "@/services/intigration.services";
+import {
+  fetchClearingOfficerDashboardStats,
+  type ClearingOfficerDashboardStats,
+} from "@/services/clearingOfficerDashboardService";
 
 interface RequirementsTableProps {
   data: RequirementData[];
@@ -66,6 +70,44 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
   const [studentCounts, setStudentCounts] = useState<Record<string, number>>(
     {}
   );
+  const [stats, setStats] = useState<ClearingOfficerDashboardStats | null>(
+    null
+  );
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const data = await fetchClearingOfficerDashboardStats();
+        setStats(data);
+
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
+
+  // Calculate derived metrics
+  // const daysUntilDeadline = stats
+  //   ? getDaysUntilDeadline(stats.activeClearance)
+  //   : 0;
+
+  // Get and format deadline date
+  const deadlineDate = stats?.activeClearance
+    ? stats.activeClearance.extendedDeadline || stats.activeClearance.deadline
+    : null;
+
+  const formattedDeadlineDate = deadlineDate
+    ? new Date(deadlineDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  const deadline = `Deadline: ${formattedDeadlineDate}`;
 
   // 🔹 Fetch student count for each courseCode
   useEffect(() => {
@@ -371,7 +413,7 @@ const RequirementsTable: React.FC<RequirementsTableProps> = ({
 
   return (
     <div className="w-full">
-      <Card title="Requirements" style={{ marginBottom: "16px" }}>
+      <Card title={deadline} style={{ marginBottom: "16px" }}>
         <Table<RequirementData>
           columns={columns}
           dataSource={tableData}

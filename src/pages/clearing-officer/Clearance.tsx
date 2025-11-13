@@ -38,6 +38,15 @@ import {
   getCurrentClearance,
   type ClearanceStatus,
 } from "@/services/clearanceService";
+import {
+  shouldAutoUpdateToMissing,
+  logDeadlineStatus,
+  notifyDeadlineStatus,
+} from "@/services/deadlineService";
+import {
+  getAllStudentRequirements,
+  bulkUpdateToMissingStatus,
+} from "@/services/studentRequirementService";
 
 // Interface for Course data (used in dialog form)
 interface Course {
@@ -103,6 +112,10 @@ const Clearance = () => {
         const status = await getCurrentClearance();
         console.log("✅ Clearance status:", status);
         setClearanceStatus(status);
+
+        // Log and display deadline status information
+        logDeadlineStatus(status);
+        notifyDeadlineStatus(status);
       } catch (error) {
         console.error("❌ Error fetching clearance status:", error);
         // Set to null if there's an error, will show "not started" message
@@ -114,6 +127,83 @@ const Clearance = () => {
 
     fetchClearanceStatus();
   }, []);
+
+  // Automatic deadline check and missing status update
+  // This effect runs when both clearance status and requirements data are loaded
+  useEffect(() => {
+    const handleAutomaticMissingStatusUpdate = async () => {
+      // Early exit if data is still loading
+      if (loading || clearanceLoading || !isInitialized) {
+        return;
+      }
+
+      // Check if we should proceed with automatic update
+      if (!shouldAutoUpdateToMissing(clearanceStatus)) {
+        console.log("⏭️ Skipping automatic missing status update");
+        return;
+      }
+
+      console.log(
+        "🔄 Deadline has passed - initiating automatic missing status update for clearing officer requirements"
+      );
+
+      try {
+        // Fetch all student requirements (not just for current user)
+        // We need to update all student requirements that are related to this clearing officer's requirements
+        const allStudentReqs = await getAllStudentRequirements();
+
+        if (allStudentReqs.length === 0) {
+          console.log("ℹ️ No student requirements found to update");
+          return;
+        }
+
+        // Filter to only include requirements created by current user (clearing officer)
+        // and match them with the clearing officer's own requirements
+        const userRequirementIds = requirementsData.map(
+          (req) => req._id || req.id
+        );
+
+        const relevantStudentReqs = allStudentReqs.filter((studentReq) =>
+          userRequirementIds.includes(studentReq.requirementId)
+        );
+
+        if (relevantStudentReqs.length === 0) {
+          console.log(
+            "ℹ️ No student requirements match this officer's requirements"
+          );
+          return;
+        }
+
+        console.log(
+          `📊 Found ${relevantStudentReqs.length} student requirement(s) to check for automatic missing status`
+        );
+
+        // Perform bulk update to missing status
+        const result = await bulkUpdateToMissingStatus(relevantStudentReqs);
+
+        if (result.updated > 0) {
+          console.log(
+            `✅ Successfully updated ${result.updated} student requirements to missing status`
+          );
+        }
+      } catch (error) {
+        console.error(
+          "❌ Error during automatic missing status update:",
+          error
+        );
+        // Fail silently - don't interrupt user experience with error messages
+        // Error logging is sufficient for debugging
+      }
+    };
+
+    handleAutomaticMissingStatusUpdate();
+  }, [
+    clearanceStatus,
+    requirementsData,
+    loading,
+    clearanceLoading,
+    isInitialized,
+  ]);
 
   // Fetch requirements from backend
   useEffect(() => {
@@ -300,10 +390,7 @@ const Clearance = () => {
         message.error("Please select a course");
         return;
       }
-      if (!newRequirement.dueDate) {
-        message.error("Please select a due date");
-        return;
-      }
+
       if (newRequirement.requirements.length === 0) {
         message.error("Please add at least one requirement");
         return;
@@ -313,7 +400,6 @@ const Clearance = () => {
       const hideLoading = message.loading("Creating requirement...", 0);
 
       // Convert dueDate to ISO DateTime format (MongoDB expects DateTime)
-      const dueDateISO = new Date(newRequirement.dueDate).toISOString();
 
       // Make API call to create requirement
       const response = await axiosInstance.post("/req/createReq", {
@@ -323,7 +409,6 @@ const Clearance = () => {
         semester: newRequirement.semester,
         requirements: newRequirement.requirements,
         department: newRequirement.department,
-        dueDate: dueDateISO,
         description: newRequirement.description,
       });
 

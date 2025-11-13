@@ -22,8 +22,6 @@ import {
   type KeyboardEvent,
   type ChangeEvent,
 } from "react";
-import { DatePicker } from "antd";
-import dayjs, { type Dayjs } from "dayjs";
 
 export interface EditRequirementData {
   _id?: string;
@@ -96,15 +94,15 @@ const EditRequirementModal: React.FC<EditRequirementModalProps> = ({
   );
 
   // Handler for date change
-  const handleDateChange = useCallback((date: Dayjs | null) => {
-    setEditedRequirement((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        dueDate: date ? date.format("YYYY-MM-DD") : "",
-      };
-    });
-  }, []);
+  // const handleDateChange = useCallback((date: Dayjs | null) => {
+  //   setEditedRequirement((prev) => {
+  //     if (!prev) return prev;
+  //     return {
+  //       ...prev,
+  //       dueDate: date ? date.format("YYYY-MM-DD") : "",
+  //     };
+  //   });
+  // }, []);
 
   // Add requirement tag
   const addRequirement = useCallback((value: string) => {
@@ -228,7 +226,7 @@ const EditRequirementModal: React.FC<EditRequirementModalProps> = ({
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] px-4">
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 px-1">
             {/* Course Code (Read-only) */}
             <div className="grid gap-2">
               <Label htmlFor="edit-courseCode">Course Code</Label>
@@ -315,7 +313,7 @@ const EditRequirementModal: React.FC<EditRequirementModalProps> = ({
             </div>
 
             {/* Due Date (Editable) */}
-            <div className="grid gap-2">
+            {/* <div className="grid gap-2">
               <Label htmlFor="edit-dueDate">Due Date</Label>
               <DatePicker
                 id="edit-dueDate"
@@ -330,7 +328,7 @@ const EditRequirementModal: React.FC<EditRequirementModalProps> = ({
                 className="w-full"
                 size="large"
               />
-            </div>
+            </div> */}
 
             {/* Description (Editable) */}
             <div className="grid gap-2">

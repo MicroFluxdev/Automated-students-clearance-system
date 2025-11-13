@@ -21,9 +21,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X } from "lucide-react";
-import { useState, useCallback, useMemo, useRef, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
-import { DatePicker } from "antd";
-import dayjs, { type Dayjs } from "dayjs";
+import {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+  type KeyboardEvent,
+  type ChangeEvent,
+} from "react";
 import type { ClearanceStatus } from "@/services/clearanceService";
 
 interface Course {
@@ -74,7 +80,6 @@ const ReqDialogForm = ({
   newRequirement,
   setNewRequirement,
   handleCreateRequirement,
-  clearanceStatus,
   disabled = false,
 }: ReqDialogFormProps) => {
   const [inputValue, setInputValue] = useState("");
@@ -87,20 +92,23 @@ const ReqDialogForm = ({
   }, [newRequirement]);
 
   // Handler for course selection - Memoized, no dependency on newRequirement
-  const handleCourseSelect = useCallback((courseCode: string) => {
-    const selectedCourse = courses.find((c) => c.courseCode === courseCode);
-    if (selectedCourse) {
-      setNewRequirement({
-        ...requirementRef.current,
-        courseCode: selectedCourse.courseCode,
-        courseName: selectedCourse.courseName,
-        yearLevel: selectedCourse.yearLevel,
-        semester: selectedCourse.semester,
-        department: selectedCourse.departments.join(", "),
-        description: selectedCourse.description || "",
-      });
-    }
-  }, [courses, setNewRequirement]);
+  const handleCourseSelect = useCallback(
+    (courseCode: string) => {
+      const selectedCourse = courses.find((c) => c.courseCode === courseCode);
+      if (selectedCourse) {
+        setNewRequirement({
+          ...requirementRef.current,
+          courseCode: selectedCourse.courseCode,
+          courseName: selectedCourse.courseName,
+          yearLevel: selectedCourse.yearLevel,
+          semester: selectedCourse.semester,
+          department: selectedCourse.departments.join(", "),
+          description: selectedCourse.description || "",
+        });
+      }
+    },
+    [courses, setNewRequirement]
+  );
 
   // Clear course selection - Memoized, no dependency on newRequirement
   const clearCourseSelection = useCallback(() => {
@@ -116,24 +124,35 @@ const ReqDialogForm = ({
   }, [setNewRequirement]);
 
   // Add requirement tag - Memoized, no dependency on newRequirement
-  const addRequirement = useCallback((value: string) => {
-    const trimmedValue = value.trim();
-    if (trimmedValue && !requirementRef.current.requirements.includes(trimmedValue)) {
-      setNewRequirement({
-        ...requirementRef.current,
-        requirements: [...requirementRef.current.requirements, trimmedValue],
-      });
-      setInputValue("");
-    }
-  }, [setNewRequirement]);
+  const addRequirement = useCallback(
+    (value: string) => {
+      const trimmedValue = value.trim();
+      if (
+        trimmedValue &&
+        !requirementRef.current.requirements.includes(trimmedValue)
+      ) {
+        setNewRequirement({
+          ...requirementRef.current,
+          requirements: [...requirementRef.current.requirements, trimmedValue],
+        });
+        setInputValue("");
+      }
+    },
+    [setNewRequirement]
+  );
 
   // Remove requirement tag - Memoized, no dependency on newRequirement
-  const removeRequirement = useCallback((index: number) => {
-    setNewRequirement({
-      ...requirementRef.current,
-      requirements: requirementRef.current.requirements.filter((_, i: number) => i !== index),
-    });
-  }, [setNewRequirement]);
+  const removeRequirement = useCallback(
+    (index: number) => {
+      setNewRequirement({
+        ...requirementRef.current,
+        requirements: requirementRef.current.requirements.filter(
+          (_, i: number) => i !== index
+        ),
+      });
+    },
+    [setNewRequirement]
+  );
 
   // Handle input change - Memoized
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -141,21 +160,24 @@ const ReqDialogForm = ({
   }, []);
 
   // Handle description change - Memoized, NO dependency on newRequirement!
-  const handleDescriptionChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    setNewRequirement({
-      ...requirementRef.current,
-      description: newValue,
-    });
-  }, [setNewRequirement]);
+  const handleDescriptionChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value;
+      setNewRequirement({
+        ...requirementRef.current,
+        description: newValue,
+      });
+    },
+    [setNewRequirement]
+  );
 
   // Handle date change - Memoized, no dependency on newRequirement
-  const handleDateChange = useCallback((date: Dayjs | null) => {
-    setNewRequirement({
-      ...requirementRef.current,
-      dueDate: date ? date.format("YYYY-MM-DD") : "",
-    });
-  }, [setNewRequirement]);
+  // const handleDateChange = useCallback((date: Dayjs | null) => {
+  //   setNewRequirement({
+  //     ...requirementRef.current,
+  //     dueDate: date ? date.format("YYYY-MM-DD") : "",
+  //   });
+  // }, [setNewRequirement]);
 
   // Handle blur on input - Memoized
   const handleInputBlur = useCallback(() => {
@@ -165,19 +187,27 @@ const ReqDialogForm = ({
   }, [inputValue, addRequirement]);
 
   // Handle key press (Enter or comma) - Memoized
-  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addRequirement(inputValue);
-    } else if (
-      e.key === "Backspace" &&
-      inputValue === "" &&
-      newRequirement.requirements.length > 0
-    ) {
-      // Remove last tag on backspace when input is empty
-      removeRequirement(newRequirement.requirements.length - 1);
-    }
-  }, [inputValue, newRequirement.requirements.length, addRequirement, removeRequirement]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        addRequirement(inputValue);
+      } else if (
+        e.key === "Backspace" &&
+        inputValue === "" &&
+        newRequirement.requirements.length > 0
+      ) {
+        // Remove last tag on backspace when input is empty
+        removeRequirement(newRequirement.requirements.length - 1);
+      }
+    },
+    [
+      inputValue,
+      newRequirement.requirements.length,
+      addRequirement,
+      removeRequirement,
+    ]
+  );
 
   // Memoize placeholder text to avoid recalculation
   const inputPlaceholder = useMemo(() => {
@@ -206,20 +236,20 @@ const ReqDialogForm = ({
     ));
   }, [newRequirement.requirements, removeRequirement]);
 
-  // Function to disable dates outside clearance period
-  const disabledDate = useCallback((current: Dayjs) => {
-    if (!clearanceStatus || !clearanceStatus.isActive) {
-      // Disable all dates if clearance is not active
-      return true;
-    }
+  // // Function to disable dates outside clearance period
+  // const disabledDate = useCallback((current: Dayjs) => {
+  //   if (!clearanceStatus || !clearanceStatus.isActive) {
+  //     // Disable all dates if clearance is not active
+  //     return true;
+  //   }
 
-    const startDate = dayjs(clearanceStatus.startDate);
-    const effectiveDeadline = clearanceStatus.extendedDeadline || clearanceStatus.deadline;
-    const endDate = dayjs(effectiveDeadline);
+  //   const startDate = dayjs(clearanceStatus.startDate);
+  //   const effectiveDeadline = clearanceStatus.extendedDeadline || clearanceStatus.deadline;
+  //   const endDate = dayjs(effectiveDeadline);
 
-    // Disable dates before start date or after deadline
-    return current.isBefore(startDate, 'day') || current.isAfter(endDate, 'day');
-  }, [clearanceStatus]);
+  //   // Disable dates before start date or after deadline
+  //   return current.isBefore(startDate, 'day') || current.isAfter(endDate, 'day');
+  // }, [clearanceStatus]);
 
   return (
     <div>
@@ -228,7 +258,11 @@ const ReqDialogForm = ({
           <Button
             className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={disabled}
-            title={disabled ? "Clearance period is not active" : "Create new requirement"}
+            title={
+              disabled
+                ? "Clearance period is not active"
+                : "Create new requirement"
+            }
           >
             <Plus className="mr-2 h-4 w-4" />
             Create Requirements
@@ -355,7 +389,7 @@ const ReqDialogForm = ({
               </div>
 
               {/* Due Date */}
-              <div className="grid gap-2">
+              {/* <div className="grid gap-2">
                 <Label htmlFor="dueDate">Due Date</Label>
                 <DatePicker
                   id="dueDate"
@@ -385,7 +419,7 @@ const ReqDialogForm = ({
                     ).format("MMM D, YYYY")}
                   </p>
                 )}
-              </div>
+              </div> */}
 
               {/* Description */}
               <div className="grid gap-2 mx-1">

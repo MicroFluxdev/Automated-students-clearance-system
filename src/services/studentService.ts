@@ -1,4 +1,4 @@
-import axiosInstance from "@/api/axios";
+import axiosInstance, { API_URL } from "@/api/axios";
 
 /**
  * Student year level types
@@ -17,6 +17,8 @@ export interface Student {
   phoneNumber: string;
   program: string;
   yearLevel: YearLevel;
+  department?: string;
+  status?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -71,7 +73,9 @@ interface StudentResponse {
  */
 export const getAllStudents = async (): Promise<Student[]> => {
   try {
-    const response = await axiosInstance.get<StudentResponse[]>("/student/getAllStudent");
+    const response = await axiosInstance.get<StudentResponse[]>(
+      "/student/getAllStudent"
+    );
     const students = response.data;
 
     // Normalize ID field: handle both 'id' and '_id'
@@ -169,12 +173,109 @@ export const deleteStudent = async (
   id: string
 ): Promise<{ message: string }> => {
   try {
-    const response = await axiosInstance.delete(
-      `/student/deleteStudent/${id}`
-    );
+    const response = await axiosInstance.delete(`/student/deleteStudent/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error deleting student with ID ${id}:`, error);
     throw error;
+  }
+};
+
+/**
+ * Sanitize search query to prevent SQL injection
+ * Removes or escapes potentially dangerous characters
+ * @param query - The raw search query
+ * @returns Sanitized query string
+ */
+const sanitizeSearchQuery = (query: string): string => {
+  // Trim whitespace
+  let sanitized = query.trim();
+
+  // Limit length to prevent DoS attacks
+  const MAX_LENGTH = 100;
+  if (sanitized.length > MAX_LENGTH) {
+    sanitized = sanitized.substring(0, MAX_LENGTH);
+  }
+
+  // Remove SQL injection patterns (basic sanitization)
+  // Note: Backend should also use parameterized queries
+  const dangerousPatterns = [
+    /['";]/g, // Remove quotes and semicolons
+    /--/g, // Remove SQL comments
+    /\/\*/g, // Remove SQL comment start
+    /\/\//g, // Remove double slashes
+  ];
+
+  dangerousPatterns.forEach((pattern) => {
+    sanitized = sanitized.replace(pattern, "");
+  });
+
+  // Remove control characters (0x00-0x1F and 0x7F)
+  // eslint-disable-next-line no-control-regex
+  sanitized = sanitized.replace(/[\u0000-\u001F\u007F]/g, "");
+
+  return sanitized;
+};
+
+/**
+ * Search students securely by query
+ * Uses query parameters to prevent SQL injection
+ * @param query - Search query (will be sanitized)
+ * @returns Array of matching students
+ */
+export const searchStudents = async (query: string): Promise<Student[]> => {
+  try {
+    // Sanitize the input
+    const sanitizedQuery = sanitizeSearchQuery(query);
+
+    // If query is empty after sanitization, return empty array
+    if (!sanitizedQuery) {
+      return [];
+    }
+
+    // Use query parameters (axios will handle URL encoding)
+    // Backend should use parameterized queries for security
+    const response = await axiosInstance.get<StudentResponse[]>(
+      `${API_URL}/enroll/getAllEnrollments`,
+      {
+        params: {
+          q: sanitizedQuery, // Using 'q' as query parameter name
+        },
+      }
+    );
+
+    const students = response.data;
+
+    // Normalize ID field: handle both 'id' and '_id'
+    return students.map((student) => ({
+      ...student,
+      _id: student._id || student.id || "",
+    }));
+  } catch (error) {
+    // If endpoint doesn't exist, fallback to client-side search
+    // This is a temporary fallback - backend should implement the endpoint
+    console.warn(
+      "Search endpoint not available, falling back to client-side search:",
+      error
+    );
+
+    try {
+      const allStudents = await getAllStudents();
+      const lowerQuery = query.toLowerCase().trim();
+
+      return allStudents.filter((student) => {
+        const fullName =
+          `${student.firstName} ${student.lastName}`.toLowerCase();
+        return (
+          fullName.includes(lowerQuery) ||
+          student.schoolId.toLowerCase().includes(lowerQuery) ||
+          student.email.toLowerCase().includes(lowerQuery) ||
+          student.phoneNumber.includes(lowerQuery)
+        );
+      });
+    } catch (fallbackError) {
+      console.error("Error in fallback search:", fallbackError);
+      throw fallbackError;
+    }
   }
 };
