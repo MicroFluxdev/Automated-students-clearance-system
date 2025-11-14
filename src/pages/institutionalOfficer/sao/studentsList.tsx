@@ -20,6 +20,9 @@ import {
   Calendar,
   Loader2,
   AlertTriangle,
+  CalendarX,
+  Clock,
+  Info,
 } from "lucide-react";
 import axiosInstance, { API_URL } from "@/api/axios";
 import { useAuth } from "@/authentication/useAuth";
@@ -77,11 +80,13 @@ import {
 import {
   getCurrentClearance,
   type ClearanceStatus,
+  getEffectiveDeadline,
 } from "@/services/clearanceService";
 import {
   shouldAutoUpdateToMissing,
   logDeadlineStatus,
   notifyDeadlineStatus,
+  hasDeadlinePassed,
 } from "@/services/deadlineService";
 
 // API response interface matching the backend data structure
@@ -151,7 +156,10 @@ export const SaoOfficer = () => {
         logDeadlineStatus(status);
         notifyDeadlineStatus(status);
       } catch (error) {
-        console.error("❌ [Institutional] Error fetching clearance status:", error);
+        console.error(
+          "❌ [Institutional] Error fetching clearance status:",
+          error
+        );
         setClearanceStatus(null);
       } finally {
         setClearanceLoading(false);
@@ -172,7 +180,9 @@ export const SaoOfficer = () => {
 
       // Check if we should proceed with automatic update
       if (!shouldAutoUpdateToMissing(clearanceStatus)) {
-        console.log("⏭️ [Institutional] Skipping automatic missing status update");
+        console.log(
+          "⏭️ [Institutional] Skipping automatic missing status update"
+        );
         return;
       }
 
@@ -183,7 +193,9 @@ export const SaoOfficer = () => {
       try {
         // Use the already-loaded allStudentRequirements state
         if (allStudentRequirements.length === 0) {
-          console.log("ℹ️ [Institutional] No student requirements found to update");
+          console.log(
+            "ℹ️ [Institutional] No student requirements found to update"
+          );
           return;
         }
 
@@ -231,7 +243,8 @@ export const SaoOfficer = () => {
             prev.map((req) => {
               const wasUpdated = relevantStudentReqs.some(
                 (r) =>
-                  (r._id === req._id || r.id === req.id) && r.status !== "missing"
+                  (r._id === req._id || r.id === req.id) &&
+                  r.status !== "missing"
               );
               if (wasUpdated) {
                 return { ...req, status: "missing" };
@@ -525,18 +538,6 @@ export const SaoOfficer = () => {
       return;
     }
 
-    console.log(
-      "🎯 handleSign called for:",
-      student.firstName,
-      student.lastName
-    );
-    console.log("   - Student ID:", id);
-    console.log("   - Student School ID:", student.schoolId);
-    console.log("   - Current Status:", student.status);
-    console.log("   - Student Requirement ID:", student.studentRequirementId);
-    console.log("   - Clearing Officer ID:", user?.id);
-    console.log("   - Requirement ID:", reqId);
-
     if (student?.status === "Signed") {
       // Show confirmation dialog before unsigning
       setUnsignTarget({ type: "single", studentId: id });
@@ -565,12 +566,6 @@ export const SaoOfficer = () => {
           user.id,
           reqId
         );
-
-        console.log("🔍 Checking for existing requirement...");
-        console.log("   - Student ID:", student.schoolId);
-        console.log("   - CO ID:", user.id);
-        console.log("   - Requirement ID:", reqId);
-        console.log("   - Existing requirement found:", existingRequirement);
 
         const hideLoading = message.loading("Signing student...", 0);
 
@@ -1003,6 +998,129 @@ export const SaoOfficer = () => {
           Export Data
         </Button>
       </div>
+
+      {/* Clearance Deadline Notice */}
+      {!clearanceLoading && clearanceStatus && (
+        <>
+          {/* If clearance is not active anymore */}
+          {!clearanceStatus.isActive && (
+            <Card className="border-orange-500/50 bg-orange-50/50 dark:bg-orange-950/20">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/50">
+                    <CalendarX className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-orange-900 dark:text-orange-100 mb-1">
+                      Clearance Period Has Ended
+                    </h3>
+                    <p className="text-sm text-orange-700 dark:text-orange-300 mb-2">
+                      The clearance period for{" "}
+                      <span className="font-medium">
+                        {clearanceStatus.semesterType}{" "}
+                        {clearanceStatus.academicYear}
+                      </span>{" "}
+                      has been stopped and is no longer active.
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-orange-600 dark:text-orange-400">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>
+                          Ended on:{" "}
+                          {new Date(
+                            getEffectiveDeadline(clearanceStatus)
+                          ).toLocaleDateString("en-US", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* If clearance is active but deadline has passed */}
+          {clearanceStatus.isActive && hasDeadlinePassed(clearanceStatus) && (
+            <Card className="border-red-500/50 bg-red-50/50 dark:bg-red-950/20">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
+                    <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-1">
+                      Clearance Deadline Has Passed
+                    </h3>
+                    <p className="text-sm text-red-700 dark:text-red-300 mb-2">
+                      {clearanceStatus.extendedDeadline ? (
+                        <>
+                          The extended deadline for clearance has passed on{" "}
+                          <span className="font-medium">
+                            {new Date(
+                              clearanceStatus.extendedDeadline
+                            ).toLocaleDateString("en-US", {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </span>
+                          . All incomplete requirements have been automatically
+                          marked as missing.
+                        </>
+                      ) : (
+                        <>
+                          The clearance deadline has passed on{" "}
+                          <span className="font-medium">
+                            {new Date(
+                              clearanceStatus.deadline
+                            ).toLocaleDateString("en-US", {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </span>
+                          . All incomplete requirements have been automatically
+                          marked as missing.
+                        </>
+                      )}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-red-600 dark:text-red-400">
+                      <div className="flex items-center gap-2">
+                        <Info className="h-4 w-4" />
+                        <span>
+                          {clearanceStatus.extendedDeadline
+                            ? "Extended deadline was used"
+                            : "Original deadline"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>
+                          {Math.floor(
+                            (new Date().getTime() -
+                              new Date(
+                                getEffectiveDeadline(clearanceStatus)
+                              ).getTime()) /
+                              (1000 * 60 * 60 * 24)
+                          )}{" "}
+                          day(s) overdue
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
