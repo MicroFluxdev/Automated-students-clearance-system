@@ -80,7 +80,7 @@ const Header = () => {
             <div className="hidden md:flex items-center gap-2 sm:gap-4">
               <Link to="/login" tabIndex={0} aria-label="Login portal">
                 <Button className="font-medium shadow-soft hover:shadow-glow transition focus-visible:ring-2 focus-visible:ring-blue-400">
-                  Login Portal
+                  Login
                 </Button>
               </Link>
             </div>

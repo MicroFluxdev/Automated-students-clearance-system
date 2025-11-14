@@ -1,5 +1,6 @@
-import { Mail, Phone, MapPin, Twitter, Linkedin, Facebook } from "lucide-react";
+import { Phone, MapPin, Github, Facebook, Instagram } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
+import { FacebookFilled } from "@ant-design/icons";
 
 const Footer = () => {
   const containerVariants = {
@@ -75,13 +76,16 @@ const Footer = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               {[
-                { icon: Twitter, delay: 0.5 },
-                { icon: Linkedin, delay: 0.6 },
-                { icon: Facebook, delay: 0.7 },
-              ].map(({ icon: Icon, delay }) => (
-                <motion.button
+                { icon: Instagram, delay: 0.5, href: "https://www.instagram.com/microflux.official/" },
+                { icon: Facebook, delay: 0.7, href: "https://www.facebook.com/MicroFluxOfficialPage" },
+                { icon: Github, delay: 0.6, href: "https://github.com/MicroFluxdev" },
+              ].map(({ icon: Icon, delay, href }) => (
+                <motion.a
                   key={delay}
-                  className="p-2 rounded-full hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition flex items-center justify-center"
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.3, delay }}
@@ -89,7 +93,7 @@ const Footer = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Icon className="h-4 w-4" />
-                </motion.button>
+                </motion.a>
               ))}
             </motion.div>
           </motion.div>
@@ -101,19 +105,18 @@ const Footer = () => {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              Product
+              Offers
             </motion.h3>
             <div className="space-y-2">
               {[
-                "Features",
-                "Pricing",
-                "Integrations",
-                "API Documentation",
-                "Security",
+                "Enrollment Management System",
+                "Compputer Laboratory Logbook",
+                "Code Flux",
+                "ASCS Mobile App",
+                "More",
               ].map((item, index) => (
                 <motion.a
                   key={item}
-                  href="#"
                   className="block text-gray-500 hover:text-blue-600 transition"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -133,19 +136,15 @@ const Footer = () => {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              Company
+              Institutions
             </motion.h3>
             <div className="space-y-2">
               {[
                 "About Us",
-                "Careers",
-                "News & Blog",
-                "Case Studies",
-                "Partners",
+                "Teams",
               ].map((item, index) => (
                 <motion.a
                   key={item}
-                  href="#"
                   className="block text-gray-500 hover:text-blue-600 transition"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -168,28 +167,47 @@ const Footer = () => {
               Contact
             </motion.h3>
             <div className="space-y-3">
-              {[
-                { icon: Mail, text: "hello@studentflow.com", delay: 0.3 },
-                { icon: Phone, text: "(555) 123-4567", delay: 0.4 },
-                { icon: MapPin, text: "San Francisco, CA", delay: 0.5 },
-              ].map(({ icon: Icon, text, delay }) => (
+              <motion.a
+                href="https://www.facebook.com/MicroFluxOfficialPage"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 text-gray-500"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                whileHover={{ x: 5, scale: 1.02 }}
+              >
                 <motion.div
-                  key={text}
-                  className="flex items-center gap-3 text-gray-500"
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.4, delay }}
-                  whileHover={{ x: 5, scale: 1.02 }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Icon className="h-4 w-4 text-blue-600" />
-                  </motion.div>
-                  <span>{text}</span>
+                  <FacebookFilled className="h-4 w-4 text-blue-600" />
                 </motion.div>
-              ))}
+                <span>MicroFlux</span>
+              </motion.a>
+
+              {/* Other contact items */}
+              <motion.div
+                className="flex items-center gap-3 text-gray-500"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+                whileHover={{ x: 5, scale: 1.02 }}
+              >
+                <Phone className="h-4 w-4 text-blue-600" />
+                <span>+639100734410</span>
+              </motion.div>
+
+              <motion.div
+                className="flex items-center gap-3 text-gray-500"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.5 }}
+                whileHover={{ x: 5, scale: 1.02 }}
+              >
+                <MapPin className="h-4 w-4 text-blue-600" />
+                <span>Lanao del Norte, Philippines</span>
+              </motion.div>
             </div>
           </motion.div>
         </motion.div>
@@ -214,7 +232,7 @@ const Footer = () => {
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
-            © 2024 StudentFlow. All rights reserved.
+            © 2025 MicroFlu. All rights reserved.
           </motion.div>
           <div className="flex gap-6">
             {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(

@@ -85,10 +85,9 @@ const About = () => {
                   },
                 }}
               >
-                StudentFlow revolutionizes how educational institutions manage
-                student processes. Our automated system eliminates bureaucratic
-                bottlenecks, reduces manual errors, and creates a seamless
-                experience for both students and administrators.
+                ASCS revolutionizes how educational institutions manage student clearance. 
+                Our automated platform eliminates bottlenecks, reduces manual errors, and provides a seamless, 
+                transparent experience for both students and administrative staff.
               </motion.p>
             </div>
 
@@ -151,25 +150,13 @@ const About = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                Learn More About Our Solution
+                Learn More
                 <motion.div
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </motion.div>
-              </motion.button>
-              <motion.button
-                className="px-8 py-3 border border-gray-300 text-gray-700 rounded-md text-base font-medium hover:bg-gray-100 transition"
-                whileHover={{
-                  scale: 1.05,
-                  backgroundColor: "#f3f4f6",
-                  borderColor: "#6b7280",
-                }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                Schedule a Demo
               </motion.button>
             </motion.div>
           </motion.div>
@@ -238,9 +225,9 @@ const About = () => {
                       delay: 0.8,
                     }}
                   >
-                    500+
+                    ASCS
                   </motion.div>
-                  <div className="text-white/80">Educational Institutions</div>
+                  <div className="text-white/80">Highlights</div>
                 </motion.div>
 
                 <motion.div
@@ -257,8 +244,8 @@ const About = () => {
                   }}
                 >
                   {[
-                    { number: "1M+", label: "Students Served" },
-                    { number: "99.9%", label: "Uptime SLA" },
+                    { number: "80%", label: "Reduce Processing Time" },
+                    { number: "90%", label: "Eliminates Manual Clearance" },
                   ].map((stat, index) => (
                     <motion.div
                       key={index}
@@ -310,7 +297,7 @@ const About = () => {
                   }}
                 >
                   {[
-                    { number: "80%", label: "Faster Processing" },
+                    { number: "27001", label: "GDPR compliant" },
                     { number: "24/7", label: "Support Available" },
                   ].map((stat, index) => (
                     <motion.div
