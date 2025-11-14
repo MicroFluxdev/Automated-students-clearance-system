@@ -141,7 +141,7 @@ export default function StudentAppDownload() {
               <div className="absolute -bottom-10 sm:-bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center z-20">
                 <div className="bg-white rounded-xl shadow-md border-2 border-blue-500 w-16 h-16 sm:w-25 sm:h-25 overflow-hidden flex items-center justify-center">
                   <img
-                    src="public/landingpage/QRCODEASCS.png"
+                    src="/landingpage/QRCODEASCS.png"
                     alt="ASCS QR Code"
                     className="w-full h-full object-cover"
                   />
