@@ -63,7 +63,7 @@ export default function Login() {
         if (status === 401 || status === 404 || status === 400) {
           setError(
             axiosError.response.data?.error ||
-              "Wrong credentials. Please try again."
+            "Wrong credentials. Please try again."
           );
         }
       } else if (axiosError.request) {
@@ -79,11 +79,13 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left side: Image */}
-      <div className="hidden lg:flex flex-1 items-center justify-center ">
+      <div className="hidden lg:flex flex-1 items-center justify-center relative bg-gradient-to-br from-indigo-100 via-white to-indigo-50 p-12 overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-indigo-300 opacity-30 blur-3xl rounded-full animate-pulse-slow"></div>
+        <div className="absolute -bottom-32 -right-24 w-[300px] h-[300px] bg-pink-200 opacity-20 blur-2xl rounded-full animate-pulse-slow"></div>
         <img
-          src="/sign/signin.png"
+          src="/sign/test1.png"
           alt="Login illustration"
-          className="object-cover w-full h-full max-h-screen"
+          className="relative rounded-3xl shadow-2xl object-contain max-w-[85%] max-h-[85%] transition-transform duration-500 hover:scale-105 hover:rotate-1"
           loading="lazy"
         />
       </div>
@@ -94,7 +96,7 @@ export default function Login() {
             Welcome back!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Log in to continue to your account
+            Log in to continue
           </p>
         </div>
 
@@ -151,7 +153,7 @@ export default function Login() {
           <div className="text-center text-xs sm:text-sm text-gray-600 mt-5">
             Need help?{" "}
             <Link
-              to="https://ncmcmaranding.com/contact-us"
+              to="https://www.facebook.com/MicroFluxOfficialPage"
               target="_blank"
               className="text-indigo-600 hover:underline hover:text-indigo-500 transition"
             >

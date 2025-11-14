@@ -34,7 +34,7 @@ export const registerSchema = z
     confirmPassword: z.string().min(1, "Confirm password is required"),
     nda: z.literal(true, {
       errorMap: () => ({
-        message: "You must agree to the Non-Disclosure Agreement",
+        message: "You must agree to the Terms and Privacy Policy",
       }),
     }),
   })
