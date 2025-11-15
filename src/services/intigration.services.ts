@@ -1,7 +1,7 @@
 // src/services/studentService.ts
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:4000";
+const API_BASE_URL = import.meta.env.VITE_INTIGRATION_API_URL;
 // const UPDATE_USER_API_BASE_URL = "http://localhost:3000";
 
 export const getAllStudentSpecificSubject = async (courseCode: string) => {
