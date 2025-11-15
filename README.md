@@ -1,4 +1,4 @@
-# 🎓 Online Clearance Officer Admin SystemS
+# 🎓 Online Clearance Officer Admin System
 
 > A comprehensive React-based web application for managing student clearance processes in educational institutions.
 

@@ -63,7 +63,7 @@ export default function Login() {
         if (status === 401 || status === 404 || status === 400) {
           setError(
             axiosError.response.data?.error ||
-            "Wrong credentials. Please try again."
+              "Wrong credentials. Please try again."
           );
         }
       } else if (axiosError.request) {
