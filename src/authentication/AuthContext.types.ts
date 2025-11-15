@@ -6,7 +6,11 @@ export interface User {
   lastName: string;
   email: string;
   phoneNumber?: string;
+  profileImage?: string;
+  profile?: string;
   role: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Error interface for Axios responses
@@ -33,6 +37,7 @@ export interface AuthContextType {
   user: User | null;
   role?: string;
   isAuthenticated: boolean;
+  isInitialized: boolean;
   login: (email: string, password: string) => Promise<void>;
   registerUser: (
     schoolId: string,
@@ -45,4 +50,6 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  logoutLoading: boolean;
+  updateUser: (userData: User) => void;
 }

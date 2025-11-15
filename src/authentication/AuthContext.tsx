@@ -5,10 +5,8 @@ import { redirectService } from "@/authentication/redirectService";
 import type { AxiosError, User } from "@/authentication/AuthContext.types";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { message } from "antd";
 
-/**
- * AuthProvider manages authentication state and logic.
- */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -19,6 +17,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     tokenService.getUserData()
   );
   const [loading, setLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Computed values
   const isAuthenticated = Boolean(accessToken && user);
@@ -28,9 +28,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   console.log("🔍 Role:", role);
   console.log("🔍 Is Authenticated:", isAuthenticated);
 
-  /**
-   * Handles user login.
-   */
   const login = async (email: string, password: string) => {
     console.log("🔑 Starting login process...");
     const res = await axiosInstance.post(
@@ -52,9 +49,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log("✅ Login successful");
   };
 
-  /**
-   * Handles user registration.
-   */
   const registerUser = async (
     schoolId: string,
     firstName: string,
@@ -86,10 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  /**
-   * Logs out the user, clears all local storage, and redirects to login.
-   */
   const logout = async () => {
+    setLogoutLoading(true);
     try {
       const currentToken = tokenService.getAccessToken();
       await axiosInstance.post(
@@ -102,8 +94,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             : {},
         }
       );
+      message.success("Logout successfully!");
     } catch (error) {
       console.error("Logout failed on server:", error);
+    } finally {
+      setLogoutLoading(false);
     }
 
     // Local cleanup
@@ -115,6 +110,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       "You have been logged out successfully.",
       false
     );
+    // Note: setLogoutLoading(false) not needed as user will be redirected
+  };
+
+  /**
+   * Updates the user data in both state and localStorage
+   */
+  const updateUser = (userData: User) => {
+    tokenService.setUserData(userData);
+    setUser(userData);
   };
 
   /**
@@ -156,6 +160,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(null);
         }
       }
+
+      // Mark initialization as complete
+      setIsInitialized(true);
     };
     tryInitialRefresh();
   }, []);
@@ -168,11 +175,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log("🔧 Setting up axios interceptors");
 
     const requestIntercept = axiosInstance.interceptors.request.use(
-      (config) => {
+      async (config) => {
         const currentToken = tokenService.getAccessToken();
-        if (currentToken && !config.url?.includes("/auth/")) {
+
+        // Skip auth endpoints
+        if (config.url?.includes("/auth/")) {
+          return config;
+        }
+
+        // Check if token is expired before making request
+        if (currentToken && tokenService.isTokenExpired(currentToken)) {
+          console.log("⏰ Token expired - refreshing before request");
+          try {
+            const newToken = await refreshAccessToken();
+            config.headers.Authorization = `Bearer ${newToken}`;
+          } catch {
+            // Refresh failed, request will fail with 401/403
+            console.error("❌ Pre-request token refresh failed");
+          }
+        } else if (currentToken) {
           config.headers.Authorization = `Bearer ${currentToken}`;
         }
+
         return config;
       },
       (error) => Promise.reject(error)
@@ -188,9 +212,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           return Promise.reject(error);
         }
 
-        // If access token expired, try to refresh
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          console.log("🚨 401 - Attempting token refresh");
+        // If access token expired or invalid, try to refresh
+        // Handle both 401 (Unauthorized) and 403 (Forbidden) for token expiry
+        const isAuthError =
+          error.response?.status === 401 || error.response?.status === 403;
+        if (isAuthError && !originalRequest._retry) {
+          console.log(
+            `🚨 ${error.response?.status} - Attempting token refresh`
+          );
           originalRequest._retry = true;
 
           try {
@@ -222,16 +251,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         user,
         role,
         isAuthenticated,
+        isInitialized,
         login,
         registerUser,
         logout,
         loading,
         setLoading,
+        logoutLoading,
+        updateUser,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-
-// Export useAuth hook separately to avoid fast refresh issues

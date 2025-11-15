@@ -1,0 +1,53 @@
+// ============================================
+// Firebase Firestore Security Rules for Notifications
+// ============================================
+// Add this to your Firebase Console > Firestore Database > Rules
+// URL: https://console.firebase.google.com/project/YOUR_PROJECT/firestore/rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Notifications collection rules
+    match /notifications/{notificationId} {
+      // Allow read for all authenticated users
+      // Since you're using custom auth, this allows reads
+      allow read: if true; // TEMPORARY - allows all reads
+      
+      // Allow delete - TEMPORARY SOLUTION FOR TESTING
+      // WARNING: This allows ANYONE to delete notifications
+      // This is INSECURE and should only be used for development
+      allow delete: if true; // TEMPORARY - allows all deletions
+      
+      // Allow create (for server-side notification creation)
+      allow create: if true; // TEMPORARY
+      
+      // Allow update (for marking as read)
+      allow update: if true; // TEMPORARY
+    }
+  }
+}
+
+// ============================================
+// PRODUCTION SOLUTION (Recommended)
+// ============================================
+// Since you're using custom authentication, you have two options:
+
+// OPTION 1: Use Firebase Authentication
+// - Migrate to Firebase Auth alongside your custom auth
+// - Then use: allow delete: if request.auth != null && 
+//                                resource.data.userId == request.auth.uid;
+
+// OPTION 2: Create Backend API Endpoint (RECOMMENDED)
+// - Create a DELETE endpoint in your backend: DELETE /api/notifications/:id
+// - Verify user authentication using your JWT tokens
+// - Check that notification.userId matches the authenticated user
+// - Then delete from Firebase server-side
+// - This is the most secure approach
+
+// ============================================
+// Quick Fix for Now (Testing Only)
+// ============================================
+// The rules above will allow deletions to work immediately
+// But remember: This is NOT secure for production!
+

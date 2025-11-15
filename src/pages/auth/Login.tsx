@@ -7,6 +7,7 @@ import { loginSchema, type LoginData } from "@/lib/validation";
 import FormInput from "@/components/myUi/auth/FormInput";
 import AuthButton from "@/components/myUi/auth/AuthButton";
 import StatusModal from "@/components/myUi/auth/StatusModal";
+import { message } from "antd";
 
 export default function Login() {
   const [error, setError] = useState<string>("");
@@ -17,7 +18,7 @@ export default function Login() {
   const { login, role, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  console.log("Im from Log in page", role);
+  console.log("Im from Log in page", user?.phoneNumber);
 
   // Redirect or show modal based on role if already authenticated
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function Login() {
 
     try {
       await login(data.email, data.password);
-
+      message.success("Login successfully!");
       setIsSuccessModalVisible(true);
     } catch (error: unknown) {
       const axiosError = error as {
@@ -62,7 +63,7 @@ export default function Login() {
         if (status === 401 || status === 404 || status === 400) {
           setError(
             axiosError.response.data?.error ||
-            "Wrong credentials. Please try again."
+              "Wrong credentials. Please try again."
           );
         }
       } else if (axiosError.request) {
@@ -168,6 +169,10 @@ export default function Login() {
           if (role === "admin") {
             navigate("/admin-side", { replace: true });
           } else if (role === "clearingOfficer") {
+            navigate("/clearing-officer", { replace: true });
+          } else if (role === "sao") {
+            navigate("/clearing-officer", { replace: true });
+          } else if (role === "registrar") {
             navigate("/clearing-officer", { replace: true });
           } else if (role === "student") {
             navigate("/", { replace: true });

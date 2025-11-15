@@ -2,13 +2,16 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface Course {
   id: number;
-  title: string;
-  description: string;
+  courseCode: string;
+  courseName: string;
+  yearLevel: string;
+  semester: string;
+  requirements: string[];
+  department: string;
   dueDate: string;
+  description: string;
   completed: boolean;
   students: number;
-  department: string;
-  requirements: string[];
 }
 
 interface ClearanceState {
@@ -16,11 +19,14 @@ interface ClearanceState {
   selectedCategory: string;
   isDialogOpen: boolean;
   newRequirement: {
-    title: string;
-    description: string;
-    dueDate: string;
-    department: string;
+    courseCode: string;
+    courseName: string;
+    yearLevel: string;
+    semester: string;
     requirements: string[];
+    department: string;
+    dueDate: string;
+    description: string;
   };
   confirmDialog: {
     isOpen: boolean;
@@ -35,43 +41,55 @@ interface ClearanceState {
 const initialRequirements: Course[] = [
   {
     id: 1,
-    title: "CC107",
-    description: "Advanced topics in data structures and algorithms.",
+    courseCode: "CC107",
+    courseName: "Data Structures and Algorithms",
+    yearLevel: "2nd Year",
+    semester: "1st Semester",
+    requirements: ["CC107"],
+    department: "BS-Computer Science",
     dueDate: "May 15, 2025",
+    description: "Advanced topics in data structures and algorithms.",
     completed: true,
     students: 45,
-    department: "BS-Computer Science",
-    requirements: ["CC107"],
   },
   {
     id: 2,
-    title: "SE102",
-    description: "Principles of software design and architecture.",
+    courseCode: "SE102",
+    courseName: "Software Design and Architecture",
+    yearLevel: "2nd Year",
+    semester: "1st Semester",
+    requirements: ["SE102", "SE103", "SE104"],
+    department: "BS-Education",
     dueDate: "April 28, 2025",
+    description: "Principles of software design and architecture.",
     completed: false,
     students: 38,
-    department: "BS-Education",
-    requirements: ["SE102", "SE103", "SE104"],
   },
   {
     id: 3,
-    title: "IS301",
-    description: "In-depth study of database management systems.",
+    courseCode: "IS301",
+    courseName: "Database Management Systems",
+    yearLevel: "3rd Year",
+    semester: "1st Semester",
+    requirements: ["IS301", "IS302"],
+    department: "BS-Administration",
     dueDate: "June 5, 2025",
+    description: "In-depth study of database management systems.",
     completed: false,
     students: 52,
-    department: "BS-Administration",
-    requirements: ["IS301", "IS302"],
   },
   {
     id: 4,
-    title: "CS404",
-    description: "Exploring the fundamentals of AI and machine learning.",
+    courseCode: "CS404",
+    courseName: "Artificial Intelligence and Machine Learning",
+    yearLevel: "4th Year",
+    semester: "2nd Semester",
+    requirements: ["CS404", "CS405", "CS406"],
+    department: "BS-Accounting",
     dueDate: "May 20, 2025",
+    description: "Exploring the fundamentals of AI and machine learning.",
     completed: true,
     students: 30,
-    department: "BS-Accounting",
-    requirements: ["CS404", "CS405", "CS406"],
   },
 ];
 
@@ -80,11 +98,14 @@ const initialState: ClearanceState = {
   selectedCategory: "all",
   isDialogOpen: false,
   newRequirement: {
-    title: "",
+    courseCode: "",
+    courseName: "",
+    yearLevel: "",
+    semester: "",
     requirements: [],
-    description: "",
-    dueDate: "",
     department: "",
+    dueDate: "",
+    description: "",
   },
   confirmDialog: {
     isOpen: false,

@@ -1,98 +1,363 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import {
-  BarChart2,
-  Activity,
-  PieChart,
-  LineChart,
-  Shield,
-  Mail,
-  LogOut,
-} from "lucide-react";
-import MonthlyAnalyticsChart from "../../components/Chart";
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Button,
+  Spin,
+  Alert,
+  Typography,
+} from "antd";
+import {
+  MailOutlined,
+  SafetyOutlined,
+  LogoutOutlined,
+  TeamOutlined,
+  CheckCircleOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
+import { useAuth } from "@/authentication/useAuth";
+import {
+  fetchClearingOfficerDashboardStats,
+  getDaysUntilDeadline,
+  type ClearingOfficerDashboardStats,
+} from "@/services/clearingOfficerDashboardService";
+import MyRequirementsStatusChart from "@/components/dashboard/clearing-officer/MyRequirementsStatusChart";
+import RecentSubmissionsTable from "@/components/dashboard/clearing-officer/RecentSubmissionsTable";
+import StudentsByYearChart from "@/components/dashboard/StudentsByYearChart";
+import {
+  fetchDashboardStats,
+  type DashboardStats,
+} from "@/services/dashboardService";
 
-export default function Dashboard() {
+const { Title, Text } = Typography;
+
+const ClearingOfficerDashboard = () => {
+  const { user, logout } = useAuth();
+  const [stats, setStats] = useState<ClearingOfficerDashboardStats | null>(
+    null
+  );
+  const [yearLevelStats, setYearLevelStats] = useState<DashboardStats | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchClearingOfficerDashboardStats();
+        setStats(data);
+
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load dashboard data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    const yearLevelStudent = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchDashboardStats();
+        setYearLevelStats(data);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load dashboard data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    yearLevelStudent();
+
+    loadDashboardData();
+  }, []);
+
+  // Calculate derived metrics
+  const daysUntilDeadline = stats
+    ? getDaysUntilDeadline(stats.activeClearance)
+    : 0;
+
+  // Get and format deadline date
+  const deadlineDate = stats?.activeClearance
+    ? stats.activeClearance.extendedDeadline || stats.activeClearance.deadline
+    : null;
+
+  const formattedDeadlineDate = deadlineDate
+    ? new Date(deadlineDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-[500px] pt-12 w-full ">
+        <Spin size="large">
+          <div className="w-full h-30" />
+        </Spin>
+        <span className="text-lg text-blue-500  tracking-wide">
+          Loading dashboard data...
+        </span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div style={{ padding: "24px" }}>
+        <Alert
+          message="Error Loading Dashboard"
+          description={error}
+          type="error"
+          showIcon
+        />
+      </div>
+    );
+  }
+
+  // No data state
+  if (!stats) {
+    return (
+      <div style={{ padding: "24px" }}>
+        <Alert
+          message="No Data Available"
+          description="Unable to load dashboard statistics. Please try again later."
+          type="warning"
+          showIcon
+        />
+      </div>
+    );
+  }
+
+  // Guards used by lower sections
+  const hasRecentSubmissions =
+    stats && (stats.recentSubmissions?.length || 0) > 0;
+
   return (
-    <div className="min-h-screen py-4 px-4 sm:px-6 lg:px-4">
-      <div className="mx-auto">
-        {/* Top Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="shadow-gray-100">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-              <BarChart2 className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">45.2K</div>
-              <p className="text-xs text-green-500 mt-1">
-                +12.5% from last month
-              </p>
-            </CardContent>
+    <div style={{ padding: "24px" }}>
+      <Title level={2} style={{ marginBottom: "24px" }}>
+        Dashboard
+      </Title>
+
+      {/* Statistics Cards */}
+      <Row gutter={[16, 16]}>
+        {/* Total Students */}
+        <Col xs={24} md={8} lg={8}>
+          <Card>
+            <Statistic
+              title="Total Students"
+              value={stats.totalStudents}
+              prefix={<TeamOutlined style={{ color: "#52c41a" }} />}
+              valueStyle={{ color: "#52c41a" }}
+            />
+            <div
+              style={{ color: "#8c8c8c", fontSize: "14px", marginTop: "8px" }}
+            >
+              Students I manage
+            </div>
           </Card>
+        </Col>
 
-          <Card className="shadow-gray-100">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-              <Activity className="h-4 w-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">87%</div>
-              <p className="text-xs text-red-500 mt-1">-2.3% from last month</p>
-            </CardContent>
+        {/* Total Signed */}
+        <Col xs={24} md={8} lg={8}>
+          <Card>
+            <Statistic
+              title="Total Signed"
+              value={stats.myRequirementStats.signed}
+              prefix={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
+              valueStyle={{ color: "#52c41a" }}
+            />
+            <div
+              style={{ color: "#8c8c8c", fontSize: "14px", marginTop: "8px" }}
+            >
+              Requirements approved
+            </div>
           </Card>
+        </Col>
 
-          <Card className="shadow-gray-100">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversion</CardTitle>
-              <PieChart className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">64%</div>
-              <p className="text-xs text-green-500 mt-1">
-                +8.1% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-gray-100">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-              <LineChart className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$32.4K</div>
-              <p className="text-xs text-green-500 mt-1">
-                +15.2% from last month
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Chart and Profile Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <MonthlyAnalyticsChart />
-
-          <Card className="p-6 shadow-gray-100">
-            <CardHeader>
-              <CardTitle className="text-center">Account Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center text-sm text-gray-500">
-                <Shield size={16} className="mr-2" />
-                <p>Account type: Premium</p>
+        {/* Clearance Deadline */}
+        <Col xs={24} md={8} lg={8}>
+          <Card style={{ position: "relative" }}>
+            {formattedDeadlineDate && (
+              <div className="absolute top-4 right-4 text-gray-500 text-sm font-medium text-right">
+                {formattedDeadlineDate}
               </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <Mail size={16} className="mr-2" />
-                <p>your@email.com</p>
+            )}
+            <Statistic
+              title="Days Until Deadline"
+              value={daysUntilDeadline}
+              suffix="days"
+              prefix={<CalendarOutlined style={{ color: "#fa8c16" }} />}
+              valueStyle={{
+                color: daysUntilDeadline > 7 ? "#3f8600" : "#cf1322",
+              }}
+            />
+            <div
+              style={{
+                color: daysUntilDeadline > 7 ? "#8c8c8c" : "#cf1322",
+                fontSize: "14px",
+                marginTop: "8px",
+              }}
+            >
+              {stats.activeClearance
+                ? `${stats.activeClearance.semesterType} ${stats.activeClearance.academicYear}`
+                : "No active clearance"}
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Charts Section */}
+      <Row gutter={[16, 16]} style={{ marginTop: "24px" }}>
+        <Col xs={24} lg={12}>
+          <StudentsByYearChart
+            data={
+              yearLevelStats?.studentsByYearLevel ?? {
+                "1st Year": 0,
+                "2nd Year": 0,
+                "3rd Year": 0,
+                "4th Year": 0,
+              }
+            }
+          />
+        </Col>
+
+        <Col xs={24} lg={12}>
+          <MyRequirementsStatusChart data={stats.myRequirementStats} />
+        </Col>
+      </Row>
+
+      {/* Recent Submissions and Account Info */}
+      <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
+        <Col xs={24} lg={16}>
+          {hasRecentSubmissions ? (
+            <RecentSubmissionsTable data={stats.recentSubmissions} />
+          ) : (
+            <Card title="My Requirements Summary" style={{ height: "100%" }}>
+              <Row gutter={[16, 16]}>
+                <Col xs={12} md={6}>
+                  <Statistic
+                    title="Total"
+                    value={stats.myRequirementStats.total}
+                  />
+                </Col>
+                <Col xs={12} md={6}>
+                  <Statistic
+                    title="Signed"
+                    value={stats.myRequirementStats.signed}
+                    valueStyle={{ color: "#52c41a" }}
+                  />
+                </Col>
+                <Col xs={12} md={6}>
+                  <Statistic
+                    title="Pending"
+                    value={stats.myRequirementStats.pending}
+                    valueStyle={{ color: "#1890ff" }}
+                  />
+                </Col>
+                <Col xs={12} md={6}>
+                  <Statistic
+                    title="Incomplete"
+                    value={stats.myRequirementStats.incomplete}
+                    valueStyle={{ color: "#faad14" }}
+                  />
+                </Col>
+                <Col xs={12} md={6}>
+                  <Statistic
+                    title="Missing"
+                    value={stats.myRequirementStats.missing}
+                    valueStyle={{ color: "#f5222d" }}
+                  />
+                </Col>
+              </Row>
+            </Card>
+          )}
+        </Col>
+
+        {/* User Account Card */}
+        <Col xs={24} lg={8}>
+          <Card title="Account Information">
+            <div style={{ marginTop: "8px" }}>
+              <div style={{ marginBottom: "16px" }}>
+                <Text strong>Name:</Text>
+                <br />
+                <Text>
+                  {user?.firstName} {user?.lastName}
+                </Text>
               </div>
-              <Button variant="default" className="w-full mt-4">
-                <LogOut size={16} className="mr-2" />
+
+              <div style={{ marginBottom: "16px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <SafetyOutlined
+                    style={{ marginRight: "8px", color: "#1890ff" }}
+                  />
+                  <Text strong>Role:</Text>
+                </div>
+                <Text style={{ marginLeft: "24px" }}>
+                  {user?.role || "Clearing Officer"}
+                </Text>
+              </div>
+
+              <div style={{ marginBottom: "24px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <MailOutlined
+                    style={{ marginRight: "8px", color: "#1890ff" }}
+                  />
+                  <Text strong>Email:</Text>
+                </div>
+                <Text style={{ marginLeft: "24px" }}>{user?.email}</Text>
+              </div>
+
+              <Button
+                type="primary"
+                danger
+                icon={<LogoutOutlined />}
+                style={{ width: "100%" }}
+                onClick={handleLogout}
+              >
                 Sign Out
               </Button>
-            </CardContent>
+            </div>
           </Card>
-        </div>
-      </div>
+        </Col>
+      </Row>
     </div>
   );
-}
+};
+
+export default ClearingOfficerDashboard;

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm exec tsc:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm list:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

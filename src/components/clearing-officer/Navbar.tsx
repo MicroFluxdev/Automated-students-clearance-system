@@ -1,120 +1,101 @@
-// import { Link, useLocation } from "react-router-dom";
-// import { Bell, LogOut, Menu } from "lucide-react";
-// import { ScanOutlined } from "@ant-design/icons";
-// import NotificationDrawer from "../NotificationDrawer";
-// import { useState } from "react";
-
-// // interface NavItem {
-// //   href: string;
-// //   label: string;
-// //   icon: React.ReactNode;
-// // }
-
-// interface NavbarProps {
-//   toggleSidebar: () => void;
-// }
-
-// export default function Navbar({ toggleSidebar }: NavbarProps) {
-//   const location = useLocation();
-//   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-//   // const navItems: NavItem[] = [
-//   //   { href: "/dashboard", label: "Home", icon: <LayoutDashboard size={18} /> },
-//   //   { href: "/dashboard/gallery", label: "Gallery", icon: <Image size={18} /> },
-//   //   {
-//   //     href: "https://github.com/HardUsername-123",
-//   //     label: "Github",
-//   //     icon: <Github size={18} />,
-//   //   },
-//   // ];
-
-//   return (
-//     <nav className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white shadow-lg">
-//       <div className="mx-auto px-4 sm:px-6 lg:px-8">
-//         <div className="flex justify-between h-16 items-center">
-//           {/* Left Side: Logo and Navigation */}
-//           <div className="flex items-center">
-//             <button
-//               onClick={toggleSidebar}
-//               className="lg:hidden p-2 rounded-md hover:bg-white/10 mr-2"
-//             >
-//               <Menu className="h-6 w-6" />
-//             </button>
-//             <Link
-//               to="/dashboard"
-//               className="flex items-center gap-2 font-bold text-xl mr-8 px-4 py-2 rounded-lg hover:bg-white/10 hover:text-white transition-colors duration-200"
-//             >
-//               <span>
-//                 {location.pathname === "/dashboard"
-//                   ? "Dashboard"
-//                   : location.pathname === "/dashboard/gallery"
-//                   ? "Gallery"
-//                   : "Dashboard"}
-//               </span>
-//             </Link>
-//             <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200">
-//               <ScanOutlined className="text-lg" />
-//               <span>QR Code</span>
-//             </div>
-
-//             {/* <div className="hidden sm:flex sm:space-x-1">
-//               {navItems.map((item) => (
-//                 <Link
-//                   key={item.href}
-//                   to={item.href}
-//                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
-//                 >
-//                   {item.icon}
-//                   {item.label}
-//                 </Link>
-//               ))}
-//             </div> */}
-//           </div>
-
-//           {/* Right Side: Notifications and Logout */}
-//           <div className="flex items-center space-x-4">
-//             <button
-//               onClick={() => setIsNotificationOpen(true)}
-//               className="relative p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-//             >
-//               <Bell className="h-6 w-6" />
-//               <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-//             </button>
-//             <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-white/10 rounded-lg transition-all duration-200">
-//               <LogOut size={18} />
-//               <span>Logout</span>
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-
-//       <NotificationDrawer
-//         open={isNotificationOpen}
-//         onClose={() => setIsNotificationOpen(false)}
-//       />
-//     </nav>
-//   );
-// }
-import { BellIcon, LogOut, Menu, QrCode, User } from "lucide-react";
+import { BellIcon, LogOut, Menu, QrCode, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState, useEffect, useRef } from "react";
 import NotificationDrawer from "../NotificationDrawer";
 import { useAuth } from "../../authentication/useAuth";
+import { QRScannerModal } from "./QRScannerModal";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "@/config/firebaseConfig";
+import { toast } from "sonner";
 
 interface NavbarProps {
   toggleSidebar: () => void;
 }
+interface Notification {
+  id: string;
+  userId?: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt?: {
+    toDate: () => Date;
+  };
+}
+
 const Navbar = ({ toggleSidebar }: NavbarProps) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const { logout } = useAuth();
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { logout, user } = useAuth();
+  const previousNotificationIds = useRef<Set<string>>(new Set());
+  const isInitialLoad = useRef(true);
 
-  const notificationCount = 3;
+  // Fetch notifications from Firebase
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Query notifications - filter by userId if available, otherwise get all
+    const notificationsQuery = query(
+      collection(db, "notifications"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+      const list: Notification[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Notification[];
+
+      // Filter by userId if notifications have userId field
+      const userNotifications = list.filter(
+        (n) => !n.userId || n.userId === user.id
+      );
+
+      // Detect new notifications and show toast
+      if (!isInitialLoad.current) {
+        const newNotifications = userNotifications.filter(
+          (n) => !previousNotificationIds.current.has(n.id)
+        );
+
+        // Show toast for each new notification
+        newNotifications.forEach((notification) => {
+          toast.info(notification.title, {
+            description: notification.message,
+            duration: 5000,
+            action: {
+              label: "View",
+              onClick: () => setIsNotificationOpen(true),
+            },
+          });
+        });
+      } else {
+        // Mark initial load as complete
+        isInitialLoad.current = false;
+      }
+
+      // Update previous notification IDs
+      previousNotificationIds.current = new Set(
+        userNotifications.map((n) => n.id)
+      );
+
+      setNotifications(userNotifications);
+    });
+
+    return () => unsubscribe();
+  }, [user?.id]);
+
+  // Calculate unread notification count
+  const notificationCount = notifications.filter((n) => !n.isRead).length;
 
   // const handleLogout = () => {
   //   console.log("Logging out...");
@@ -147,6 +128,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                   variant="ghost"
                   size="sm"
                   className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  onClick={() => setIsQRScannerOpen(true)}
                 >
                   <QrCode className="h-5 w-5 text-gray-500" />
                   <span className="text-sm text-gray-600">QR Scanner</span>
@@ -180,16 +162,79 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
               onClose={() => setIsNotificationOpen(false)}
             />
 
+            {/* QR Scanner Modal */}
+            <QRScannerModal
+              open={isQRScannerOpen}
+              onOpenChange={setIsQRScannerOpen}
+              onScanSuccess={(decodedText) => {
+                console.log("QR Code scanned:", decodedText);
+                // You can add navigation or other logic here
+                // For example: navigate to student page if decodedText is a student ID
+              }}
+            />
+
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <User size={24} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="relative h-10 w-10 rounded-full"
+                >
+                  <Avatar className="h-10 w-10 border-2 border-blue-500">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      <img
+                        alt=""
+                        src={
+                          user?.profileImage ||
+                          "https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                        }
+                        className="size-10 rounded-full object-cover"
+                      />
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={logout}>
-                  <LogOut className="mr-2 h-4 w-4" />
+              <DropdownMenuContent align="end" className="w-64 mr-2">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
+                          <img
+                            alt=""
+                            src={
+                              user?.profileImage ||
+                              "https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                            }
+                            className="size-10 rounded-full object-cover"
+                          />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <p className="text-sm font-semibold leading-none text-foreground">
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground mt-1.5">
+                          {user?.schoolId}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Mail className="h-4 w-4" />
+                    <span className="truncate">{user?.email}</span>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>

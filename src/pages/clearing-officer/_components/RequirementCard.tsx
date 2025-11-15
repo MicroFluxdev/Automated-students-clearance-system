@@ -21,10 +21,13 @@ import { Link } from "react-router-dom";
 
 interface RequirementsCardProps {
   index: number;
-  title: string;
-  department: string;
+  courseCode: string;
+  courseName: string;
+  department: string[];
+  semester: string;
+  yearLevel: string;
   completed: boolean;
-  description: string;
+  description?: string;
   dueDate: string;
   students: number;
   requirements: string[];
@@ -32,7 +35,10 @@ interface RequirementsCardProps {
 
 const RequirementCard: React.FC<RequirementsCardProps> = ({
   index,
-  title,
+  courseCode,
+  courseName,
+  semester,
+  yearLevel,
   department,
   completed,
   description,
@@ -54,9 +60,9 @@ const RequirementCard: React.FC<RequirementsCardProps> = ({
               </div>
               <div>
                 <CardTitle className="text-lg font-bold text-slate-700">
-                  {title}
+                  {courseCode}
                 </CardTitle>
-                <CardDescription>{department}</CardDescription>
+                <CardDescription>{courseName}</CardDescription>
               </div>
             </div>
             <Badge
@@ -92,6 +98,18 @@ const RequirementCard: React.FC<RequirementsCardProps> = ({
           <div className="flex gap-2 text-gray-500 text-sm mt-4">
             <CircleAlert className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-600" />
             <p className="flex-1">{description}</p>
+          </div>
+          <div className="flex gap-2 text-gray-500 text-sm mt-4">
+            <CircleAlert className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-600" />
+            <p className="flex-1">{yearLevel}</p>
+          </div>
+          <div className="flex gap-2 text-gray-500 text-sm mt-4">
+            <CircleAlert className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-600" />
+            <p className="flex-1">{department}</p>
+          </div>
+          <div className="flex gap-2 text-gray-500 text-sm mt-4">
+            <CircleAlert className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-600" />
+            <p className="flex-1">{semester}</p>
           </div>
           <div className="flex items-center text-sm text-gray-500 mt-4">
             <Calendar className="h-4 w-4 mr-2" />

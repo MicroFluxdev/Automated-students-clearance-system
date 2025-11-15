@@ -1,117 +1,17 @@
-// import {
-//   LayoutDashboard,
-//   GraduationCap,
-//   Calendar,
-//   Settings,
-//   NotebookPen,
-// } from "lucide-react";
-
-// import { CloseOutlined } from "@ant-design/icons";
-// import { Link, useLocation } from "react-router-dom";
-
-// interface CloseSidebarProps {
-//   closeSidebar: () => void;
-// }
-
-// export const SideMenu = ({ closeSidebar }: CloseSidebarProps) => {
-//   const location = useLocation();
-
-//   const navbar = [
-//     {
-//       to: "/clearing-officer",
-//       icon: <LayoutDashboard size={20} />,
-//       label: "Dashboard",
-//     },
-//     {
-//       to: "/clearing-officer/courses",
-//       icon: <GraduationCap size={20} />,
-//       label: "Courses",
-//     },
-//     {
-//       to: "/clearing-officer/requirements",
-//       icon: <NotebookPen size={20} />,
-//       label: "Requirements",
-//     },
-//     {
-//       to: "/clearing-officer/events",
-//       icon: <Calendar size={20} />,
-//       label: "Events",
-//     },
-//     {
-//       to: "/clearing-officer/accountSettings",
-//       icon: <Settings size={20} />,
-//       label: "Account Settings",
-//     },
-//   ];
-
-//   return (
-//     <div className="flex h-screen flex-col justify-between bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
-//       <div className="px-6 py-8">
-//         <span
-//           onClick={closeSidebar}
-//           className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-all duration-300 absolute right-4 top-4"
-//         >
-//           <CloseOutlined size={20} />
-//         </span>
-//         <span className="flex justify-center items-center w-full rounded-xl mb-12 border-b border-white/10 pb-4">
-//           <div className="relative w-25 h-25  cursor-pointer hover:pause">
-//             <img
-//               src="/MF-logo.png"
-//               alt="Web Image"
-//               className="absolute w-25 h-25 [transform:rotateY(0deg)] [backface-visibility:hidden] drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-//             />
-//           </div>
-//         </span>
-
-//         <ul className="space-y-2">
-//           {navbar.map(({ to, icon, label }) => (
-//             <li key={to}>
-//               <Link
-//                 to={to}
-//                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-//                   location.pathname === to
-//                     ? "bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg hover:shadow-blue-500/25"
-//                     : "hover:bg-white/10"
-//                 }`}
-//               >
-//                 {icon}
-//                 <span className="font-medium">{label}</span>
-//               </Link>
-//             </li>
-//           ))}
-//         </ul>
-//       </div>
-
-//       <div className="border-t border-white/10">
-//         <div className="p-4 mx-4 my-4 rounded-xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
-//           <div className="flex items-center gap-3">
-//             <img
-//               alt=""
-//               src="https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
-//               className="size-10 rounded-full object-cover"
-//             />
-
-//             <div>
-//               <p className="font-medium text-sm text-white">Anthony Crausus</p>
-//               <p className="text-xs text-gray-400">anthony.dev@gmail.com</p>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { useState, useCallback } from "react";
 import {
   Search,
   ChevronLeft,
   LayoutDashboard,
-  GraduationCap,
   Calendar,
   Settings2,
+  Book,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/authentication/useAuth";
+import { StudentSearchModal } from "./StudentSearchModal";
 
 const navbar = [
   {
@@ -119,10 +19,25 @@ const navbar = [
     icon: LayoutDashboard,
     label: "Dashboard",
   },
+  // {
+  //   to: "/clearing-officer/sao/students",
+  //   icon: User,
+  //   label: "Students",
+  // },
+  {
+    to: "/clearing-officer/sao/requirements",
+    icon: FileText,
+    label: "Requirements",
+  },
+  {
+    to: "/clearing-officer/viewCourses",
+    icon: Book,
+    label: "Courses",
+  },
   {
     to: "/clearing-officer/clearance",
-    icon: GraduationCap,
-    label: "Clearance",
+    icon: FileText,
+    label: "Requirements",
   },
   {
     to: "/clearing-officer/events",
@@ -143,6 +58,14 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
   const location = useLocation();
 
   const currentPath = location.pathname;
+  const { user } = useAuth();
+
+  console.log("lala", user?.role);
+
+  const userName = `${user?.firstName} ${user?.lastName}`;
+
+  // Search modal state
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const isActive = (path: string) => {
     if (path === "/clearing-officer" && currentPath === "/clearing-officer")
@@ -151,6 +74,16 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
       return true;
     return false;
   };
+
+  // Handle search input click/focus - open modal
+  const handleSearchClick = useCallback(() => {
+    setIsSearchModalOpen(true);
+  }, []);
+
+  // Handle modal close
+  const handleModalClose = useCallback((open: boolean) => {
+    setIsSearchModalOpen(open);
+  }, []);
 
   return (
     <aside
@@ -182,17 +115,25 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
       </div>
 
       {/* Search */}
-
       <div className="px-3 mt-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search..."
-            className="w-full rounded-lg bg-gray-50 pl-10 pr-4 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            placeholder="Search students..."
+            readOnly
+            onClick={handleSearchClick}
+            onFocus={handleSearchClick}
+            className="w-full rounded-lg bg-gray-50 pl-10 pr-4 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
           />
         </div>
       </div>
+
+      {/* Student Search Modal */}
+      <StudentSearchModal
+        open={isSearchModalOpen}
+        onOpenChange={handleModalClose}
+      />
 
       {/* Navigation */}
       <div className="mt-6 px-2 flex-1 overflow-y-auto">
@@ -202,6 +143,23 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
 
         <nav className="space-y-1">
           {navbar.map((item, index) => {
+            // Hide `/clearing-officer/clearance` and `/clearing-officer/viewCourses` if user role is "sao" or "registrar"
+            const shouldHideForSao =
+              (user?.role === "sao" || user?.role === "registrar") &&
+              (item.to === "/clearing-officer/clearance" ||
+                item.to === "/clearing-officer/viewCourses");
+
+            // Show `/clearing-officer/sao` and `/clearing-officer/sao/post-requirements` only for "sao" or "registrar" role
+            const shouldHideForNonSao =
+              user?.role !== "sao" &&
+              user?.role !== "registrar" &&
+              (item.to === "/clearing-officer/sao/students" ||
+                item.to === "/clearing-officer/sao/requirements");
+
+            if (shouldHideForSao || shouldHideForNonSao) {
+              return null;
+            }
+
             const active = isActive(item.to);
             const Icon = item.icon;
 
@@ -238,33 +196,34 @@ export function AppSidebar({ closeSidebar }: CloseSidebarProps) {
 
       {/* Footer */}
       <div className={cn("mt-auto px-4 py-4")}>
-        {/* // <div className="rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 p-3 animate-fade-in">
-          //   <h4 className="text-sm font-medium text-blue-700 mb-1">
-          //     Upgrade to Pro
-          //   </h4>
-          //   <p className="text-xs text-blue-600 mb-2">
-          //     Get access to all features
-          //   </p>
-          //   <button className="w-full rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-blue-700 hover:scale-105 active:scale-95">
-          //     Upgrade Now
-          //   </button>
-          // </div> */}
-        <div className="rounded-lg hover:bg-gray-800 p-3 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <img
-              alt=""
-              src="https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
-              className="size-10 rounded-full object-cover"
-            />
+        <Link to="/clearing-officer/accountSettings">
+          <div className="rounded-lg hover:bg-gray-800 p-3 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <img
+                alt=""
+                src={
+                  user?.profileImage ||
+                  "https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                }
+                className="size-10 rounded-full object-cover border-2 border-blue-500"
+              />
 
-            <div>
-              <p className="font-medium text-xs text-blue-600">
-                Anthony Crausus
-              </p>
-              <p className="text-xs text-gray-400">anthony.dev@gmail.com</p>
+              <div>
+                <p className="font-medium text-xs text-blue-600">{userName}</p>
+                {/* <p className="text-xs text-gray-400">{user?.email}</p> */}
+                <p className="text-xs text-gray-400">
+                  {user?.role === "clearingOfficer"
+                    ? "Clearing Officer"
+                    : user?.role === "sao"
+                    ? "SAO"
+                    : user?.role === "registrar"
+                    ? "Registrar"
+                    : "Who are you?"}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   );

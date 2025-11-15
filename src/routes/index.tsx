@@ -7,7 +7,6 @@ import Unauthorized from "../pages/Unauthorized";
 import Dashboard from "../pages/clearing-officer/Dashboard";
 import Clearance from "../pages/clearing-officer/Clearance";
 import StudentRecord from "../pages/clearing-officer/StudentRecord";
-import Requirements from "../pages/clearing-officer/Requirements";
 import Events from "@/pages/clearing-officer/Events";
 import AccountSettings from "@/pages/clearing-officer/AccountSettings";
 import AdminDashboard from "@/pages/admin-side/Dashboard";
@@ -24,16 +23,13 @@ import RootPages from "@/pages/landingPage/RootPages";
 import ClearingOfficerLayout from "@/layouts/ClearingOfficerLayout";
 import SampleQrCode from "@/pages/SampleQrCode";
 import ViewPermit from "@/pages/TestingQrCodePermit";
-// Enrollment System Imports
-import EnrollmentDashboard from "@/pages/enrollmentSide/EnrollmentDashboard";
-import StudentManagement from "@/pages/enrollmentSide/StudentManagement";
-import CourseManagement from "@/pages/enrollmentSide/CourseManagement";
-import SemesterManagement from "@/pages/enrollmentSide/SemesterManagement";
-import StudentEnrollment from "@/pages/enrollmentSide/StudentEnrollment";
-import EnrollmentRecords from "@/pages/enrollmentSide/EnrollmentRecords";
-import EnrollmentLayout from "@/layouts/EnrollmentLayout";
+
 import EnrollmentLogin from "@/pages/enrollmentSide/EnrollmentLogin";
-import { TermsPolicy } from "@/pages/landingPage/_components/TermsPolicy";
+import ViewCourses from "@/pages/clearing-officer/ViewCourses";
+import { SaoOfficer } from "@/pages/institutionalOfficer/sao/studentsList";
+import Requirements from "@/pages/institutionalOfficer/sao/Requirements";
+import { ClearanceStart } from "@/pages/admin-side/ClearanceStart";
+import TermsPolicy from "@/pages/landingPage/_components/TermsPolicy";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -57,6 +53,7 @@ const AppRoutes: React.FC = () => {
         <Route path="addStudents" element={<AddStudents />} />
         <Route path="addClearingOfficer" element={<AddClearingOfficer />} />
         <Route path="adminSettings" element={<AdminSettings />} />
+        <Route path="adminClearance" element={<ClearanceStart />} />
 
         <Route path="*" element={<Unauthorized />} />
       </Route>
@@ -64,25 +61,67 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/clearing-officer"
         element={
-          <ProtectedRoute allowedRoles={["clearingOfficer"]}>
+          <ProtectedRoute
+            allowedRoles={["clearingOfficer", "sao", "registrar"]}
+          >
             <ClearingOfficerLayout />
           </ProtectedRoute>
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="clearance" element={<Clearance />} />
-        <Route path="student-records" element={<StudentRecord />} />
-        <Route path="requirements" element={<Requirements />} />
+        <Route
+          path="clearance"
+          element={
+            <ProtectedRoute allowedRoles={["clearingOfficer"]}>
+              <Clearance />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="student-records/:courseCode/:reqId"
+          element={
+            <ProtectedRoute allowedRoles={["clearingOfficer"]}>
+              <StudentRecord />
+            </ProtectedRoute>
+          }
+        />
         <Route path="events" element={<Events />} />
         <Route path="accountSettings" element={<AccountSettings />} />
         <Route path="viewClearance" element={<ViewClearance />} />
+        <Route
+          path="viewCourses"
+          element={
+            <ProtectedRoute allowedRoles={["clearingOfficer", "sao"]}>
+              <ViewCourses />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* sao */}
+        <Route
+          path="sao/requirements"
+          element={
+            <ProtectedRoute allowedRoles={["sao", "registrar"]}>
+              <Requirements />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="sao/students/:reqId"
+          element={
+            <ProtectedRoute allowedRoles={["sao", "registrar"]}>
+              <SaoOfficer />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="*" element={<Unauthorized />} />
       </Route>
       {/**General Route */}
       <Route path="permit" element={<ViewQrCodePermit />} />
       <Route path="sampleQrCode" element={<SampleQrCode />} />
       <Route path="viewPermit" element={<ViewPermit />} />
-      <Route path="TermsPolicy"  element={<TermsPolicy />} />
+      <Route path="TermsPolicy" element={<TermsPolicy />} />
 
       <Route path="enrollmentLogin" element={<EnrollmentLogin />} />
       <Route
@@ -101,22 +140,6 @@ const AppRoutes: React.FC = () => {
           </GuestRoute>
         }
       />
-      {/* Enrollment System Routes */}
-      <Route
-        path="/enrollment"
-        element={
-          // <ProtectedRoute allowedRoles={["admin"]}>
-          <EnrollmentLayout />
-          // </ProtectedRoute>
-        }
-      >
-        <Route index element={<EnrollmentDashboard />} />
-        <Route path="students" element={<StudentManagement />} />
-        <Route path="courses" element={<CourseManagement />} />
-        <Route path="semester" element={<SemesterManagement />} />
-        <Route path="enroll" element={<StudentEnrollment />} />
-        <Route path="records" element={<EnrollmentRecords />} />
-      </Route>
 
       <Route path="unauthorized" element={<Unauthorized />} />
     </Routes>

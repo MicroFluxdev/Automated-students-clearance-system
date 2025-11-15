@@ -1,5 +1,15 @@
-import { useState } from "react";
-import { Button, message } from "antd";
+import React, { useState, type ChangeEvent } from "react";
+import {
+  User,
+  Lock,
+  Trash2,
+  Upload,
+  Mail,
+  AlertCircle,
+  Phone,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,205 +17,519 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useAuth } from "@/authentication/useAuth";
+import {
+  updateUserProfile,
+  updateUserPassword,
+  updateAvatar,
+} from "@/services/userService";
+import { toast } from "react-toastify";
 
-export default function AdminSettings() {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [extendDeadline, setExtendDeadline] = useState(false);
-  const [previousEndDate, setPreviousEndDate] = useState("");
+const AccountSettings = () => {
+  const { user, updateUser } = useAuth();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
-  const handleSaveDeadline = () => {
-    if (!startDate || !endDate) {
-      message.error("Please select both start and end dates.");
-      return;
-    }
+  console.log("👤 Current User in AccountSettings:", user);
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+  // Profile form state - initialized from user data
+  const [profileForm, setProfileForm] = useState({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    phoneNumber: user?.phoneNumber || "",
+  });
 
-    if (start > end) {
-      message.error("Start date cannot be after end date.");
-      return;
-    }
+  // Sync form state when user data changes (e.g., after login or refresh)
+  React.useEffect(() => {
+    if (user) {
+      console.log("🔄 useEffect triggered - Syncing user data");
+      console.log("👤 User profileImage:", user.profileImage);
 
-    if (extendDeadline) {
-      const prevEnd = new Date(previousEndDate);
-      if (end <= prevEnd) {
-        message.error(
-          "New end date must be after current end date when extending."
-        );
-        return;
+      setProfileForm({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
+      });
+      // Sync avatar with user's profile image from server only if different
+      if (user.profileImage && user.profileImage !== avatar) {
+        console.log("✅ Updating avatar state to:", user.profileImage);
+        setAvatar(user.profileImage);
       }
     }
+  }, [user, avatar]);
 
-    setPreviousEndDate(endDate);
-    message.success(
-      `Clearance deadline ${
-        extendDeadline ? "extended" : "set"
-      } from ${startDate} to ${endDate}`
-    );
+  // Password form state
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const handleProfileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setProfileForm((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleChangePassword = () => {
-    if (password === confirmPassword) {
-      message.success("Password changed successfully!");
-    } else {
-      message.error("Passwords do not match!");
+  const handlePasswordInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setPasswordForm((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!user?.id) {
+      toast.error("User not found. Please log in again.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const updateProfileParams = user.id;
+
+      const response = await updateUserProfile(updateProfileParams, {
+        firstName: profileForm.firstName,
+        lastName: profileForm.lastName,
+        email: profileForm.email,
+        phoneNumber: profileForm.phoneNumber,
+      });
+
+      // Update the user context with new data, preserving existing user properties
+      const updatedUser = {
+        ...user,
+        firstName: profileForm.firstName,
+        lastName: profileForm.lastName,
+        email: profileForm.email,
+        phoneNumber: profileForm.phoneNumber,
+        // Merge any additional data from the response if available
+        ...(response.user || {}),
+      };
+
+      updateUser(updatedUser);
+      toast.success("Profile updated successfully!");
+    } catch (error: unknown) {
+      // Type guard for Axios error shape
+      const err = error as { response?: { data?: { message?: string } } };
+      console.error("Profile update error:", error);
+      toast.error(
+        err?.response?.data?.message ||
+          "Failed to update profile. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!user?.id) {
+      toast.error("User not found. Please log in again.");
+      return;
+    }
+
+    // Validate password match
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New passwords do not match!");
+      return;
+    }
+
+    // Validate password length
+    if (passwordForm.newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters long!");
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const updatePasswordParams = user.id;
+
+      await updateUserPassword(updatePasswordParams, {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+
+      toast.success("Password changed successfully!");
+
+      // Clear password form
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error: unknown) {
+      // Type guard for Axios error shape
+      const err = error as { response?: { data?: { message?: string } } };
+      console.error("Password change error:", error);
+      toast.error(
+        err?.response?.data?.message ||
+          "Failed to change password. Please try again."
+      );
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setLoading(true);
+    // TODO: Implement delete account functionality when endpoint is ready
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setLoading(false);
+    setIsDeleteModalOpen(false);
+    toast.info("Delete account functionality will be implemented soon.");
+  };
+
+  const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select a valid image file.");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error("Image size must be less than 5MB.");
+        return;
+      }
+
+      if (!user?.id) {
+        toast.error("User not found. Please log in again.");
+        return;
+      }
+
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatar(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload the file
+      setAvatarLoading(true);
+      try {
+        const response = await updateAvatar(user.id, file);
+
+        console.log("📸 Upload Response:", response);
+
+        // Extract the uploaded image URL from various possible response structures
+        const uploadedImageUrl =
+          response.updatedOfficer?.profileImage ||
+          response.updatedOfficer?.profileImageUrl ||
+          response.profileImageUrl ||
+          response.profileImage ||
+          response.data?.profileImageUrl ||
+          response.data?.profileImage ||
+          response.user?.profileImage ||
+          response.user?.profileImageUrl;
+
+        console.log("📸 Uploaded Image URL:", uploadedImageUrl);
+
+        if (!uploadedImageUrl) {
+          console.error("❌ No image URL in response:", response);
+          throw new Error("Server did not return an image URL");
+        }
+
+        // Update the user context with new profile image
+        const updatedUser = {
+          ...user,
+          profileImage: uploadedImageUrl,
+        };
+
+        console.log("👤 Updated User:", updatedUser);
+
+        updateUser(updatedUser);
+
+        // Update avatar state with the server URL for immediate display
+        setAvatar(uploadedImageUrl);
+
+        toast.success("Profile image updated successfully!");
+      } catch (error: unknown) {
+        // Type guard for Axios error shape
+        const err = error as { response?: { data?: { message?: string } } };
+        console.error("Avatar upload error:", error);
+
+        // Reset preview on error
+        setAvatar(null);
+
+        toast.error(
+          err?.response?.data?.message ||
+            "Failed to upload profile image. Please try again."
+        );
+      } finally {
+        setAvatarLoading(false);
+      }
     }
   };
 
   return (
-    <>
-      <div className="p-6">
-        <div className="flex justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
-              Account Settings
-            </h1>
-            <p className="text-gray-500">Manage your account settings</p>
-          </div>
-        </div>
+    <div className="space-y-8 p-4 md:p-8 max-w-4xl">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your account settings and preferences.
+        </p>
       </div>
-      <div className="p-6 max-w-4xl">
-        <Tabs defaultValue="clearance" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-blue-500">
-            <TabsTrigger value="clearance">Clearance Deadline</TabsTrigger>
-            <TabsTrigger value="password">Change Password</TabsTrigger>
-          </TabsList>
 
-          <TabsContent value="clearance" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Set Clearance Period</CardTitle>
-                <CardDescription>
-                  Configure the clearance deadline for students
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {previousEndDate && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-700">
-                      Previous deadline ended on:{" "}
-                      <strong>{previousEndDate}</strong>
-                    </p>
-                  </div>
+      {/* Profile Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Information</CardTitle>
+          <CardDescription>Update your public profile details.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-6 mb-8">
+            <div className="relative group">
+              <Avatar className="w-24 h-24 border-2 border-primary">
+                <AvatarImage
+                  src={
+                    avatar ||
+                    user?.profileImage ||
+                    // "https://github.com/evilrabbit.png"
+                    "https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                  }
+                />
+                <AvatarFallback>
+                  <User className="w-10 h-10" />
+                </AvatarFallback>
+              </Avatar>
+              <label
+                htmlFor="avatar-upload"
+                className={`absolute inset-0 flex items-center justify-center bg-black/50 rounded-full transition-opacity ${
+                  avatarLoading
+                    ? "opacity-100 cursor-wait"
+                    : "opacity-0 group-hover:opacity-100 cursor-pointer"
+                }`}
+              >
+                {avatarLoading ? (
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+                ) : (
+                  <Upload className="text-white w-8 h-8" />
                 )}
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="extend"
-                    checked={extendDeadline}
-                    onCheckedChange={(checked) => {
-                      const newValue = checked as boolean;
-                      setExtendDeadline(newValue);
-                      if (newValue && previousEndDate) {
-                        setStartDate(previousEndDate);
-                      } else {
-                        setStartDate("");
-                      }
-                    }}
-                  />
-                  <Label htmlFor="extend" className="text-sm font-medium">
-                    Extend from current deadline
-                  </Label>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      disabled={extendDeadline}
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="endDate">End Date</Label>
-                    <Input
-                      id="endDate"
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  type="primary"
-                  onClick={handleSaveDeadline}
-                  className="w-full md:w-auto"
-                >
-                  Save Deadline
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="password" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Change Admin Password</CardTitle>
-                <CardDescription>
-                  Update your administrator account password
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  disabled={avatarLoading}
+                />
+              </label>
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold">
+                {user?.firstName} {user?.lastName}
+              </h2>
+              <span className="text-muted-foreground text-sm">
+                {user?.schoolId}
+              </span>
+              <p className="text-muted-foreground">{user?.email}</p>
+            </div>
+          </div>
+          <form onSubmit={handleUpdateProfile} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
-                    id="username"
-                    placeholder="Enter Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    id="firstName"
+                    placeholder="John"
+                    className="pl-10"
+                    value={profileForm.firstName}
+                    onChange={handleProfileInputChange}
+                    required
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
+                    className="pl-10"
+                    value={profileForm.lastName}
+                    onChange={handleProfileInputChange}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="johndoe@example.com"
+                  className="pl-10"
+                  value={profileForm.email}
+                  onChange={handleProfileInputChange}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  placeholder="+1234567890"
+                  className="pl-10"
+                  value={profileForm.phoneNumber}
+                  onChange={handleProfileInputChange}
+                />
+              </div>
+            </div>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Updating..." : "Update Profile"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+      {/* Change Password Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Change Password</CardTitle>
+          <CardDescription>
+            For your security, we recommend using a strong password that you
+            don't use elsewhere.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleChangePassword} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  className="pl-10"
+                  value={passwordForm.currentPassword}
+                  onChange={handlePasswordInputChange}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="newPassword"
                     type="password"
-                    placeholder="Enter new password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pl-10"
+                    value={passwordForm.newPassword}
+                    onChange={handlePasswordInputChange}
+                    required
+                    minLength={6}
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
                     type="password"
-                    placeholder="Confirm new password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pl-10"
+                    value={passwordForm.confirmPassword}
+                    onChange={handlePasswordInputChange}
+                    required
+                    minLength={6}
                   />
                 </div>
+              </div>
+            </div>
+            <Button type="submit" disabled={passwordLoading}>
+              {passwordLoading ? "Changing..." : "Change Password"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
+      {/* Delete Account Section */}
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Delete Account</CardTitle>
+          <CardDescription>
+            Permanently delete your account and all associated data. This action
+            is irreversible.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Account
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="text-destructive" />
+                    <span>Are you absolutely sure?</span>
+                  </div>
+                </DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
                 <Button
-                  type="primary"
-                  onClick={handleChangePassword}
-                  className="w-full md:w-auto"
+                  variant="outline"
+                  onClick={() => setIsDeleteModalOpen(false)}
                 >
-                  Change Password
+                  Cancel
                 </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAccount}
+                  disabled={loading}
+                >
+                  {loading ? "Deleting..." : "Yes, delete my account"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+    </div>
   );
-}
+};
+
+export default AccountSettings;

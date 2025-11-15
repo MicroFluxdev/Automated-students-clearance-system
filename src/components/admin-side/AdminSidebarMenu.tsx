@@ -1,13 +1,15 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   Search,
   ChevronLeft,
   LayoutDashboard,
   Settings,
-  UserCog,
+  UsersRound,
+  UserRoundCog,
+  CalendarCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { UsergroupAddOutlined } from "@ant-design/icons";
+import { useAuth } from "@/authentication/useAuth";
 
 const navbar = [
   {
@@ -17,13 +19,18 @@ const navbar = [
   },
   {
     to: "/admin-side/addStudents",
-    icon: UsergroupAddOutlined,
+    icon: UsersRound,
     label: "Student",
   },
   {
     to: "/admin-side/addClearingOfficer",
-    icon: UserCog,
+    icon: UserRoundCog,
     label: "Clearing Officer",
+  },
+  {
+    to: "/admin-side/adminClearance",
+    icon: CalendarCog,
+    label: "Setup Clearance",
   },
   {
     to: "/admin-side/adminSettings",
@@ -39,6 +46,12 @@ interface CloseSidebarProps {
 export function AdminSideMenu({ closeSidebar }: CloseSidebarProps) {
   const location = useLocation();
   const currentPath = location.pathname;
+
+  const { user } = useAuth();
+
+  console.log("lala", user);
+
+  const userName = `${user?.firstName} ${user?.lastName}`;
 
   const isActive = (path: string) => {
     if (path === "/admin-side" && currentPath === "/admin-side") return true;
@@ -133,35 +146,29 @@ export function AdminSideMenu({ closeSidebar }: CloseSidebarProps) {
       {/* Footer */}
       <div className="px-3 py-4">
         {/* Upgrade Button */}
-        <div className={cn("mt-auto rounded-lg hover:bg-gray-800")}>
-          {/* // <div className="rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 p-3 animate-fade-in">
-          //   <h4 className="text-sm font-medium text-blue-700 mb-1">
-          //     Upgrade to Pro
-          //   </h4>
-          //   <p className="text-xs text-blue-600 mb-2">
-          //     Get access to all features
-          //   </p>
-          //   <button className="w-full rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-blue-700 hover:scale-105 active:scale-95">
-          //     Upgrade Now
-          //   </button>
-          // </div> */}
-          <div className="rounded-lg  p-3 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <img
-                alt=""
-                src="https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
-                className="size-10 rounded-full object-cover"
-              />
-
-              <div>
-                <p className="font-medium text-xs text-blue-600">
-                  Administrator
-                </p>
-                <p className="text-xs text-gray-400">admin@gmail.com</p>
+        <Link to="/admin-side/adminSettings">
+          <div className={cn("mt-auto rounded-lg hover:bg-gray-800")}>
+            <div className="rounded-lg  p-3 animate-fade-in">
+              <div className="flex items-center gap-3">
+                <img
+                  alt=""
+                  src={
+                    user?.profileImage ||
+                    "https://media.istockphoto.com/id/1327592449/vector/default-avatar-photo-placeholder-icon-grey-profile-picture-business-man.jpg?s=612x612&w=0&k=20&c=yqoos7g9jmufJhfkbQsk-mdhKEsih6Di4WZ66t_ib7I="
+                  }
+                  className="size-10 rounded-full object-cover border-2 border-blue-500"
+                />
+                <div>
+                  <p className="font-medium text-xs text-blue-600">
+                    {userName}
+                  </p>
+                  {/* <p className="text-xs text-gray-400">{user?.email}</p> */}
+                  <p className="text-xs text-gray-400">{user?.role}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   );

@@ -1,6 +1,5 @@
-import { Phone, MapPin, Github, Facebook, Instagram } from "lucide-react";
+import { Mail, Phone, MapPin, Twitter, Linkedin, Facebook } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
-import { FacebookFilled } from "@ant-design/icons";
 
 const Footer = () => {
   const containerVariants = {
@@ -29,7 +28,7 @@ const Footer = () => {
   return (
     <motion.footer
       id="contact"
-      className="bg-white border-t border-gray-200 text-gray-700 lg:px-30"
+      className="bg-[#222222]  text-white lg:px-30"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
@@ -47,21 +46,15 @@ const Footer = () => {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
-              <motion.div
-                className="p-2 bg-blue-500 rounded-lg"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <img
-                  className="h-8 w-8 rounded-md object-cover"
-                  src="/MICRO FLUX LOGO.png"
-                  alt="Menu icon"
-                />
-              </motion.div>
-              <span className="text-2xl font-bold text-gray-900">ASCS</span>
+              <img
+                className="h-10 w-10 rounded-md object-cover"
+                src="/MICRO FLUX LOGO.png"
+                alt="Menu icon"
+              />
+              <span className="text-2xl font-bold text-gray-50">ASCS</span>
             </motion.div>
             <motion.p
-              className="text-gray-500 leading-relaxed"
+              className="text-gray-300 leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -76,16 +69,13 @@ const Footer = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               {[
-                { icon: Instagram, delay: 0.5, href: "https://www.instagram.com/microflux.official/" },
-                { icon: Facebook, delay: 0.7, href: "https://www.facebook.com/MicroFluxOfficialPage" },
-                { icon: Github, delay: 0.6, href: "https://github.com/MicroFluxdev" },
-              ].map(({ icon: Icon, delay, href }) => (
-                <motion.a
+                { icon: Twitter, delay: 0.5 },
+                { icon: Linkedin, delay: 0.6 },
+                { icon: Facebook, delay: 0.7 },
+              ].map(({ icon: Icon, delay }) => (
+                <motion.button
                   key={delay}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-full hover:bg-blue-100 text-gray-500 hover:text-blue-600 transition flex items-center justify-center"
+                  className="p-2 rounded-full hover:bg-blue-100 text-gray-300 hover:text-blue-600 transition"
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.3, delay }}
@@ -93,7 +83,7 @@ const Footer = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Icon className="h-4 w-4" />
-                </motion.a>
+                </motion.button>
               ))}
             </motion.div>
           </motion.div>
@@ -101,23 +91,24 @@ const Footer = () => {
           {/* Product Links */}
           <motion.div className="space-y-4" variants={itemVariants}>
             <motion.h3
-              className="font-semibold text-gray-900"
+              className="font-semibold text-gray-50"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              Offers
+              Product
             </motion.h3>
             <div className="space-y-2">
               {[
-                "Enrollment Management System",
-                "Compputer Laboratory Logbook",
-                "Code Flux",
-                "ASCS Mobile App",
-                "More",
+                "Features",
+                "Pricing",
+                "Integrations",
+                "API Documentation",
+                "Security",
               ].map((item, index) => (
                 <motion.a
                   key={item}
-                  className="block text-gray-500 hover:text-blue-600 transition"
+                  href="#"
+                  className="block text-gray-300 hover:text-blue-600 transition"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
@@ -132,20 +123,24 @@ const Footer = () => {
           {/* Company Links */}
           <motion.div className="space-y-4" variants={itemVariants}>
             <motion.h3
-              className="font-semibold text-gray-900"
+              className="font-semibold text-gray-50"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              Institutions
+              Company
             </motion.h3>
             <div className="space-y-2">
               {[
                 "About Us",
-                "Teams",
+                "Careers",
+                "News & Blog",
+                "Case Studies",
+                "Partners",
               ].map((item, index) => (
                 <motion.a
                   key={item}
-                  className="block text-gray-500 hover:text-blue-600 transition"
+                  href="#"
+                  className="block text-gray-300 hover:text-blue-600 transition"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
@@ -160,61 +155,42 @@ const Footer = () => {
           {/* Contact Info */}
           <motion.div className="space-y-4" variants={itemVariants}>
             <motion.h3
-              className="font-semibold text-gray-900"
+              className="font-semibold text-gray-50"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
               Contact
             </motion.h3>
             <div className="space-y-3">
-              <motion.a
-                href="https://www.facebook.com/MicroFluxOfficialPage"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 text-gray-500"
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                whileHover={{ x: 5, scale: 1.02 }}
-              >
+              {[
+                { icon: Mail, text: "hello@studentflow.com", delay: 0.3 },
+                { icon: Phone, text: "(555) 123-4567", delay: 0.4 },
+                { icon: MapPin, text: "San Francisco, CA", delay: 0.5 },
+              ].map(({ icon: Icon, text, delay }) => (
                 <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ duration: 0.2 }}
+                  key={text}
+                  className="flex items-center gap-3 text-gray-300"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.4, delay }}
+                  whileHover={{ x: 5, scale: 1.02 }}
                 >
-                  <FacebookFilled className="h-4 w-4 text-blue-600" />
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Icon className="h-4 w-4 text-blue-600" />
+                  </motion.div>
+                  <span>{text}</span>
                 </motion.div>
-                <span>MicroFlux</span>
-              </motion.a>
-
-              {/* Other contact items */}
-              <motion.div
-                className="flex items-center gap-3 text-gray-500"
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.4 }}
-                whileHover={{ x: 5, scale: 1.02 }}
-              >
-                <Phone className="h-4 w-4 text-blue-600" />
-                <span>+639100734410</span>
-              </motion.div>
-
-              <motion.div
-                className="flex items-center gap-3 text-gray-500"
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.5 }}
-                whileHover={{ x: 5, scale: 1.02 }}
-              >
-                <MapPin className="h-4 w-4 text-blue-600" />
-                <span>Lanao del Norte, Philippines</span>
-              </motion.div>
+              ))}
             </div>
           </motion.div>
         </motion.div>
 
         {/* Separator */}
         <motion.div
-          className="my-8 border-t border-gray-200"
+          className="my-8 border-t border-white/20"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
@@ -228,11 +204,11 @@ const Footer = () => {
           transition={{ duration: 0.6, delay: 0.6 }}
         >
           <motion.div
-            className="text-gray-500"
+            className="text-gray-300"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
-            © 2025 MicroFlu. All rights reserved.
+            © 2024 StudentFlow. All rights reserved.
           </motion.div>
           <div className="flex gap-6">
             {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
@@ -240,7 +216,7 @@ const Footer = () => {
                 <motion.a
                   key={item}
                   href="#"
-                  className="text-gray-500 hover:text-blue-600 transition"
+                  className="text-gray-300 hover:text-blue-600 transition"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}

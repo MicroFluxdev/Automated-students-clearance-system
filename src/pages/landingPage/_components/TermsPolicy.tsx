@@ -6,12 +6,11 @@ export const TermsPolicy: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-10 px-4">
       <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl p-8 md:p-10 transition-all duration-300">
-
         <div className="flex justify-center mb-6">
           <div
             className="h-16 w-16 bg-center bg-contain bg-no-repeat"
             style={{
-              backgroundImage: "url('public/sign/MICRO FLUX ico.png')",
+              backgroundImage: "url('/sign/MICRO FLUX ico.png')",
             }}
           />
         </div>
@@ -29,9 +28,9 @@ export const TermsPolicy: React.FC = () => {
               1. Introduction
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              Welcome to our website. By accessing or using our service, you agree
-              to comply with and be bound by the following terms and conditions.
-              Please read them carefully before using our site.
+              Welcome to our website. By accessing or using our service, you
+              agree to comply with and be bound by the following terms and
+              conditions. Please read them carefully before using our site.
             </p>
           </div>
 
@@ -40,9 +39,9 @@ export const TermsPolicy: React.FC = () => {
               2. Use of Our Service
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              You agree to use this service only for lawful purposes. You must not
-              use it in any way that could harm, disable, or impair the website or
-              interfere with others’ use.
+              You agree to use this service only for lawful purposes. You must
+              not use it in any way that could harm, disable, or impair the
+              website or interfere with others’ use.
             </p>
           </div>
 
@@ -51,10 +50,10 @@ export const TermsPolicy: React.FC = () => {
               3. Privacy Policy
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              We value your privacy. Any information collected through our website
-              is used to provide and improve our services. We do not share your
-              personal data with third parties except as required by law or with
-              your consent.
+              We value your privacy. Any information collected through our
+              website is used to provide and improve our services. We do not
+              share your personal data with third parties except as required by
+              law or with your consent.
             </p>
           </div>
 
@@ -96,7 +95,7 @@ export const TermsPolicy: React.FC = () => {
             </h2>
             <p className="text-gray-600 leading-relaxed">
               If you have any questions about these Terms or our Privacy Policy,
-              please contact us at {" "}
+              please contact us at{" "}
               <a
                 href="https://www.facebook.com/MicroFluxOfficialPage"
                 target="_blank"
@@ -114,7 +113,9 @@ export const TermsPolicy: React.FC = () => {
           <p className="text-sm text-gray-500 mb-6">
             Automated Student Clerance System
           </p>
-          <Link to={"/register"}><Button>Back</Button></Link>
+          <Link to={"/register"}>
+            <Button>Back</Button>
+          </Link>
         </div>
       </div>
     </div>
