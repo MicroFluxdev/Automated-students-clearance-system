@@ -47,6 +47,8 @@ import {
   getAllStudentRequirements,
   bulkUpdateToMissingStatus,
 } from "@/services/studentRequirementService";
+import { db } from "@/config/firebaseConfig";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 // Interface for Course data (used in dialog form)
 interface Course {
@@ -417,6 +419,14 @@ const Clearance = () => {
 
       // Show success message
       message.success("Requirement created successfully!");
+
+      await addDoc(collection(db, "notifications"), {
+        userId: user?.id,
+        title: "Requirement Created",
+        message: `A new requirement for ${newRequirement.courseName} has been added.`,
+        isRead: false,
+        createdAt: serverTimestamp(),
+      });
       console.log("Created requirement:", response.data);
 
       // Close dialog
